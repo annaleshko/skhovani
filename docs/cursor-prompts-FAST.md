@@ -1,83 +1,81 @@
-# FAST TRACK — whole app today (6 prompts)
+# FAST TRACK v2 — MVP without registration (AI guide first)
 
-Each prompt runs 2 detailed stages from `docs/cursor-prompts.md` as one task. Paste one prompt per new Agent chat, in order. Commit after each.
+Flow: app opens on the map (07) as a fake signed-in user → flight → museum → hall → tour / touch zones → «Про картину» → AI chat → final → next path. Onboarding (01–04), login (01б, 18, 18б, 18в, E4), rhythm (18г) and push (18д) are OUT of the MVP. Detailed specs per stage stay in `docs/cursor-prompts.md`; ignore everything about Supabase, auth and push there.
 
-Shared speed rules (already part of every prompt below):
-- Working end-to-end flow beats polish. Exact Figma fidelity on key screens (07, 12, 13–15, 16, 17, 20); other screens close enough.
-- Do not stop to ask questions. Take the documented decision or a sensible default, leave `// TODO(<topic>)`, and list it in the summary.
-- If a sub-task blocks progress for long, stub it behind a clear TODO and move on.
+Run one prompt per new Agent chat. After each: `git add -A && git commit -m "..." && git push`.
 
 ---
 
-## Prompt 1 — Foundation + components + first deploy
+## Prompt A — Switch to demo user, start on the map
 
 ```
-Read `.cursor/rules/shovani.mdc` and `docs/cursor-prompts.md`.
+## Review
+Onboarding (01–04) and the journey (E1, 07, 9, 11) are implemented. For the MVP the product changes: no registration and no onboarding. The app must open directly on the map screen 07 (Figma `87:1359`) as if the person is already signed in.
 
-Execute **Stage 1** and **Stage 2** from `docs/cursor-prompts.md` as one task, in that order.
+## Iterate
+Remove onboarding and auth from the user flow and seed a fake signed-in demo user.
 
-Speed mode:
-- Working end-to-end beats polish. Do not stop to ask questions: take the documented decision or a sensible default, leave `// TODO(<topic>)`, list TODOs in the summary.
-- Keep `/dev/tokens` simple: one page, no extra tooling.
+## Specify
+- Read `.cursor/rules/shovani.mdc` (updated: no auth, no Supabase, no push).
+- Create `web/src/data/demo-user.ts`: name «Анна», vocative «Анно», start city Вінниця, account «Google», rhythm «Без нагадувань» (so every next path is available immediately), avatar initial «А». All screens read the user from here via the existing state provider.
+- `/` opens the journey: E1 (only if > 400ms) → 07 «Привіт, Анно» with the first path (Вінниця → Херсон). On a returning visit with completed paths, `/` opens Home (built later; for now a simple placeholder that shows the next path and «Летимо»).
+- Do NOT delete onboarding/login code. Keep it in the repo but unreachable: remove links/redirects to it and add a short `// MVP: disabled` note. Remove any auth stubs/toasts from the active flow.
+- Add a demo reset for the jury: route `/reset` clears localStorage progress and redirects to `/`; also a hidden trigger (long-press 2s on the avatar in Home/Profile, when they exist). No visible UI for it.
+- Persist progress (completedPaths, openedArtworkIds, chat history, seen tour) in localStorage under a versioned key.
+- Keep all journey animations and behavior unchanged.
 
-Also:
-- Initialize git in `shovani/` with a `.gitignore` (node_modules, .next, .env*, .DS_Store; keep `.env.example`).
-- Make sure `npm run build` passes in `web/` so I can deploy to Vercel with Root Directory = `web`.
-
-Finish with: files changed, asset rename table, TODOs, the exact commands to run locally.
+## Maintain
+Do not change map, flight, zoom, museum facade or transitions. Do not touch data files except adding `demo-user.ts`. Run lint, type check, build. Summarize changed files and how to test from a clean browser.
 ```
 
-## Prompt 2 — Onboarding + journey
-
-```
-Read `.cursor/rules/shovani.mdc`. Execute **Stage 3** and **Stage 4** from `docs/cursor-prompts.md` as one task.
-
-Speed mode: working flow first, no questions, defaults + `// TODO`, list TODOs at the end.
-Goal of this step: on a phone I can go 01 → 02 → 03 → 04 → E1 → 07 → «Летимо» → flight → 9 → 11 → door → (hall placeholder).
-Run lint, type check, build. Summarize what to check on a real phone.
-```
-
-## Prompt 3 — Hall, tour, touch zones, «Про картину», wallpapers
+## Prompt B — Hall, AI-guide tour, touch zones, «Про картину», wallpapers (core)
 
 ```
 Read `.cursor/rules/shovani.mdc`. Execute **Stage 5** and **Stage 6** from `docs/cursor-prompts.md` as one task.
 
-Speed mode: working flow first, no questions, defaults + `// TODO`, list TODOs at the end.
-Priority inside this step: hall → tour (with grid fallback when x/y/zoom are null) → «Про картину» tabs + sources → «Завершити шлях» → touch zones → wallpapers → `/dev/calibrate`.
-The tour must work for ALL artworks in the journey, not only «Великодня заутреня».
+This is the core feature of the MVP — highest fidelity to Figma (`92:4217`, `125:6530`, `100:1655`, `97:4692`, `97:4745`, `97:4788`, `104:1701`, `125:6841`, `107:1712`, `107:1777`, `107:1840`, `107:1906`, `127:9384`, `127:9408`) and smooth motion.
+Speed mode otherwise: no questions, defaults + `// TODO`, list TODOs at the end.
+Priority: hall → tour (grid fallback when x/y/zoom are null) → touch zones → «Про картину» tabs + sources → «Завершити шлях» → wallpapers → `/dev/calibrate`.
+The tour and touch zones must work for ALL artworks in the journey.
 Run lint, type check, build. Summarize.
 ```
 
-## Prompt 4 — AI chat + final
+## Prompt C — AI chat + final
 
 ```
-Read `.cursor/rules/shovani.mdc`. Execute **Stage 7** and **Stage 8** from `docs/cursor-prompts.md` as one task.
+Read `.cursor/rules/shovani.mdc`. Execute **Stage 7** and **Stage 8** from `docs/cursor-prompts.md` as one task, with these MVP changes:
+- No auth: chat history per artwork lives in localStorage only.
+- Final (17): no login sheet. The CTA «Зберегти моє сузір’я» and its hint are replaced by a primary «На головну» (→ Home) and the «Наступний шлях» card.
 
-Speed mode: working flow first, no questions, defaults + `// TODO`, list TODOs at the end.
-`OPENAI_API_KEY` and `OPENAI_MODEL` are in `web/.env.local`. If the key is missing, the chat must still work with fallback answers.
-Goal: full first path works end-to-end: onboarding → journey → hall → tour → «Про картину» → chat → «Завершити шлях» → final with the star.
-Run lint, type check, build. Summarize + the fallback answers list for my review.
+The AI chat is the core feature: streaming, verified source chips with real links, follow-up chips, E3 error card and fallback answers must all work.
+`OPENAI_API_KEY` and `OPENAI_MODEL` are in `web/.env.local`. Without a key the chat must still work on fallback answers.
+Speed mode otherwise: no questions, defaults + `// TODO`, list TODOs at the end.
+Goal: the whole first path works end-to-end: 07 → flight → museum → hall → tour → «Про картину» → chat → «Завершити шлях» → final.
+Run lint, type check, build. Summarize + print the fallback answers for my review.
 ```
 
-## Prompt 5 — Return visit: Home, Collection, Profile + offline basics
+## Prompt D — Home, Collection, Profile with the demo user + offline basics
 
 ```
 Read `.cursor/rules/shovani.mdc`. Execute **Stage 11** from `docs/cursor-prompts.md`, then from **Stage 12** only: E2 offline screen, chat offline fallback label, preloading the next facade/hall during the flight.
 
-Speed mode: working flow first, no questions, defaults + `// TODO`, list TODOs at the end.
-Auth is not connected yet: Profile «Акаунт» row shows «Не увійшли», «Вийти» and «Видалити акаунт і дані» clear local data for now (TODO for Stage 9).
-Jury mode must work: with rhythm «Без нагадувань» (or rhythm not chosen yet) the next path is available right after the previous one, so all artworks can be passed in one session.
+MVP changes:
+- Profile shows the demo user (Анна, Google, Вінниця, «Без нагадувань»). Rows Ім’я / Місто старту open simple inline edit sheets saved to localStorage. «Ритм», «Вийти», «Видалити акаунт і дані» are visible but non-functional (show a small «Недоступно в демо» toast) — except «Видалити акаунт і дані», which does the demo reset after a confirm sheet.
+- Path availability: always jury mode — the next path opens right after the previous one.
+- Tap on an opened artwork in Collection → AI-guide explore mode (touch zones) with ▶ replay tour, «Спитати гіда», «Про картину».
+- Melitopol: no occupation label on map, Home or Collection.
+Speed mode otherwise: no questions, defaults + `// TODO`, list TODOs at the end.
 Run lint, type check, build. Summarize.
 ```
 
-## Prompt 6 — Real auth, rhythm, web push, production
+## Prompt E — Production check
 
 ```
-Read `.cursor/rules/shovani.mdc`. Execute **Stage 9** and **Stage 10** from `docs/cursor-prompts.md` as one task, then the deploy part of **Stage 12**.
-
-Speed mode: working flow first, no questions, defaults + `// TODO`, list TODOs at the end.
-Env in `web/.env.local`: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY. Generate VAPID keys with `npx web-push generate-vapid-keys`, add them and CRON_SECRET to `.env.local` and to `.env.example` (without values).
-Wire the existing Profile rows (Акаунт, Вийти, Видалити акаунт і дані) to Supabase.
-Give me at the end: SQL to run (or confirm migrations ran), the full list of env vars for Vercel, the exact redirect URLs to add in Supabase and Google Cloud, and a 10-step test script for iPhone (install to Home Screen → push).
-Run lint, type check, build.
+Read `.cursor/rules/shovani.mdc`. Prepare the MVP for the demo:
+- Full run in a 390px viewport: `/reset` → 3 full paths (Херсон, Мелітополь, Херсон) → Collection → Profile → `/reset`. Fix blockers you find with minimal changes.
+- PWA: manifest + icons valid; app installs to the Home Screen; status bar/safe areas correct in standalone mode.
+- Accessibility quick pass: labels on icon buttons, focus in sheets, reduced motion.
+- Performance: `next/image` sizes, no image > 500KB served on mobile, Lighthouse mobile performance ≥ 80 on the map.
+- List env vars for Vercel (only OPENAI_API_KEY, OPENAI_MODEL) and confirm `.env.example`.
+Final report: what works, known issues ranked by demo risk.
 ```
