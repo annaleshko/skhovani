@@ -1,0 +1,198 @@
+#!/usr/bin/env node
+/**
+ * Copies root asset folders into web/public with Latin kebab-case names.
+ * Run from web/: node scripts/prepare-assets.mjs
+ */
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import sharp from "sharp";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const WEB_ROOT = path.resolve(__dirname, "..");
+const REPO_ROOT = path.resolve(WEB_ROOT, "..");
+const PUBLIC = path.join(WEB_ROOT, "public");
+
+const content = JSON.parse(
+  fs.readFileSync(path.join(WEB_ROOT, "src/data/content.json"), "utf8"),
+);
+
+const renameTable = [];
+
+function ensureDir(dir) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+function slugifyFilename(name) {
+  return name
+    .normalize("NFC")
+    .replace(/\.[^.]+$/, "")
+    .toLowerCase()
+    .replace(/['ʼ`]/g, "")
+    .replace(/[^a-z0-9а-яіїєґ]+/gi, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function toWebp(src, dest, maxSide) {
+  ensureDir(path.dirname(dest));
+  const image = sharp(src);
+  const meta = await image.metadata();
+  const w = meta.width ?? maxSide;
+  const h = meta.height ?? maxSide;
+  const long = Math.max(w, h);
+  const pipeline =
+    long > maxSide
+      ? image.resize({
+          width: w >= h ? maxSide : undefined,
+          height: h > w ? maxSide : undefined,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+      : image;
+  await pipeline.webp({ quality: 82 }).toFile(dest);
+}
+
+async function copyFile(src, dest) {
+  ensureDir(path.dirname(dest));
+  fs.copyFileSync(src, dest);
+}
+
+function track(original, next) {
+  renameTable.push({ original, next });
+  console.log(`${original}  →  ${next}`);
+}
+
+// --- Art (jpg only; ignore png duplicates) ---
+const ART_SLUGS = Object.fromEntries(
+  content.artworks
+    .filter((a) => a.sourceAssets?.image)
+    .map((a) => [a.sourceAssets.image, a.slug]),
+);
+
+for (const artwork of content.artworks) {
+  const srcRel = artwork.sourceAssets?.image;
+  if (!srcRel) continue;
+  const src = path.join(REPO_ROOT, srcRel);
+  if (!fs.existsSync(src)) {
+    console.warn(`MISSING art: ${srcRel}`);
+    continue;
+  }
+  const destRel = `art/${artwork.slug}.webp`;
+  const dest = path.join(PUBLIC, destRel);
+  await toWebp(src, dest, 2000);
+  track(srcRel, `/` + destRel);
+
+  const alt = artwork.sourceAssets?.imageAlt;
+  if (alt) {
+    const altSrc = path.join(REPO_ROOT, alt);
+    if (fs.existsSync(altSrc)) {
+      const altDestRel = `art/${artwork.slug}-open.webp`;
+      await toWebp(altSrc, path.join(PUBLIC, altDestRel), 2000);
+      track(alt, `/` + altDestRel);
+    }
+  }
+}
+
+// --- Wallpapers (keep PNG) ---
+for (const artwork of content.artworks) {
+  const srcRel = artwork.sourceAssets?.wallpaper;
+  if (!srcRel) continue;
+  const src = path.join(REPO_ROOT, srcRel);
+  if (!fs.existsSync(src)) {
+    console.warn(`MISSING wallpaper: ${srcRel}`);
+    continue;
+  }
+  const destRel = `wallpapers/${artwork.slug}.png`;
+  await copyFile(src, path.join(PUBLIC, destRel));
+  track(srcRel, `/` + destRel);
+}
+
+// --- Museums ---
+const MUSEUM_SLUGS = {
+  kherson: "kherson",
+  melitopol: "melitopol",
+  kharkiv: "kharkiv",
+  lviv: "lviv",
+  chernihiv: "chernihiv",
+};
+
+for (const museum of content.museums) {
+  const slug = MUSEUM_SLUGS[museum.id] ?? museum.id;
+  const facadeRel = museum.sourceAssets?.facade;
+  if (facadeRel) {
+    const src = path.join(REPO_ROOT, facadeRel);
+    if (fs.existsSync(src)) {
+      const destRel = `museums/${slug}.webp`;
+      await toWebp(src, path.join(PUBLIC, destRel), 1600);
+      track(facadeRel, `/` + destRel);
+    } else {
+      console.warn(`MISSING facade: ${facadeRel}`);
+    }
+  }
+  const hallRel = museum.sourceAssets?.hall;
+  if (hallRel) {
+    const src = path.join(REPO_ROOT, hallRel);
+    if (fs.existsSync(src)) {
+      // TODO(confirm): melitopol hall uses backgrounds/image 63.png
+      const destRel = `halls/${slug}.webp`;
+      await toWebp(src, path.join(PUBLIC, destRel), 2000);
+      track(hallRel, `/` + destRel);
+    } else {
+      console.warn(`MISSING hall: ${hallRel}`);
+    }
+  }
+}
+
+// --- Map ---
+{
+  const src = path.join(REPO_ROOT, "map/Map.svg");
+  const destRel = "map/map.svg";
+  if (fs.existsSync(src)) {
+    await copyFile(src, path.join(PUBLIC, destRel));
+    track("map/Map.svg", `/` + destRel);
+  }
+}
+
+// --- asset-map.ts ---
+const assetMap = {
+  artworks: Object.fromEntries(
+    content.artworks.map((a) => [
+      a.slug,
+      {
+        image: a.image,
+        wallpaper: a.wallpaper,
+        ...(a.sourceAssets?.imageAlt
+          ? { imageAlt: `/art/${a.slug}-open.webp` }
+          : {}),
+      },
+    ]),
+  ),
+  museums: Object.fromEntries(
+    content.museums.map((m) => [
+      m.id,
+      {
+        facade: `/museums/${m.id}.webp`,
+        hall: `/halls/${m.id}.webp`,
+      },
+    ]),
+  ),
+  hallUi: {
+    frame: "/hall/frame.webp",
+    spotlight: "/hall/spotlight.webp",
+    lightCone: "/hall/light-cone.svg",
+    projector: "/hall/projector.svg",
+  },
+};
+
+const assetMapTs = `/* Auto-generated by scripts/prepare-assets.mjs — do not edit by hand */
+export const assetMap = ${JSON.stringify(assetMap, null, 2)} as const;
+
+export type ArtworkSlug = keyof typeof assetMap.artworks;
+export type MuseumId = keyof typeof assetMap.museums;
+`;
+
+fs.writeFileSync(path.join(WEB_ROOT, "src/data/asset-map.ts"), assetMapTs);
+
+console.log("\n=== Asset rename table ===");
+console.table(renameTable);
+console.log(`Wrote src/data/asset-map.ts (${Object.keys(assetMap.artworks).length} artworks, ${Object.keys(assetMap.museums).length} museums)`);

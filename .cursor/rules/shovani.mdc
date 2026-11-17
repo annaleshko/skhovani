@@ -1,0 +1,46 @@
+---
+description: Project rules for «Сховані» (Shovani) — PWA for the OBRIO × МУР hackathon
+alwaysApply: true
+---
+
+# Сховані — project rules
+
+## Sources of truth
+- Product behavior, copy, flow and animation spec: `docs/app-spec.md`.
+- Artwork data, tour stops, touch zones, AI chat rules, sources, museums, journey order: `data/artworks.json` (generated from `docs/artwork-passports.md`, which stays the human-readable reference). Never retype or paraphrase content from these files.
+- Visual design: Figma file `YwA6vCDB79wBlD1A8E8Nt0` («хакатон»), section «основні екрани» (node `42:1719`), components page (node `59:2`). Use Figma MCP; inspect the relevant frame before building a screen.
+- Technical decisions: the existing code in `web/`.
+- If the spec and Figma disagree on behavior, follow `docs/app-spec.md`. If they disagree on visuals, follow Figma.
+
+## Stack
+- Next.js (App Router) + TypeScript (strict) + Tailwind CSS + Framer Motion. App lives in `web/`.
+- Supabase for auth (Google + email OTP) and persistence. OpenAI API for the guide chat. Web Push (VAPID) for reminders.
+- Do not add other dependencies without explaining why in your summary.
+
+## Product rules
+- Mobile-only PWA. Design frame 390×844, side padding 24px, 4/8 grid, Manrope (via `next/font`). One warm dark theme.
+- On desktop, render the app centered at max-width 430px; do not design a desktop layout.
+- All UI copy is Ukrainian and comes from the spec/Figma. Never invent copy; if a string is missing, add a `// TODO(copy)` and use the closest existing string.
+- The journey only moves forward. No back button inside a path (map → museum → hall → tour).
+- Safety: never state or guess where evacuated artworks are stored. Only «твір в укритті».
+- Every fact shown to users must come from `docs/artwork-passports.md`. Sources must be real links from the passport.
+
+## Design tokens
+- Use Figma variables (names like `bg/screen`, `text/secondary`, `status/stolen-*`) mapped to CSS variables + Tailwind theme. Never hardcode hex values in components.
+
+## Motion
+- Use the durations/easings from the animation table in `docs/app-spec.md` (section 8). Keep them in one `motion.ts` constants file.
+- Default spring: stiffness 300, damping 30.
+- Respect `prefers-reduced-motion`: flights, zooms and lens become 200ms crossfades; pulses are disabled.
+
+## Code conventions
+- Small focused components in `web/src/components/<area>/`. Screens in `web/src/app/`.
+- Typed data in `web/src/data/`. No content strings hardcoded inside logic.
+- Client state: React context + `localStorage` for the anonymous user; synced to Supabase after login.
+- Accessibility: semantic buttons/links, visible focus, accessible names on icon buttons, touch targets ≥ 44px, no info by color alone.
+- Secrets only in env vars (`.env.local`, never committed). Provide `.env.example`.
+
+## Working style
+- Inspect relevant files and the Figma frame before editing. Make the smallest change that fulfills the stage.
+- Do not rewrite files outside the current stage unless required; say why if you do.
+- After each stage run `npm run lint`, `npx tsc --noEmit` and `npm run build` in `web/`, fix errors, then summarize: files changed, what works, what to verify manually, open TODOs.
