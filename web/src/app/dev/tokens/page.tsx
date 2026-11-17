@@ -57,6 +57,12 @@ export default function TokensPage() {
     <main className="space-y-2xl px-xl pb-[calc(120px+var(--safe-bottom))] pt-md">
       <StatusBarSpacer />
       <ScreenHeader title="Токени і компоненти" subtitle="Stage 1–2 · /dev/tokens" />
+      <p className="text-caption text-text-secondary">
+        <a href="/dev/calibrate" className="text-text-accent">
+          /dev/calibrate
+        </a>{" "}
+        — калібрування турів
+      </p>
 
       <Section title="Кольори">
         <div className="grid grid-cols-3 gap-sm">
