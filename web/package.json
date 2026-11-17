@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "prebuild": "node scripts/validate-content.mjs",
+    "prebuild": "node scripts/validate-content.mjs && node scripts/test-projection.mjs && node scripts/test-camera.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src --max-warnings 0",
     "prepare-assets": "node scripts/prepare-assets.mjs",
     "validate-content": "node scripts/validate-content.mjs",
+    "test:projection": "node scripts/test-projection.mjs",
+    "test:camera": "node scripts/test-camera.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

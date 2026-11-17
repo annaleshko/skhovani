@@ -8,12 +8,13 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   fullWidth?: boolean;
 };
 
+/** No border by default (Figma primary has none). Variants that need a stroke use --color-border-button. */
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-text-on-accent border border-border-subtle/0 enabled:active:opacity-90 disabled:bg-surface-raised disabled:text-text-secondary",
+    "border-0 bg-accent text-text-on-accent enabled:active:opacity-90 disabled:bg-surface-raised disabled:text-text-secondary",
   secondary:
-    "bg-surface-raised text-text-primary border border-border-subtle enabled:active:opacity-90",
-  ghost: "bg-transparent text-text-secondary border border-transparent enabled:active:opacity-80",
+    "border-0 bg-surface-raised text-text-primary enabled:active:opacity-90",
+  ghost: "border-0 bg-transparent text-text-secondary enabled:active:opacity-80",
 };
 
 /** Figma Button 59:21 — Primary / Secondary / Ghost */

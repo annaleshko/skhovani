@@ -64,13 +64,20 @@
 html,
 body {
   height: 100%;
+  background: var(--color-bg-screen);
 }
 
 body {
   color: var(--color-text-primary);
-  background: var(--color-bg-screen);
   font-family: var(--font-manrope), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Never fall back to Tailwind’s light-gray default border */
+@layer base {
+  * {
+    border-color: var(--color-border-subtle);
+  }
 }
 
 /* Mobile shell: centered phone column on desktop */

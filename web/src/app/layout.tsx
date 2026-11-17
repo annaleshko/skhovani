@@ -1,3 +1,4 @@
+import { Providers } from "@/components/providers/Providers";
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
@@ -34,9 +35,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uk">
-      <body className={`${manrope.variable} font-sans antialiased`}>
-        <div id="app-shell">{children}</div>
+    <html lang="uk" className="bg-screen">
+      <body className={`${manrope.variable} bg-screen font-sans antialiased`}>
+        <Providers>
+          <div id="app-shell">{children}</div>
+        </Providers>
       </body>
     </html>
   );
