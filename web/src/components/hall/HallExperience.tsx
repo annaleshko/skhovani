@@ -1,7 +1,11 @@
 "use client";
 
 import { AboutSheet } from "@/components/about/AboutSheet";
-import { RouteMapScreen } from "@/components/journey/RouteMapScreen";
+import { JourneyFlow } from "@/components/journey/JourneyFlow";
+import {
+  RouteMapScreen,
+  type DepartOpts,
+} from "@/components/journey/RouteMapScreen";
 import { WallpaperSavedScreen } from "@/components/journey/WallpaperSavedScreen";
 import { StatusBadge } from "@/components/ui";
 import { GuideScreen } from "@/components/guide/GuideScreen";
@@ -179,6 +183,11 @@ export function HallExperience({
     reopenHall ? "remembered" : "empty",
   );
   const [wallpaperShared, setWallpaperShared] = useState(false);
+  /** 02в → flight without /journey navigation (same map cam). */
+  const [routeFlight, setRouteFlight] = useState<{
+    pathN: number;
+    mapCam: DepartOpts["mapCam"];
+  } | null>(null);
   const [focusKey, setFocusKey] = useState(artworkId);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -508,11 +517,11 @@ export function HallExperience({
   }, [artworkId, completeCurrentPath, isReplayPassport]);
 
   const departNext = useCallback(
-    (path: ResolvedPath) => {
-      // 02в «Вирушити» always flies — never skip to hall (path 1 / first visit).
-      router.replace(`/journey?path=${path.n}&autostart=1`);
+    (path: ResolvedPath, opts: DepartOpts) => {
+      // Fly inside this tree from the measured 02в map cam (no /journey jump).
+      setRouteFlight({ pathN: path.n, mapCam: opts.mapCam });
     },
-    [router],
+    [],
   );
 
   /** Next unfinished path for passport «Далі — <місто>». */
@@ -627,16 +636,16 @@ export function HallExperience({
   const hintTour = (isShelter || isSaved) && showUi && !reopenHall;
   const hintPassport = reopenHall && showUi;
 
-  // Hint ring stays on the glass corner (scrolls with the hall). Label is
-  // placed left/top with 8px gap; only the label is clamped on-screen so it
-  // never covers the Melitopol badge in reopen.
+  // Figma 05: ring on frame top-right (scrolls with hall); label ABOVE the
+  // ring, outside the frame. Melitopol: label above glass, clear of badge.
   const markerPos = (() => {
     const r = hallFocusSlot.frameRect;
     const inset = emptyInset;
     const glassRight = r.x + r.w * (1 - inset.right);
     const glassTop = r.y + r.h * inset.top;
-    const cx = glassRight - 8;
-    const cy = glassTop + 14;
+    // Ring sits on the frame corner (just outside / on the chrome edge).
+    const cx = r.x + r.w - 8;
+    const cy = r.y + 14;
     const half = 28.5;
     const gap = 8;
     const hintW = 145;
@@ -646,18 +655,37 @@ export function HallExperience({
     const visL = scrollDes;
     const visR = scrollDes + viewW / px;
     const visT = 0;
-    // Prefer label to the left of the ring (8px), else above.
-    let hintLeft = cx - half - gap - hintW;
-    let hintTop = cy - hintH / 2;
-    if (hintLeft < visL + margin) {
-      hintLeft = cx - hintW / 2;
-      hintTop = cy - half - gap - hintH;
+    // Default: centered above the ring, outside the frame.
+    let hintLeft = cx - hintW / 2;
+    let hintTop = cy - half - gap - hintH;
+    if (museumId === "melitopol") {
+      // Vitrine: ring on glass corner; label above glass, not over badge.
+      const glassCx = glassRight - 8;
+      const glassCy = glassTop + 14;
+      const badgeBottom = (layout.captions.badgeY ?? 254) + 28;
+      hintLeft = glassCx - hintW / 2;
+      hintTop = Math.min(
+        glassCy - half - gap - hintH,
+        glassTop - gap - hintH,
+      );
+      if (hintTop < badgeBottom + gap) {
+        hintTop = badgeBottom + gap;
+      }
+      return {
+        cx: glassCx,
+        cy: glassCy,
+        hintLeft: Math.min(
+          Math.max(hintLeft, visL + margin),
+          visR - margin - hintW,
+        ),
+        hintTop: Math.max(hintTop, visT + margin),
+        hintW,
+      };
     }
-    const badgeBottom =
-      museumId === "melitopol" ? (layout.captions.badgeY ?? 254) + 28 : 0;
-    if (badgeBottom > 0 && hintTop < badgeBottom + gap) {
-      hintLeft = Math.min(cx - half - gap - hintW, visR - margin - hintW);
-      hintTop = Math.max(badgeBottom + gap, glassTop);
+    // Keep label outside the frame opening (above frame top).
+    const frameTop = r.y;
+    if (hintTop + hintH > frameTop - gap) {
+      hintTop = frameTop - gap - hintH;
     }
     hintLeft = Math.min(
       Math.max(hintLeft, visL + margin),
@@ -1465,6 +1493,17 @@ export function HallExperience({
           );
         }}
       />
+
+      {routeFlight ? (
+        <div className="absolute inset-0 z-[60]">
+          <JourneyFlow
+            pathN={routeFlight.pathN}
+            autostart
+            fromRouteMap
+            initialCam={routeFlight.mapCam}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

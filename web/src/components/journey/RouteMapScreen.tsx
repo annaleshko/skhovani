@@ -6,6 +6,7 @@ import { MapMuseumHits } from "@/components/map/MapMuseumHits";
 import { MapPin } from "@/components/map/MapPin";
 import { MapStar } from "@/components/map/MapStar";
 import { MuseumDot } from "@/components/map/MuseumDot";
+import { RestartJourneyLink } from "@/components/journey/RestartJourneyLink";
 import { getMuseum } from "@/data";
 import {
   ALL_DONE_COPY,
@@ -23,6 +24,7 @@ import {
   routeSheetBlurbForPath,
 } from "@/data/museum-copy";
 import { getMuseumShortLabel } from "@/data/museums";
+import type { CameraTransform } from "@/lib/camera";
 import {
   arcControl,
   getMapViewBox,
@@ -32,19 +34,25 @@ import {
 import { layoutMapLabels, type MapLabelMarker } from "@/lib/map-label";
 import {
   defaultSpring,
+  easings,
   motionTokens,
   useReducedMotionSafe,
 } from "@/lib/motion";
 import { useAppState } from "@/state/AppState";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+export type DepartOpts = {
+  /** 02в map SVG rect as JourneyFlow camera (tx/ty/scale) — frame 0 of flight. */
+  mapCam: CameraTransform;
+};
 
 type Props = {
   open: boolean;
   /** Journey-order next path when the screen opens. */
   next: ResolvedPath | null;
-  onDepart: (path: ResolvedPath) => void;
+  onDepart: (path: ResolvedPath, opts: DepartOpts) => void;
   /**
    * Star museum tap (already opened) — flight without sheet.
    * `reopen` when all museum paths are done (hall shows last opened, revealed).
@@ -62,6 +70,9 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   const { completedPaths, openedArtworkIds, startCityId } = useAppState();
   const vb = getMapViewBox();
   const [confirmRestart, setConfirmRestart] = useState(false);
+  const [sheetExit, setSheetExit] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const mapSvgRef = useRef<SVGSVGElement>(null);
 
   const defaultMuseumId = next?.museumId ?? JOURNEY_MUSEUM_ORDER[0];
   /** null = follow journey-order next; set when the user taps a museum. */
@@ -99,7 +110,10 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     return projectToMap(targetMuseum.lat, targetMuseum.lng);
   }, [startPt, targetMuseum]);
 
-  const ctrl = useMemo(() => arcControl(startPt, targetPt), [startPt, targetPt]);
+  const distanceKm = useMemo(() => {
+    if (!targetMuseum) return 0;
+    return haversineKm(origin.city, targetMuseum);
+  }, [origin.city, targetMuseum]);
 
   const visitedOrder = useMemo(
     () => getVisitedMuseumOrder(completedPaths),
@@ -107,10 +121,10 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   );
   const visitedSet = useMemo(() => new Set(visitedOrder), [visitedOrder]);
 
-  const distanceKm = useMemo(() => {
-    if (!targetMuseum) return 0;
-    return haversineKm(origin.city, targetMuseum);
-  }, [origin.city, targetMuseum]);
+  const ctrl = useMemo(
+    () => arcControl(startPt, targetPt),
+    [startPt, targetPt],
+  );
 
   const labelLayout = useMemo(() => {
     const markers: MapLabelMarker[] = [];
@@ -132,10 +146,38 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     }).filter((t): t is NonNullable<typeof t> => Boolean(t));
   }, []);
 
+  const measureMapCam = useCallback((): CameraTransform => {
+    const svg = mapSvgRef.current;
+    const root = rootRef.current;
+    if (!svg || !root) {
+      return { tx: -9, ty: 239, scale: 1 };
+    }
+    const sr = svg.getBoundingClientRect();
+    const rr = root.getBoundingClientRect();
+    const scale = sr.width / vb.w;
+    return {
+      tx: sr.left - rr.left,
+      ty: sr.top - rr.top,
+      scale,
+    };
+  }, [vb.w]);
+
+  const handleDepart = useCallback(
+    (path: ResolvedPath) => {
+      if (sheetExit) return;
+      const mapCam = measureMapCam();
+      setSheetExit(true);
+      const delay = reduced ? 0 : motionTokens.sheetHide * 1000;
+      window.setTimeout(() => {
+        onDepart(path, { mapCam });
+      }, delay);
+    },
+    [measureMapCam, onDepart, reduced, sheetExit],
+  );
+
   const onMuseumTap = (id: string) => {
-    // Revisit shortcut ONLY on 02в star tap when museum already has an opened artwork.
-    // Never from city picker / path 1 sheet.
-    if (onRevisit && museumHasOpenedArtwork(id, openedArtworkIds)) {
+    if (sheetExit) return;
+    if (museumHasOpenedArtwork(id, openedArtworkIds) && onRevisit) {
       const nextIn = getNextPathInMuseum(id, completedPaths);
       if (nextIn) {
         onRevisit(nextIn, { reopen: false });
@@ -154,6 +196,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     <AnimatePresence>
       {open ? (
         <motion.div
+          ref={rootRef}
           className="absolute inset-0 z-40 flex flex-col bg-screen"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -178,6 +221,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
             />
             <div className="absolute left-1/2 top-1/2 h-[70%] w-[92%] max-w-[360px] -translate-x-1/2 -translate-y-[42%]">
               <svg
+                ref={mapSvgRef}
                 viewBox={`0 0 ${vb.w} ${vb.h}`}
                 className="size-full"
                 role="img"
@@ -185,7 +229,6 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
               >
                 <image href="/map/map.svg" width={vb.w} height={vb.h} />
 
-                {/* Rays: start → visited — #E9B872 50%, 2px dots, 6px gap */}
                 {visitedOrder.map((id) => {
                   const m = getMuseum(id);
                   if (!m) return null;
@@ -205,7 +248,6 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   );
                 })}
 
-                {/* Active start → target — 85% */}
                 {targetMuseum ? (
                   <DottedRoute
                     start={startPt}
@@ -301,7 +343,6 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   )
                 ) : null}
               </svg>
-              {/* hits overlay */}
               <MapMuseumHits
                 className="absolute inset-0 z-[1]"
                 targets={hitTargets}
@@ -313,8 +354,12 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
           <motion.div
             className="shrink-0 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
             initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            transition={defaultSpring}
+            animate={{ y: sheetExit ? "100%" : 0 }}
+            transition={
+              sheetExit
+                ? { duration: motionTokens.sheetHide, ease: easings.easeIn }
+                : defaultSpring
+            }
           >
             {journeyDone ? (
               <>
@@ -327,10 +372,10 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   {confirmRestart ? (
                     <>
                       <p className="text-body-md text-text-secondary">
-                        Скинути прогрес і почати з початку?
+                        Почати шлях спочатку? Прогрес буде скинуто.
                       </p>
                       <Button onClick={() => router.push("/reset")}>
-                        Так, почати знову
+                        Так, почати
                       </Button>
                       <Button
                         variant="ghost"
@@ -355,9 +400,14 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   ≈ {distanceKm} км від тебе.{" "}
                   {routeSheetBlurbForPath(sheetPath)}
                 </p>
-                <div className="mt-lg">
-                  {/* Sheet «Вирушити» always flies (02→flight→04). Star-tap uses onRevisit. */}
-                  <Button onClick={() => onDepart(sheetPath)}>Вирушити</Button>
+                <div className="mt-lg flex flex-col items-stretch">
+                  <Button
+                    onClick={() => handleDepart(sheetPath)}
+                    disabled={sheetExit}
+                  >
+                    Вирушити
+                  </Button>
+                  <RestartJourneyLink />
                 </div>
               </>
             ) : (
@@ -370,6 +420,9 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                     ? "Усі твори в цьому музеї вже відкриті. Обери інший музей на карті."
                     : "Обери музей на карті."}
                 </p>
+                <div className="mt-lg flex flex-col items-stretch">
+                  <RestartJourneyLink />
+                </div>
               </>
             )}
           </motion.div>

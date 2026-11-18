@@ -16,6 +16,9 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
+/** Log once per server process when the key is absent. */
+let loggedMissingOpenAiKey = false;
+
 type InMessage = { role: "user" | "guide" | "assistant"; content: string };
 
 type Body = {
@@ -167,6 +170,10 @@ export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   const model = process.env.OPENAI_MODEL?.trim();
   if (!apiKey || !model) {
+    if (!apiKey && !loggedMissingOpenAiKey) {
+      loggedMissingOpenAiKey = true;
+      console.warn("[guide] OPENAI_API_KEY missing — using fallback");
+    }
     return NextResponse.json(fallbackResponse(artworkId, question));
   }
 

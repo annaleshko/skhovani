@@ -60,6 +60,7 @@ import {
 } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RestartJourneyLink } from "./RestartJourneyLink";
 import { RouteTrail, type TrailItem } from "./RouteTrail";
 import { pickPath } from "./pickPath";
 
@@ -82,6 +83,13 @@ type Props = {
   revisit?: boolean;
   /** Hall shows last opened artwork already revealed. */
   reopenHall?: boolean;
+  /**
+   * Flight starts from the 02в map camera (no navigation jump).
+   * When set with autostart, frame 0 equals the last 02в map frame.
+   */
+  fromRouteMap?: boolean;
+  /** Stage-pixel camera matching the 02в SVG rect (tx/ty/scale). */
+  initialCam?: CameraTransform;
 };
 
 const PICK_DELAY_MS = 0;
@@ -158,6 +166,8 @@ export function JourneyFlow({
   pathN,
   autostart = false,
   revisit = false,
+  fromRouteMap = false,
+  initialCam,
   reopenHall = false,
 }: Props) {
   const router = useRouter();
@@ -225,6 +235,10 @@ export function JourneyFlow({
   const reopenHallRef = useRef(reopenHall);
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mapStageRef = useRef<HTMLDivElement>(null);
+  /** Flight lerp start — 02в map cam when fromRouteMap, else stage cam07. */
+  const flightStartCamRef = useRef<CameraTransform | null>(
+    fromRouteMap && initialCam ? initialCam : null,
+  );
   const facadeRootRef = useRef<HTMLDivElement>(null);
   const facadeCardRef = useRef<HTMLDivElement>(null);
   const facadeTrailRef = useRef<HTMLElement>(null);
@@ -417,10 +431,12 @@ export function JourneyFlow({
     [camScale, camX, camY],
   );
 
-  /** Flight camera: follow the dot while easing 07 → locked 09 (scale 6.22, focus 208×356). */
+  /** Flight camera: follow the dot while easing start cam → locked 09. */
   const camForFlightT = useCallback(
     (t: number, stageW: number, stageH: number, cam09: CameraTransform): CameraTransform => {
-      const c0 = toStageCam07(cam07Design, stageW, stageH);
+      const c0 =
+        flightStartCamRef.current ??
+        toStageCam07(cam07Design, stageW, stageH);
       const startFocus = cameraProjectPoint(startPt, c0);
       const focusX = startFocus.x + (ZOOM_FOCUS.x - startFocus.x) * t;
       const focusY = startFocus.y + (ZOOM_FOCUS.y - startFocus.y) * t;
@@ -442,7 +458,8 @@ export function JourneyFlow({
       setStageSize({ w, h });
       const p = phaseRef.current;
       if (p === "map" || p === "boot") {
-        const cam = toStageCam07(camera07(), w, h);
+        const cam =
+          flightStartCamRef.current ?? toStageCam07(camera07(), w, h);
         setCam(cam);
         writeOverlay(cam, 0, false);
       }
@@ -542,12 +559,19 @@ export function JourneyFlow({
     journeyLockedRef.current = false;
     lockedCam09Ref.current = null;
     setPhase("map");
-    const cam = toStageCam07(camera07(), stageSize.w, stageSize.h);
+    // 02в handoff: start from the measured map cam so frame 0 matches 02в.
+    const cam =
+      fromRouteMap && initialCam
+        ? initialCam
+        : toStageCam07(camera07(), stageSize.w, stageSize.h);
+    flightStartCamRef.current =
+      fromRouteMap && initialCam ? initialCam : null;
     setCam(cam);
     flightT.set(0);
     writeOverlay(cam, 0, false);
 
     // «Вирушити» / autostart: skip route draw-in + sheet — fly from ready map state.
+    // fromRouteMap: sheet already slid on 02в; fly immediately from that cam.
     if (autoFlight) {
       mapOpacity.set(1);
       glowOpacity.set(1);
@@ -590,7 +614,9 @@ export function JourneyFlow({
   }, [
     clearEntryTimers,
     flightT,
+    fromRouteMap,
     glowOpacity,
+    initialCam,
     mapOpacity,
     reduced,
     scheduleEntry,
@@ -1189,8 +1215,9 @@ export function JourneyFlow({
                 ? `Звідти, де ти зараз. ${pathSheetBlurb(path.museumId)}`
                 : `≈ ${distanceKm} км від тебе. ${pathSheetBlurb(path.museumId)}`}
             </p>
-            <div className="mt-lg">
+            <div className="mt-lg flex flex-col items-stretch">
               <Button onClick={runFlight}>Вирушити</Button>
+              <RestartJourneyLink />
             </div>
           </motion.div>
         )}

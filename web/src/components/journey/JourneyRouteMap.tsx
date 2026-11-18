@@ -1,29 +1,32 @@
 "use client";
 
-import { RouteMapScreen } from "@/components/journey/RouteMapScreen";
+import { JourneyFlow } from "@/components/journey/JourneyFlow";
+import {
+  RouteMapScreen,
+  type DepartOpts,
+} from "@/components/journey/RouteMapScreen";
 import { getNextPath, type ResolvedPath } from "@/data/journey";
 import { useAppState } from "@/state/AppState";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 /**
  * Standalone 02в — `/journey?mode=route` (also used from /finish).
- * «Вирушити» always flies via `/journey?path=N&autostart=1` (map → flight → 04).
- * Star revisit (museum already opened): `/journey?path=N&autostart=1&revisit=1`.
- * Never skip straight to hall from 02в sheet — that shortcut is star-tap only.
+ * «Вирушити» flies in-place from the 02в map cam (no camera jump).
+ * Star revisit: `/journey?path=N&autostart=1&revisit=1`.
  */
 export function JourneyRouteMap() {
   const router = useRouter();
   const { completedPaths } = useAppState();
   const next = getNextPath(completedPaths) ?? null;
+  const [routeFlight, setRouteFlight] = useState<{
+    pathN: number;
+    mapCam: DepartOpts["mapCam"];
+  } | null>(null);
 
-  const onDepart = useCallback(
-    (path: ResolvedPath) => {
-      // Always flight + facade from 02в «Вирушити» (including path 1).
-      router.replace(`/journey?path=${path.n}&autostart=1`);
-    },
-    [router],
-  );
+  const onDepart = useCallback((path: ResolvedPath, opts: DepartOpts) => {
+    setRouteFlight({ pathN: path.n, mapCam: opts.mapCam });
+  }, []);
 
   const onRevisit = useCallback(
     (path: ResolvedPath, opts: { reopen: boolean }) => {
@@ -34,6 +37,19 @@ export function JourneyRouteMap() {
     },
     [router],
   );
+
+  if (routeFlight) {
+    return (
+      <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-screen">
+        <JourneyFlow
+          pathN={routeFlight.pathN}
+          autostart
+          fromRouteMap
+          initialCam={routeFlight.mapCam}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-screen">
