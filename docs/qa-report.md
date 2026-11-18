@@ -32,7 +32,7 @@ Date: 2026-11-18 (evening). Build: `npm run build` clean in `web/`. No push. No 
 2. Reopened passport «Далі» uses next *unfinished* path city (`getNextPath(completedPaths)`).
 3. End of journey passport CTA label: «Шлях пройдено» → opens 02в end sheet.
 4. Map: product overrides older mvp-v2 «target = star» — unopened target is pin.
-5. `displayYear`: strip parenthetical notes for `YYYY (…)`; collection dating rewritten to «IV ст. … · знайдено 1954».
+5. `displayYear`: strip parenthetical notes for `YYYY (…)`; collection dating keeps century only in meta («IV ст. до н. е.»); find-year stays in passport body, not hall/about meta.
 6. Tour replay: sync `stopIdxRef` before `flyTo`; don’t start lens until `onLoadingComplete`.
 
 ## Coordinate changes (stage 4)
@@ -75,6 +75,23 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] 390×844 and 390×667: bar flush, no cut paragraph, no credit overlap
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
+
+## Melitopol hall + flight + labels + context (2026-11-18)
+
+| # | Fix | Check |
+|---|---|---|
+| 1 | Melitopol: glass-only blur (`blur(14px)…`); empty label in glass; hint ring clamped; captions under pedestal; meta «Невідомі майстри · IV ст. до н. е.»; memory «яким воно було» (hide @667 if no room) | [ ] 390×844 / 390×667 path 2 |
+| 2 | «Вирушити» / autostart: skip map draw-in → flight immediately | [ ] |
+| 3 | Kherson: title/meta/badge under every opened lit frame | [ ] after path 1 |
+| 4 | Revisit facade: eyebrow + full name sheet ≥1.2s, then hall | [ ] 02в Melitopol |
+| 5 | Guide: `# Ширший контекст` → `extendedKnowledge.scope:"context"` + prompt block | [ ] art 3 Q below |
+
+### Artwork 3 — ширший контекст
+
+**Q.** Чи є ще скіфське золото, крім мелітопольського?  
+**Expected.** Guide answers with general-context framing («Якщо говорити ширше…»), mentions the pectoral from Товста Могила (Мозолевський, 1971) and Crimean gold returned in 2023, with `xk_*` sourceIds (e.g. пектораль / Кабмін / Zaxid).
+
+Import: `node scripts/import-guide-knowledge.mjs` → 79 bullets (18 context) across 11 artworks.
 
 ## Fix hall click + first path flow (2026-11-18)
 

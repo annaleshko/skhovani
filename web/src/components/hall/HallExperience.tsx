@@ -57,8 +57,19 @@ type Phase =
 /** Stolen focus: empty frame → memory reveal → tour. */
 type StolenPhase = "empty" | "revealing" | "remembered";
 
-/** Focus stolen before tap — heavy blur clipped to the painting opening. */
+/** Focus stolen before tap — heavy blur clipped to the painting / glass opening. */
 const STOLEN_BLUR_FILTER = "blur(18px) brightness(0.45) saturate(0.55)";
+/** Melitopol vitrine interior only. */
+const VITRINE_BLUR_FILTER = "blur(14px) brightness(0.5) saturate(0.6)";
+
+function stolenBlurFor(artworkId: number): string {
+  return artworkId === 3 ? VITRINE_BLUR_FILTER : STOLEN_BLUR_FILTER;
+}
+
+function memoryLineCopy(artworkId: number): string {
+  if (artworkId === 3) return "Але ми пам'ятаємо, яким воно було.";
+  return "Але ми пам'ятаємо, який він.";
+}
 
 type Props = {
   museumId: string;
@@ -168,6 +179,8 @@ export function HallExperience({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [viewH, setViewH] = useState(844);
+  const [viewW, setViewW] = useState(390);
+  const [scrollLeftPx, setScrollLeftPx] = useState(0);
   const neighborTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revealTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -185,7 +198,10 @@ export function HallExperience({
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
-    const measure = () => setViewH(el.clientHeight || 844);
+    const measure = () => {
+      setViewH(el.clientHeight || 844);
+      setViewW(el.clientWidth || 390);
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -227,6 +243,16 @@ export function HallExperience({
     }, 40);
     return () => window.clearTimeout(t);
   }, [pathSlotIndex, phase, reduced, slots, px, artworkId]);
+
+  // Track horizontal scroll for hint-ring viewport clamp
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || phase !== "hall") return;
+    const onScroll = () => setScrollLeftPx(el.scrollLeft);
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [phase]);
 
   // Mouse drag-to-scroll (momentum + snap), no text selection
   useEffect(() => {
@@ -550,11 +576,43 @@ export function HallExperience({
   const pathSlot = slots[pathSlotIndex]!;
   const hallFocusSlot = showHall ? pathSlot : focusSlot;
   const coneTop = layout.cone.y;
-  const markerCx = hallFocusSlot.frameRect.x + hallFocusSlot.frameRect.w - 26.5;
-  const markerCy = hallFocusSlot.frameRect.y + 11.5;
   const emptyInset = paintingOpeningInset(
     showHall ? artworkId : focus.id,
   );
+  // Hint ring: top-right of glass/opening, clamped into the visible viewport (16px margin).
+  const markerPos = (() => {
+    const r = hallFocusSlot.frameRect;
+    const inset = emptyInset;
+    const glassRight = r.x + r.w * (1 - inset.right);
+    const glassTop = r.y + r.h * inset.top;
+    let cx = glassRight - 8;
+    let cy = glassTop + 14;
+    const margin = 16 / px;
+    const half = 28.5;
+    const scrollDes = scrollLeftPx / px;
+    const visL = scrollDes;
+    const visR = scrollDes + viewW / px;
+    const visT = 0;
+    const visB = viewH / px;
+    cx = Math.min(Math.max(cx, visL + margin + half), visR - margin - half);
+    cy = Math.min(Math.max(cy, visT + margin + half), visB - margin - half);
+    // Hint label (145×~40) sits above the ring, centered on cx
+    const hintW = 145;
+    const hintH = 40;
+    let hintLeft = cx - hintW / 2;
+    let hintTop = cy - 11.5 - 55;
+    hintLeft = Math.min(
+      Math.max(hintLeft, visL + margin),
+      visR - margin - hintW,
+    );
+    hintTop = Math.min(
+      Math.max(hintTop, visT + margin),
+      Math.max(visT + margin, cy - half - hintH - 8),
+    );
+    return { cx, cy, hintLeft, hintTop, hintW };
+  })();
+  const markerCx = markerPos.cx;
+  const markerCy = markerPos.cy;
 
   const showUi = intro === "ui" || intro === "done";
   const showCone = intro === "cone" || intro === "bright" || showUi;
@@ -657,7 +715,7 @@ export function HallExperience({
                           alt=""
                           className="absolute inset-0 size-full object-contain"
                           draggable={false}
-                          style={{ filter: STOLEN_BLUR_FILTER }}
+                          style={{ filter: stolenBlurFor(slot.artworkId) }}
                         />
                       </div>
                     ) : null}
@@ -824,7 +882,7 @@ export function HallExperience({
                                         : 1,
                                     filter:
                                       stolenPhase === "empty"
-                                        ? STOLEN_BLUR_FILTER
+                                        ? stolenBlurFor(slot.artworkId)
                                         : "none",
                                   }}
                                   transition={{
@@ -924,86 +982,119 @@ export function HallExperience({
                   : null}
               </AnimatePresence>
 
-              {/* 5. Captions — path focus only; hidden during neighbor caption (12) */}
+              {/* 5. Captions — every lit opened frame (Figma 05); hidden during neighbor (12) */}
               <AnimatePresence>
-                {showUi && neighborId == null && focus ? (
-                  <motion.div
-                    key={`cap-${artworkId}`}
-                    data-hall-caption={artworkId}
-                    className="pointer-events-none absolute z-[9] flex max-w-[226px] flex-col items-center text-center"
-                    style={{
-                      left:
-                        (hallFocusSlot.frameRect.x +
-                          hallFocusSlot.frameRect.w / 2) *
-                        px,
-                      top: layout.captions.titleY * px,
-                      width: 226 * px,
-                    }}
-                    initial={{ opacity: 0, x: "-50%", y: 6 }}
-                    animate={{ opacity: 1, x: "-50%", y: 0 }}
-                    exit={{ opacity: 0, x: "-50%" }}
-                  >
-                    <p className="w-full text-h3 text-text-primary">
-                      {displayHeadline(getArtwork(artworkId) ?? focus!)}
-                    </p>
-                    <p
-                      className="w-full text-body-md text-text-caption"
-                      style={{
-                        marginTop:
-                          (layout.captions.metaY -
-                            layout.captions.titleY -
-                            24) *
-                          px,
-                      }}
-                    >
-                      {displayAuthorMeta(getArtwork(artworkId) ?? focus)}
-                    </p>
-                    <div
-                      className="flex w-full justify-center"
-                      style={{
-                        marginTop:
-                          (layout.captions.badgeY -
-                            layout.captions.metaY -
-                            20) *
-                          px,
-                      }}
-                    >
-                      <StatusBadge
-                        status={(getArtwork(artworkId) ?? focus).status}
-                      />
-                    </div>
-                  </motion.div>
-                ) : null}
+                {showUi && neighborId == null
+                  ? slots
+                      .filter(
+                        (s) =>
+                          litSlotIds.has(s.artworkId) &&
+                          (openedIds.has(s.artworkId) ||
+                            s.artworkId === artworkId),
+                      )
+                      .map((slot) => {
+                        const art = getArtwork(slot.artworkId);
+                        if (!art) return null;
+                        const isActiveCap = slot.artworkId === artworkId;
+                        return (
+                          <motion.div
+                            key={`cap-${slot.artworkId}`}
+                            data-hall-caption={slot.artworkId}
+                            className="pointer-events-none absolute z-[9] flex max-w-[226px] flex-col items-center text-center"
+                            style={{
+                              left:
+                                (slot.frameRect.x + slot.frameRect.w / 2) * px,
+                              top: layout.captions.titleY * px,
+                              width: 226 * px,
+                              opacity: isActiveCap ? 1 : 0.92,
+                            }}
+                            initial={{ opacity: 0, x: "-50%", y: 6 }}
+                            animate={{
+                              opacity: isActiveCap ? 1 : 0.92,
+                              x: "-50%",
+                              y: 0,
+                            }}
+                            exit={{ opacity: 0, x: "-50%" }}
+                          >
+                            <p className="w-full text-h3 text-text-primary">
+                              {displayHeadline(art)}
+                            </p>
+                            <p
+                              className="w-full text-body-md text-text-caption"
+                              style={{
+                                marginTop:
+                                  (layout.captions.metaY -
+                                    layout.captions.titleY -
+                                    24) *
+                                  px,
+                              }}
+                            >
+                              {displayAuthorMeta(art)}
+                            </p>
+                            <div
+                              className="flex w-full justify-center"
+                              style={{
+                                marginTop:
+                                  (layout.captions.badgeY -
+                                    layout.captions.metaY -
+                                    20) *
+                                  px,
+                              }}
+                            >
+                              <StatusBadge status={art.status} />
+                            </div>
+                          </motion.div>
+                        );
+                      })
+                  : null}
               </AnimatePresence>
 
-              {/* Memory line above frame (06) */}
+              {/* Memory line above glass/frame (06); hide if it would hit lamp/title at short heights */}
               <AnimatePresence>
-                {showMemoryLine ? (
-                  <motion.p
-                    key="memory-line"
-                    className="pointer-events-none absolute z-[10] text-center text-body-md text-text-primary"
-                    style={{
-                      left:
-                        (hallFocusSlot.frameRect.x +
-                          hallFocusSlot.frameRect.w / 2) *
-                        px,
-                      top: (hallFocusSlot.frameRect.y - 36) * px,
-                      width: Math.max(280, hallFocusSlot.frameRect.w) * px,
-                      x: "-50%",
-                    }}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: reduced
-                        ? motionTokens.reducedCrossfade
-                        : 0.6,
-                      delay: reduced ? 0 : 0.8,
-                    }}
-                  >
-                    Але ми пам&apos;ятаємо, який він.
-                  </motion.p>
-                ) : null}
+                {showMemoryLine
+                  ? (() => {
+                      const r = hallFocusSlot.frameRect;
+                      const glassTop = r.y + r.h * emptyInset.top;
+                      const lineH = 20;
+                      const gap = 16;
+                      const topDes = glassTop - gap - lineH;
+                      const lampBottom =
+                        layout.lamp.y + layout.lamp.h + 8;
+                      const titleTop = layout.captions.titleY;
+                      // Title is below object for Melitopol; for others title is below frame.
+                      // Hide when no room above glass without overlapping lamp (or title if above).
+                      const titleAbove =
+                        titleTop + 24 < glassTop;
+                      const fits =
+                        topDes * px >= 16 &&
+                        topDes >= lampBottom &&
+                        (!titleAbove || topDes + lineH + 8 <= titleTop);
+                      if (!fits) return null;
+                      return (
+                        <motion.p
+                          key="memory-line"
+                          className="pointer-events-none absolute z-[10] text-center text-body-md text-text-primary"
+                          style={{
+                            left: (r.x + r.w / 2) * px,
+                            top: topDes * px,
+                            width: Math.max(280, r.w) * px,
+                            x: "-50%",
+                          }}
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            duration: reduced
+                              ? motionTokens.reducedCrossfade
+                              : 0.6,
+                            delay: reduced ? 0 : 0.8,
+                          }}
+                        >
+                          {memoryLineCopy(artworkId)}
+                        </motion.p>
+                      );
+                    })()
+                  : null}
               </AnimatePresence>
 
               {/* Neighbor caption (12) */}
@@ -1046,13 +1137,13 @@ export function HallExperience({
                     <motion.p
                       className="pointer-events-none absolute z-[10] text-right text-label-md leading-4 text-text-primary"
                       style={{
-                        left: markerCx * px,
-                        top: (markerCy - 11.5 - 55) * px,
-                        width: 145 * px,
+                        left: markerPos.hintLeft * px,
+                        top: markerPos.hintTop * px,
+                        width: markerPos.hintW * px,
                       }}
-                      initial={{ opacity: 0, x: "-50%" }}
-                      animate={{ opacity: 1, x: "-50%" }}
-                      exit={{ opacity: 0, x: "-50%" }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                     >
                       {hintStolen ? (
                         <>Торкнись, щоб згадати</>

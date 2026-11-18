@@ -6,7 +6,10 @@
  * Markdown shape:
  *   ## <id> · <title>
  *   ## Спільне … (id 1, 2, 4, 5, 6, 7)
+ *   ## Спільне для всіх творів · …  → all artworks, scope "context" under # Ширший контекст
  *   - <fact> ⚠ verify [src: <label> | <url>]
+ *
+ * Section `# Ширший контекст` marks following ## blocks as scope: "context".
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -27,6 +30,8 @@ if (!fs.existsSync(EXTRA)) {
 }
 
 const md = fs.readFileSync(EXTRA, "utf8");
+const artworksFile = JSON.parse(fs.readFileSync(ARTWORKS, "utf8"));
+const ALL_ARTWORK_IDS = artworksFile.artworks.map((a) => a.id);
 
 /** Stable short id from label+url so the same source reuses one id. */
 function sourceIdFor(label, url) {
@@ -59,15 +64,24 @@ function parseBullet(line) {
   return { fact, label, url, verify };
 }
 
-/** Split markdown into ## sections. */
+/**
+ * Split markdown into ## sections; track H1 for scope (context vs extra).
+ * @returns {{ title: string, bullets: string[], scope: "extra" | "context" }[]}
+ */
 function parseSections(text) {
   const lines = text.split(/\r?\n/);
   const sections = [];
   let current = null;
+  let scope = "extra";
   for (const line of lines) {
+    const h1 = line.match(/^#\s+(.+)\s*$/);
+    if (h1 && !line.startsWith("##")) {
+      scope = /ширший\s+контекст/i.test(h1[1]) ? "context" : "extra";
+      continue;
+    }
     const head = line.match(/^##\s+(.+)\s*$/);
     if (head) {
-      current = { title: head[1].trim(), bullets: [] };
+      current = { title: head[1].trim(), bullets: [], scope };
       sections.push(current);
       continue;
     }
@@ -79,6 +93,9 @@ function parseSections(text) {
 
 /** Resolve which artwork ids a section applies to. */
 function sectionArtworkIds(title) {
+  if (/Спільне для всіх творів/i.test(title)) {
+    return [...ALL_ARTWORK_IDS];
+  }
   const shared = title.match(/\(id\s*([\d,\s]+)\)/i);
   if (shared) {
     return shared[1]
@@ -103,6 +120,7 @@ function ensureArt(id) {
 }
 
 let bulletCount = 0;
+let contextCount = 0;
 for (const sec of sections) {
   const ids = sectionArtworkIds(sec.title);
   if (!ids.length) {
@@ -116,6 +134,7 @@ for (const sec of sections) {
       continue;
     }
     bulletCount += 1;
+    if (sec.scope === "context") contextCount += 1;
     const sid = sourceIdFor(parsed.label, parsed.url);
     for (const id of ids) {
       const bucket = ensureArt(id);
@@ -130,6 +149,7 @@ for (const sec of sections) {
         sourceId: sid,
         verify: parsed.verify,
         sourceLabel: parsed.label,
+        scope: sec.scope,
       });
     }
   }
@@ -149,12 +169,16 @@ function apply(file) {
     }
     art.sources = [...byId.values()];
     // Replace extendedKnowledge from this import (idempotent).
-    art.extendedKnowledge = bucket.facts.map((f) => ({
-      fact: f.fact,
-      sourceId: f.sourceId,
-      verify: f.verify || undefined,
-      sourceLabel: f.sourceLabel,
-    }));
+    art.extendedKnowledge = bucket.facts.map((f) => {
+      const entry = {
+        fact: f.fact,
+        sourceId: f.sourceId,
+        sourceLabel: f.sourceLabel,
+      };
+      if (f.verify) entry.verify = true;
+      if (f.scope === "context") entry.scope = "context";
+      return entry;
+    });
   }
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
 }
@@ -162,7 +186,7 @@ function apply(file) {
 apply(ARTWORKS);
 apply(CONTENT);
 console.log(
-  `imported ${bulletCount} bullets → ${byArt.size} artworks with extendedKnowledge`,
+  `imported ${bulletCount} bullets (${contextCount} context) → ${byArt.size} artworks with extendedKnowledge`,
 );
 
 const v = spawnSync(

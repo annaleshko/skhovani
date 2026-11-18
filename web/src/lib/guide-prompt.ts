@@ -66,15 +66,27 @@ export function buildGuideSystemPrompt(
     .map((s) => `- ${s.n}. ${s.title}: ${s.text}`)
     .join("\n");
 
-  const extended = (artwork.extendedKnowledge ?? [])
-    .map((e) => {
-      const flag = e.verify
-        ? ` ⚠ verify — обовʼязково формулюй як «за даними ${e.sourceLabel ?? "джерела"}»`
-        : "";
-      const label = e.sourceLabel ? ` (${e.sourceLabel})` : "";
-      return `- [${e.sourceId}]${label}${flag}: ${e.fact}`;
-    })
-    .join("\n");
+  const formatExtended = (
+    list: NonNullable<Artwork["extendedKnowledge"]>,
+  ) =>
+    list
+      .map((e) => {
+        const flag = e.verify
+          ? ` ⚠ verify — обовʼязково формулюй як «за даними ${e.sourceLabel ?? "джерела"}»`
+          : "";
+        const label = e.sourceLabel ? ` (${e.sourceLabel})` : "";
+        return `- [${e.sourceId}]${label}${flag}: ${e.fact}`;
+      })
+      .join("\n");
+
+  const extendedExtra = (artwork.extendedKnowledge ?? []).filter(
+    (e) => e.scope !== "context",
+  );
+  const extendedContext = (artwork.extendedKnowledge ?? []).filter(
+    (e) => e.scope === "context",
+  );
+  const extended = formatExtended(extendedExtra);
+  const contextBlock = formatExtended(extendedContext);
 
   const detailLine = detailTitle
     ? `\nКористувач відкрив чат із деталі твору: «${detailTitle}». Відповідай з урахуванням цієї деталі, якщо питання про неї.\n`
@@ -128,6 +140,12 @@ ${kb}
 - У sourceIds став id додаткового факту (xk_…), не паспортний, якщо відповідь з додаткового факту.
 - Якщо додатковий факт суперечить паспорту: для звичайних фактів — перевага за паспортом; для ⚠ verify — можна згадати обидва («у паспорті …; за даними <джерело> …»), ніколи не заперечуй verify-факт так, ніби його немає в джерелах.
 ${extended || "(немає)"}
+
+ШИРШИЙ КОНТЕКСТ (тема, не сам твір):
+- Використовуй для ширших питань («а чи є ще…», «як взагалі…»), які виходять за паспорт цього твору.
+- ОБОВʼЯЗКОВО познач, що це загальний контекст (напр. «Якщо говорити ширше…» / «Якщо про тему загалом…»), і завжди цитуй джерело (sourceId у JSON).
+- Не підміняй цими фактами відповідь про сам твір, якщо є паспортні дані.
+${contextBlock || "(немає)"}
 
 ДЖЕРЕЛА (допустимі sourceIds):
 ${sources}`;

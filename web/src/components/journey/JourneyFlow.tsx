@@ -86,8 +86,8 @@ type Props = {
 
 const PICK_DELAY_MS = 0;
 const FACADE_AUTO_MS = 600;
-/** Revisit: facade shown ~0.8s with no buttons, then auto-enter. */
-const REVISIT_FACADE_MS = 800;
+/** Revisit: full name sheet visible ≥1.2s after fade-in, then auto-enter. */
+const REVISIT_FACADE_MS = 1200;
 const REVISIT_FLIGHT_SEC = 1.2;
 const OCCUPATION_HOLD_MS = 2500;
 const TRAIL_LEN = 18;
@@ -301,6 +301,9 @@ export function JourneyFlow({
       setFacadeWidth(rootRect.width || FRAME.w);
       if (trail) {
         setFacadeTrailBottom(trail.getBoundingClientRect().bottom - rootRect.top);
+      } else if (revisit) {
+        // No trail on revisit — keep facade below safe status area
+        setFacadeTrailBottom(56);
       }
       if (!card) return;
       const cardRect = card.getBoundingClientRect();
@@ -318,7 +321,7 @@ export function JourneyFlow({
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [phase, path?.museumId]);
+  }, [phase, path?.museumId, revisit]);
 
   const trailItems: TrailItem[] | null = useMemo(() => {
     if (!path) return null;
@@ -523,24 +526,32 @@ export function JourneyFlow({
     const cam = toStageCam07(camera07(), stageSize.w, stageSize.h);
     setCam(cam);
     flightT.set(0);
-    glowOpacity.set(0);
     writeOverlay(cam, 0, false);
+
+    // «Вирушити» / autostart: skip route draw-in + sheet — fly from ready map state.
+    if (autoFlight) {
+      mapOpacity.set(1);
+      glowOpacity.set(1);
+      setShowStartPin(true);
+      setArcDrawn(true);
+      setShowTargetPin(true);
+      setSheetVisible(false);
+      scheduleEntry(() => runFlightRef.current(), 0);
+      return;
+    }
+
     if (reduced) {
       mapOpacity.set(1);
       glowOpacity.set(1);
       setShowStartPin(true);
       setArcDrawn(true);
       setShowTargetPin(true);
-      if (autoFlight) {
-        setSheetVisible(false);
-        scheduleEntry(() => runFlightRef.current(), 0);
-      } else {
-        setSheetVisible(true);
-      }
+      setSheetVisible(true);
       return;
     }
     // Absolute timeline ≈ 2.8s — no nested onComplete / extra gaps
     mapOpacity.set(0);
+    glowOpacity.set(0);
     setShowStartPin(false);
     setArcDrawn(false);
     setShowTargetPin(false);
@@ -556,12 +567,7 @@ export function JourneyFlow({
       glowOpacity.set(0);
       animate(glowOpacity, 1, { duration: ENTRY_TARGET_MS / 1000, ease: easings.easeOut });
     }, ENTRY_T_TARGET);
-    if (autoFlight) {
-      // Pins + arc ready, then fly — no screen-02 sheet
-      scheduleEntry(() => runFlightRef.current(), ENTRY_T_SHEET);
-    } else {
-      scheduleEntry(() => setSheetVisible(true), ENTRY_T_SHEET);
-    }
+    scheduleEntry(() => setSheetVisible(true), ENTRY_T_SHEET);
   }, [
     clearEntryTimers,
     flightT,
@@ -1203,14 +1209,17 @@ export function JourneyFlow({
             </motion.div>
           ) : null}
 
-          {/* Revisit: no sheet / buttons — short hold then auto-enter */}
+          {/* Revisit: eyebrow + full title sheet (no buttons), hold ≥1.2s then hall */}
           {phase === "facade" && revisit ? (
             <div
               ref={facadeCardRef}
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
               aria-hidden
             >
-              <h2 className="text-h2 break-words text-text-primary/90">
+              <p className="text-overline uppercase text-text-accent">
+                Ласкаво просимо
+              </p>
+              <h2 className="mt-md text-h2 break-words">
                 {getMuseumDisplayName(path.museumId)}
               </h2>
             </div>

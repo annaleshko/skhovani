@@ -261,6 +261,42 @@
           "label": "КПІ ім. Ігоря Сікорського: Пимоненко Микола",
           "url": "https://kpi.ua/en/node/9357",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
+        },
+        {
+          "id": "xk_4033d71c",
+          "label": "Телеграф: традиції Великодня, 2024",
+          "url": "https://news.telegraf.com.ua/ukr/obshhestvo/2024-04-30/5849180-bez-kulichey-i-paskhalnykh-yaits-nekuda-kakikh-traditsiy-na-paskhu-priderzhivayutsya-ukraintsy",
+          "note": null
+        },
+        {
+          "id": "xk_85c8a94d",
+          "label": "Радіо Свобода: Великдень",
+          "url": "https://www.radiosvoboda.org/a/2000960.html",
+          "note": null
+        },
+        {
+          "id": "xk_f5bac56d",
+          "label": "УП Життя: забуті звичаї Пасхи від етнографів",
+          "url": "https://life.pravda.com.ua/culture/2019/04/22/236629/",
+          "note": null
         }
       ],
       "chat": {
@@ -357,8 +393,8 @@
         {
           "fact": "Пимоненко — син і онук кріпаків, киянин. Підлітком він навчався в іконописній школі Києво-Печерської лаври.",
           "sourceId": "xk_f704fd41",
-          "verify": true,
-          "sourceLabel": "uahistory.com: Микола Пимоненко"
+          "sourceLabel": "uahistory.com: Микола Пимоненко",
+          "verify": true
         },
         {
           "fact": "Талант юного Пимоненка у 1876 році помітив Микола Мурашко і взяв його до своєї Київської рисувальної школи безкоштовно.",
@@ -384,6 +420,54 @@
           "fact": "З 1900 року до смерті в 1912-му Пимоненко викладав у Київському політехнічному інституті.",
           "sourceId": "xk_2e94402e",
           "sourceLabel": "КПІ ім. Ігоря Сікорського: Пимоненко Микола"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "До великоднього кошика зазвичай клали паску, крашанки, сало, ковбасу, хліб, масло й сир; освячену їжу куштували після служби.",
+          "sourceId": "xk_4033d71c",
+          "sourceLabel": "Телеграф: традиції Великодня, 2024",
+          "scope": "context"
+        },
+        {
+          "fact": "Кошик мав регіональні відмінності: у Центральній Україні крашанки клали в шкарлупі, а на Галичині їх чистили.",
+          "sourceId": "xk_85c8a94d",
+          "sourceLabel": "Радіо Свобода: Великдень",
+          "scope": "context"
+        },
+        {
+          "fact": "Давніше паска більше нагадувала коровай, а на Гуцульщині розрізняли несолодку «паску» і здобну «бабку» з родзинками.",
+          "sourceId": "xk_f5bac56d",
+          "sourceLabel": "УП Життя: забуті звичаї Пасхи від етнографів",
+          "scope": "context"
+        },
+        {
+          "fact": "Традицію розписувати яйця на Великдень — писанки — вважають особливо характерною саме для України.",
+          "sourceId": "xk_85c8a94d",
+          "sourceLabel": "Радіо Свобода: Великдень",
+          "scope": "context"
         }
       ]
     },
@@ -610,6 +694,42 @@
           "label": "DailyArt Magazine: Mykola Pymonenko",
           "url": "https://www.dailyartmagazine.com/mykola-pymonenko/",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
+        },
+        {
+          "id": "xk_a3b18b89",
+          "label": "УП Життя: українські колядки, 2023",
+          "url": "https://life.pravda.com.ua/society/2023/01/05/252174/",
+          "note": null
+        },
+        {
+          "id": "xk_f861596c",
+          "label": "УП Життя: українські колядки",
+          "url": "https://life.pravda.com.ua/society/2023/12/24/258499/",
+          "note": null
+        },
+        {
+          "id": "xk_2cc9df25",
+          "label": "Kyiv Post: традиції Різдва",
+          "url": "https://www.kyivpost.com/uk/post/66648",
+          "note": null
         }
       ],
       "chat": {
@@ -709,6 +829,48 @@
           "fact": "Талант юного Пимоненка у 1876 році помітив Микола Мурашко і взяв його до Київської рисувальної школи безкоштовно.",
           "sourceId": "xk_f69b8aec",
           "sourceLabel": "DailyArt Magazine: Mykola Pymonenko"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Колядки — народні пісні зимових свят, що зʼявилися ще в дохристиянські часи; згодом їх співали на Різдво, прославляючи народження Христа.",
+          "sourceId": "xk_a3b18b89",
+          "sourceLabel": "УП Життя: українські колядки, 2023",
+          "scope": "context"
+        },
+        {
+          "fact": "За традицією на Різдво зранку йшли до церкви, а ввечері починали колядувати по хатах.",
+          "sourceId": "xk_f861596c",
+          "sourceLabel": "УП Життя: українські колядки",
+          "scope": "context"
+        },
+        {
+          "fact": "У радянські часи святкувати Різдво забороняли; люди колядували попри можливе покарання, і це ставало знаком сили духу.",
+          "sourceId": "xk_2cc9df25",
+          "sourceLabel": "Kyiv Post: традиції Різдва",
+          "scope": "context"
         }
       ]
     },
@@ -923,6 +1085,60 @@
           "label": "УП Життя: окупанти захопили музей зі скіфським золотом",
           "url": "https://life.pravda.com.ua/culture/2022/04/28/248445/",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
+        },
+        {
+          "id": "xk_2cff5e86",
+          "label": "24 Канал: Золота пектораль",
+          "url": "https://24tv.ua/priznachennya-zolotoyi-pektorali-shedevr-mozhe-buti-novini-krimu_n1707510",
+          "note": null
+        },
+        {
+          "id": "xk_bfb949cf",
+          "label": "НМІУ, museum-digital: пектораль",
+          "url": "https://kyiv.ua.museum-digital.org/pdf/object/12940.pdf?lang=ru",
+          "note": null
+        },
+        {
+          "id": "xk_1a54a4bd",
+          "label": "Kyiv Post",
+          "url": "https://www.kyivpost.com/uk/post/18505",
+          "note": null
+        },
+        {
+          "id": "xk_bfcb09d7",
+          "label": "Kyiv Post",
+          "url": "https://www.kyivpost.com/uk/post/24709",
+          "note": null
+        },
+        {
+          "id": "xk_e52b68b4",
+          "label": "Кабмін / Мін'юст, 09.06.2023",
+          "url": "https://www.kmu.gov.ua/news/miniust-dovhoochikuvana-i-ostatochna-peremoha-ukrainy-u-spravi-povernennia-skifskoho-zolota",
+          "note": null
+        },
+        {
+          "id": "xk_7337d793",
+          "label": "Zaxid.net, 27.11.2023",
+          "url": "https://zaxid.net/skifske_zoloto_povernuli_z_niderlandiv_v_ukrayinu_n1575250/amp",
+          "note": null
         }
       ],
       "chat": {
@@ -1027,6 +1243,66 @@
           "fact": "Окупанти поширювали версію, що нібито «врятували» золото від працівників музею; Запорізька ОВА назвала це брехнею. За словами міського голови, місце, де сховали колекцію, видали колаборанти.",
           "sourceId": "xk_ea3f33b7",
           "sourceLabel": "УП Життя: окупанти захопили музей зі скіфським золотом"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Найвідоміша скіфська знахідка України — золота пектораль IV ст. до н. е. Її 21 червня 1971 року знайшов археолог Борис Мозолевський у кургані Товста Могила на Дніпропетровщині.",
+          "sourceId": "xk_2cff5e86",
+          "sourceLabel": "24 Канал: Золота пектораль",
+          "scope": "context"
+        },
+        {
+          "fact": "Пектораль має діаметр 30,6 см і зберігається в Національному музеї історії України (Скарбниця).",
+          "sourceId": "xk_bfb949cf",
+          "sourceLabel": "НМІУ, museum-digital: пектораль",
+          "scope": "context"
+        },
+        {
+          "fact": "Мозолевський був не лише археологом, а й поетом-шістдесятником; про знахідку він написав книжку «Товста Могила».",
+          "sourceId": "xk_1a54a4bd",
+          "sourceLabel": "Kyiv Post",
+          "scope": "context"
+        },
+        {
+          "fact": "Окрема історія — «кримське скіфське золото»: експонати з чотирьох кримських музеїв поїхали на виставку до Амстердама в 2014 році й опинилися в центрі суперечки після окупації Криму.",
+          "sourceId": "xk_bfcb09d7",
+          "sourceLabel": "Kyiv Post",
+          "scope": "context"
+        },
+        {
+          "fact": "9 червня 2023 року Верховний суд Нідерландів остаточно постановив передати ці колекції Національному музею історії України.",
+          "sourceId": "xk_e52b68b4",
+          "sourceLabel": "Кабмін / Мін'юст, 09.06.2023",
+          "scope": "context"
+        },
+        {
+          "fact": "У листопаді 2023 року «кримське золото» повернулося до Києва; до деокупації Криму воно зберігатиметься в Національному музеї історії України.",
+          "sourceId": "xk_7337d793",
+          "sourceLabel": "Zaxid.net, 27.11.2023",
+          "scope": "context"
         }
       ]
     },
@@ -1245,6 +1521,30 @@
           "label": "Kyiv Post: росіяни викрали з Херсонського музею картини Айвазовського",
           "url": "https://www.kyivpost.com/uk/amp/post/20053",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
+        },
+        {
+          "id": "xk_ad7a7c34",
+          "label": "Hyperallergic, 02.05.2022",
+          "url": "https://hyperallergic.com/729290/ukraine-accuses-russia-looting-mariupol-melitopol-artworks/",
+          "note": null
         }
       ],
       "chat": {
@@ -1344,6 +1644,36 @@
           "fact": "З Херсонського музею окупанти вивезли три картини Айвазовського: «Буря вщухає», «Вид міста Одеси» та «Море».",
           "sourceId": "xk_ba46f67d",
           "sourceLabel": "Kyiv Post: росіяни викрали з Херсонського музею картини Айвазовського"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Айвазовський народився в Криму, а Куїнджі — у Маріуполі; обидва відомі морськими пейзажами, і роботи обох окупанти вивезли з музеїв у 2022 році.",
+          "sourceId": "xk_ad7a7c34",
+          "sourceLabel": "Hyperallergic, 02.05.2022",
+          "scope": "context"
         }
       ]
     },
@@ -1570,6 +1900,24 @@
           "label": "Royal Collection Trust: Barbara Villiers, Duchess of Cleveland",
           "url": "https://www.rct.uk/collection/404957/barbara-villiers-duchess-of-cleveland-ca-1641-1709",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -1675,6 +2023,30 @@
           "fact": "Лелі вважають засновником англійської традиції світського портрета — пишного, «парадного» зображення знаті.",
           "sourceId": "xk_b3926928",
           "sourceLabel": "Encyclopedia.com: Sir Peter Lely"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
         }
       ]
     },
@@ -1899,6 +2271,24 @@
           "label": "Kyiv Post: «Ранок Христового Воскресіння»",
           "url": "https://www.kyivpost.com/uk/amp/post/51120",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -2009,6 +2399,30 @@
           "fact": "Помер Орловський у 1914 році в Італії, в місті Нерві.",
           "sourceId": "xk_59906859",
           "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
         }
       ]
     },
@@ -2215,6 +2629,24 @@
           "label": "Wikipedia: Fyodor Bronnikov",
           "url": "https://en.wikipedia.org/wiki/Fyodor_Bronnikov",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -2308,6 +2740,30 @@
           "fact": "З 1881 року — того ж, коли написано «Капуцина», — Бронников виставлявся вже не на академічних виставках, а з Товариством пересувних виставок.",
           "sourceId": "xk_e0634384",
           "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
         }
       ]
     },
@@ -2527,6 +2983,24 @@
           "label": "Kyiv Post: Ілля Рєпін",
           "url": "https://www.kyivpost.com/uk/post/81735",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -2620,6 +3094,30 @@
           "fact": "Рєпін народився 5 серпня 1844 року в Чугуєві на Харківщині, тож харківський варіант «Запорожців» повернувся на батьківщину художника.",
           "sourceId": "xk_943e3110",
           "sourceLabel": "Kyiv Post: Ілля Рєпін"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
         }
       ]
     },
@@ -2816,6 +3314,24 @@
           "label": "Л. Чень, Вісник НУ «Львівська політехніка», 2021",
           "url": "https://sciencetst.lpnu.ua/sites/default/files/journal-paper/2021/dec/25870/15.pdf",
           "note": null
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -2897,6 +3413,30 @@
           "fact": "Скит Манявський існував у 1605–1785 роках і був відомий далеко за межами України; заснували його Іов Княгиницький і Феодосій Манявський.",
           "sourceId": "xk_1677bfb7",
           "sourceLabel": "Л. Чень, Вісник НУ «Львівська політехніка», 2021"
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
         }
       ]
     },
@@ -3116,6 +3656,24 @@
           "label": "Музей Івана Гончара: ікона «Святий Миколай», Ф. Стовбуненко",
           "url": "https://honchar.org.ua/en/collections/detail/2329",
           "note": "⚠ verify"
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -3200,8 +3758,32 @@
         {
           "fact": "За даними Музею Івана Гончара, народний художник Федір Стовбуненко жив у 1864–1933 роках і працював на Полтавщині.",
           "sourceId": "xk_6d265e58",
-          "verify": true,
-          "sourceLabel": "Музей Івана Гончара: ікона «Святий Миколай», Ф. Стовбуненко"
+          "sourceLabel": "Музей Івана Гончара: ікона «Святий Миколай», Ф. Стовбуненко",
+          "verify": true
+        },
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
         }
       ]
     },
@@ -3339,6 +3921,24 @@
           "label": "uahistory.com — біографія Уварова",
           "url": "https://uahistory.com/?p=16729",
           "note": "біографія Уварова (блог, довідково)"
+        },
+        {
+          "id": "xk_0d51db39",
+          "label": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_b23707e1",
+          "label": "Human Rights Watch, 20.12.2022",
+          "url": "https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions",
+          "note": null
+        },
+        {
+          "id": "xk_82f0e47d",
+          "label": "JusticeInfo: The art of war in Ukraine",
+          "url": "https://www.justiceinfo.net/en?p=148452",
+          "note": null
         }
       ],
       "chat": {
@@ -3381,7 +3981,33 @@
       "sourceAssets": {
         "image": null,
         "wallpaper": null
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
+          "sourceId": "xk_0d51db39",
+          "sourceLabel": "Human Rights Watch: Russians pillage Kherson cultural institutions, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "У Херсоні перед відступом у листопаді 2022 року вивезли тисячі предметів із двох музеїв, собору й обласного архіву.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "context"
+        },
+        {
+          "fact": "За даними ЮНЕСКО, станом на червень 2025 року підтверджено пошкодження 501 історичного обʼєкта в Україні, серед них 34 музеї.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        },
+        {
+          "fact": "Пограбування культурних цінностей під час війни порушує Гаазьку конвенцію 1954 року про захист культурних цінностей у разі збройного конфлікту.",
+          "sourceId": "xk_82f0e47d",
+          "sourceLabel": "JusticeInfo: The art of war in Ukraine",
+          "scope": "context"
+        }
+      ]
     }
   ],
   "museums": [

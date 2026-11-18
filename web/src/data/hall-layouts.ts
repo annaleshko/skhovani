@@ -91,7 +91,11 @@ export const hallLayouts: Record<string, HallLayout> = {
       },
     ],
   },
-  /** Melitopol — Figma `171:6608`, single centered work on vertical wall. */
+  /**
+   * Melitopol — Figma `171:6608`, single vitrine+pedestal.
+   * Captions sit on the pedestal face (below glass / pedestal top), not above
+   * the object — same rule as Kherson, even though Figma placed them higher.
+   */
   melitopol: {
     museumId: "melitopol",
     designWidth: 390,
@@ -99,7 +103,8 @@ export const hallLayouts: Record<string, HallLayout> = {
     wallSrc: "/halls/melitopol/wall.webp",
     lamp: { w: 98, h: 72, y: 45 },
     cone: { w: 353, h: 745, y: 99 },
-    captions: { titleY: 170, metaY: 198, badgeY: 254 },
+    // Pedestal top ≈ y 513 (glass ends ~42% into frameRect); title below it.
+    captions: { titleY: 528, metaY: 556, badgeY: 600 },
     slots: [
       {
         artworkId: 3,
@@ -190,9 +195,9 @@ export function paintingOpeningInset(artworkId: number): OpeningInset {
   if (artworkId === 7 || artworkId === 10) {
     return { top: 0.08, right: 0.16, bottom: 0.08, left: 0.16 };
   }
-  // Tall Melitopol case
+  // Melitopol glass vitrine only (not pedestal / glass edges) — measured from frame 3.webp
   if (artworkId === 3) {
-    return { top: 0.06, right: 0.1, bottom: 0.08, left: 0.1 };
+    return { top: 0.09, right: 0.2, bottom: 0.58, left: 0.2 };
   }
   // Landscape frames (Великодня, Колядки, Одеса, Околиці, Запорожці, іконостас)
   return { top: 0.12, right: 0.11, bottom: 0.13, left: 0.11 };

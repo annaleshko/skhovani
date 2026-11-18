@@ -54,6 +54,11 @@ export type ExtendedKnowledgeFact = {
   /** Soft source — phrase as «за даними <sourceLabel>». */
   verify?: boolean;
   sourceLabel?: string;
+  /**
+   * `context` — topic-level facts from «# Ширший контекст»
+   * (say «Якщо говорити ширше…» and cite the source).
+   */
+  scope?: "context";
 };
 
 export type ArtworkTabs = {

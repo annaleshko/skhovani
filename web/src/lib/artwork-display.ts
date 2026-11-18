@@ -30,10 +30,10 @@ export function displayYear(year: string): string {
     if (semi > 0) return y.slice(0, semi).trim();
     return y;
   }
-  // Collection / century dating — keep the readable clause
+  // Collection / century dating — keep the readable clause; find-year stays in passport body
   let s = y.split(";")[0]?.trim() ?? y;
   s = s.replace(/^колекція\s*[—–-]\s*/i, "");
-  s = s.replace(/,\s*знайдена?\s+у\s+(\d{4})/i, " · знайдено $1");
+  s = s.replace(/,?\s*знайдена?\s+у\s+\d{4}/i, "");
   s = s.replace(/\s+/g, " ").trim();
   if (isUnknownYear(s)) return "";
   return s || "";
