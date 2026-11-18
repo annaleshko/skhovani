@@ -11,10 +11,11 @@ import {
   type ReactNode,
 } from "react";
 import {
-  STORAGE_KEY,
-  clearPersistedState,
+  clearDemoResetFlag,
   defaultPersistedState,
+  isDemoResetActive,
   loadPersistedState,
+  performDemoReset,
   savePersistedState,
   type ChatMessage,
   type PersistedState,
@@ -42,14 +43,14 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 
 /**
  * startCityId may only become null via resetAll.
- * Blocks accidental wipes (hydrate races between desktop shell + iframe).
+ * Blocks accidental wipes inside one provider tree.
  */
 function protectStartCity(
   prev: PersistedState,
   next: PersistedState,
   allowClear: boolean,
 ): PersistedState {
-  if (allowClear) return next;
+  if (allowClear || isDemoResetActive()) return next;
   if (prev.startCityId && !next.startCityId) {
     if (process.env.NODE_ENV === "development") {
       console.warn(
@@ -61,19 +62,19 @@ function protectStartCity(
   return next;
 }
 
-function readStoredStartCityId(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<PersistedState>;
-    return typeof parsed.startCityId === "string" ? parsed.startCityId : null;
-  } catch {
-    return null;
-  }
-}
+type AppStateProviderProps = {
+  children: ReactNode;
+  /**
+   * When false, this tree never reads/writes localStorage.
+   * Desktop shell preview must pass false — only the iframe app persists.
+   */
+  persist?: boolean;
+};
 
-export function AppStateProvider({ children }: { children: ReactNode }) {
+export function AppStateProvider({
+  children,
+  persist = true,
+}: AppStateProviderProps) {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<PersistedState>(defaultPersistedState);
   const hydratedRef = useRef(false);
@@ -92,36 +93,40 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    // Client-only hydrate from localStorage (avoid SSR mismatch)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional mount hydrate
+    // Client-only hydrate from localStorage (avoid SSR mismatch).
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional mount hydrate */
+    if (!persist) {
+      setState(defaultPersistedState());
+      hydratedRef.current = true;
+      setReady(true);
+      return;
+    }
     setState(loadPersistedState());
     hydratedRef.current = true;
     setReady(true);
-  }, []);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [persist]);
 
   useEffect(() => {
+    if (!persist) return;
     if (!ready || !hydratedRef.current) return;
 
-    // Guard: never write null over a stored city (outer shell vs iframe race).
-    if (!state.startCityId) {
-      const stored = readStoredStartCityId();
-      if (stored) {
-        if (process.env.NODE_ENV === "development") {
-          console.warn(
-            "[shovani] save skipped — would overwrite startCityId with null",
-          );
-        }
-        // Persist merged snapshot without a setState loop.
-        savePersistedState({ ...state, startCityId: stored });
-        return;
+    // Reset latch: never let a stale in-memory city rewrite storage.
+    if (isDemoResetActive()) {
+      if (!state.startCityId) {
+        savePersistedState(state);
+        // Defaults are durable — drop the latch so a new city pick can save.
+        clearDemoResetFlag();
       }
+      return;
     }
 
     savePersistedState(state);
-  }, [state, ready]);
+  }, [state, ready, persist]);
 
   const setStartCityId = useCallback(
     (id: string) => {
+      clearDemoResetFlag();
       commit((s) => ({ ...s, startCityId: id }));
     },
     [commit],
@@ -172,19 +177,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const resetAll = useCallback(() => {
     allowClearStartCityRef.current = true;
-    clearPersistedState();
+    const next = performDemoReset();
     allowClearStartCityRef.current = true;
-    setState(defaultPersistedState());
+    setState(next);
   }, []);
-
-  const startCityId =
-    state.startCityId ?? (ready ? readStoredStartCityId() : null);
 
   const value = useMemo<AppStateValue>(
     () => ({
       ready,
       user: state.user,
-      startCityId,
+      startCityId: state.startCityId,
       completedPaths: state.completedPaths,
       currentPath: state.currentPath,
       openedArtworkIds: state.openedArtworkIds,
@@ -200,7 +202,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [
       ready,
       state,
-      startCityId,
       setStartCityId,
       setCurrentPath,
       markPathComplete,

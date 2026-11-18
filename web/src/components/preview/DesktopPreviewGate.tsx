@@ -3,6 +3,7 @@
 import { LandscapeLock } from "@/components/layout/LandscapeLock";
 import { DesktopPhonePreview } from "@/components/preview/DesktopPhonePreview";
 import { EmbedUrlSync } from "@/components/preview/EmbedUrlSync";
+import { AppStateProvider } from "@/state/AppState";
 import { useEffect, useState, type ReactNode } from "react";
 
 function isPwaStandalone(): boolean {
@@ -27,7 +28,7 @@ function shouldUsePhonePreview(): boolean {
 
 /**
  * On wide desktop viewports, show a Figma-sized phone iframe instead of the app.
- * The outer page does not mount the app — only the iframe does.
+ * The outer shell does NOT mount AppStateProvider — only the iframe app persists.
  * Phones, PWA standalone, and `?embed=1` render children as usual.
  */
 export function DesktopPreviewGate({ children }: { children: ReactNode }) {
@@ -57,10 +58,10 @@ export function DesktopPreviewGate({ children }: { children: ReactNode }) {
   }
 
   return (
-    <>
+    <AppStateProvider persist>
       <EmbedUrlSync />
       <div id="app-shell">{children}</div>
       <LandscapeLock />
-    </>
+    </AppStateProvider>
   );
 }

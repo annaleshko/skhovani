@@ -39,6 +39,7 @@ import {
   useReducedMotionSafe,
 } from "@/lib/motion";
 import { useAppState } from "@/state/AppState";
+import { resetHomeHref } from "@/state/storage";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -67,7 +68,8 @@ type Props = {
 export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
-  const { completedPaths, openedArtworkIds, startCityId } = useAppState();
+  const { completedPaths, openedArtworkIds, startCityId, resetAll } =
+    useAppState();
   const vb = getMapViewBox();
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [sheetExit, setSheetExit] = useState(false);
@@ -372,7 +374,12 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                       <p className="text-body-md text-text-secondary">
                         Почати шлях спочатку? Прогрес буде скинуто.
                       </p>
-                      <Button onClick={() => router.push("/reset")}>
+                      <Button
+                        onClick={() => {
+                          resetAll();
+                          router.replace(resetHomeHref());
+                        }}
+                      >
                         Так, почати
                       </Button>
                       <Button

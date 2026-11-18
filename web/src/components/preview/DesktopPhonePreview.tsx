@@ -2,6 +2,7 @@
 
 import { EMBED_NAV_MESSAGE } from "@/components/preview/EmbedUrlSync";
 import { cn } from "@/lib/cn";
+import { performDemoReset } from "@/state/storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const BEZEL = 10;
@@ -37,6 +38,11 @@ export function DesktopPhonePreview() {
   const [scale, setScale] = useState(1);
   const [iframeSrc, setIframeSrc] = useState(() => {
     if (typeof window === "undefined") return "/?embed=1";
+    // Outer `/reset` never mounts AppState — clear here, then load city picker.
+    if (window.location.pathname === "/reset") {
+      performDemoReset();
+      return withEmbed(`/?_=${Date.now()}`);
+    }
     return withEmbed(
       window.location.pathname + window.location.search + window.location.hash,
     );
@@ -63,6 +69,12 @@ export function DesktopPhonePreview() {
     return () => window.removeEventListener("resize", updateScale);
   }, [updateScale]);
 
+  // Outer `/reset` was rewritten to city picker in the iframe — sync the address bar.
+  useEffect(() => {
+    if (window.location.pathname !== "/reset") return;
+    window.history.replaceState(null, "", "/");
+  }, []);
+
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
@@ -82,7 +94,10 @@ export function DesktopPhonePreview() {
   }, []);
 
   const resetDemo = () => {
-    const src = `${withEmbed("/reset")}&_=${Date.now()}`;
+    // Clear in the shell browsing context first (no AppStateProvider here).
+    performDemoReset();
+    // Hard-load city picker in the iframe with embed kept.
+    const src = `${withEmbed("/")}&_=${Date.now()}`;
     setIframeSrc(src);
     if (iframeRef.current) iframeRef.current.src = src;
   };

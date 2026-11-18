@@ -169,6 +169,19 @@ Automated @ 390×844 (`reducedMotion`) + `/api/guide`. Guide chat UI / detail / 
 
 **Push:** single `git push` after commit `final polish`.
 
+## Stage 0 — Production reset race (2026-11-18)
+
+**Cause:** Desktop shell mounted `AppStateProvider` and could rewrite `startCityId` into `localStorage` after `/reset` or «Скинути демо» cleared it (iframe + shell share storage). Soft «Почати спочатку» worked because only the iframe tree updated.
+
+**Fix:** `performDemoReset()` + `shovani:reset` latch; shell preview mounts no AppStateProvider; iframe-only persistence; all three entry points use the same reset → `/?embed=1` when embedded.
+
+| Check (prod `next start`) | Result |
+|---|---|
+| Desktop `/reset` → city picker | OK |
+| «Скинути демо» → city picker | OK |
+| «Почати спочатку → Так, почати» → city picker | OK |
+| Mobile `/reset` → city picker | OK |
+
 ## Release candidate stages (2026-11-18 evening)
 
 ### Stage 1 — Revisit stuck (root cause)

@@ -1,8 +1,11 @@
 "use client";
 
-import { AppStateProvider } from "@/state/AppState";
 import type { ReactNode } from "react";
 
+/**
+ * Root client wrappers. App state lives inside DesktopPreviewGate's app branch
+ * so the desktop phone-shell window never persists localStorage.
+ */
 export function Providers({ children }: { children: ReactNode }) {
-  return <AppStateProvider>{children}</AppStateProvider>;
+  return <>{children}</>;
 }

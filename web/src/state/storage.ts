@@ -3,6 +3,9 @@ import { demoUser, type DemoUser } from "@/data/demo-user";
 /** MVP v2 — bump clears incompatible v1 state. */
 export const STORAGE_KEY = "shovani:v2";
 export const LEGACY_STORAGE_KEY = "shovani:v1";
+/** Short-lived reset latch shared by shell + iframe (localStorage). */
+export const RESET_FLAG_KEY = "shovani:reset";
+const RESET_TTL_MS = 8000;
 
 export type ChatMessage = {
   role: "user" | "guide";
@@ -42,6 +45,7 @@ export function defaultPersistedState(): PersistedState {
 
 export function loadPersistedState(): PersistedState {
   if (typeof window === "undefined") return defaultPersistedState();
+  if (isDemoResetActive()) return defaultPersistedState();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -66,6 +70,12 @@ export function loadPersistedState(): PersistedState {
 
 export function savePersistedState(state: PersistedState): void {
   if (typeof window === "undefined") return;
+  // During reset latch, never re-poison storage with a stale in-memory city.
+  if (isDemoResetActive()) {
+    if (state.startCityId) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return;
+  }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -73,4 +83,64 @@ export function clearPersistedState(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(LEGACY_STORAGE_KEY);
+}
+
+/** True while a demo reset is in flight (shell + iframe both see this). */
+export function isDemoResetActive(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw =
+      localStorage.getItem(RESET_FLAG_KEY) ??
+      sessionStorage.getItem(RESET_FLAG_KEY);
+    if (!raw) return false;
+    const ts = Number(raw);
+    if (!Number.isFinite(ts)) {
+      clearDemoResetFlag();
+      return false;
+    }
+    if (Date.now() - ts > RESET_TTL_MS) {
+      clearDemoResetFlag();
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearDemoResetFlag(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(RESET_FLAG_KEY);
+    sessionStorage.removeItem(RESET_FLAG_KEY);
+  } catch {
+    /* private mode */
+  }
+}
+
+/**
+ * Single explicit demo reset used by `/reset`, «Скинути демо», «Почати спочатку».
+ * Clears persisted progress and latches providers so stale saves cannot restore it.
+ */
+export function performDemoReset(): PersistedState {
+  if (typeof window === "undefined") return defaultPersistedState();
+  clearPersistedState();
+  const ts = String(Date.now());
+  try {
+    // localStorage: shared by desktop shell window + phone iframe.
+    localStorage.setItem(RESET_FLAG_KEY, ts);
+    // sessionStorage: same-tab latch inside the frame that triggered reset.
+    sessionStorage.setItem(RESET_FLAG_KEY, ts);
+  } catch {
+    /* private mode */
+  }
+  return defaultPersistedState();
+}
+
+/** Home after reset — keep `?embed=1` inside the phone iframe. */
+export function resetHomeHref(): string {
+  if (typeof window === "undefined") return "/";
+  const embed =
+    new URLSearchParams(window.location.search).get("embed") === "1";
+  return embed ? "/?embed=1" : "/";
 }
