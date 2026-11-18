@@ -3,6 +3,7 @@
 import { IconButton } from "@/components/ui";
 import type { Artwork } from "@/data/types";
 import { getSource } from "@/data";
+import { displayHeadline } from "@/lib/artwork-display";
 import { authorSurname } from "@/lib/guide-prompt";
 import { easings, motionTokens, useReducedMotionSafe } from "@/lib/motion";
 import { useAppState } from "@/state/AppState";
@@ -190,7 +191,7 @@ export function GuideScreen({
             <div className="min-w-0 flex-1">
               <p className="text-label-lg text-text-primary">Гід</p>
               <p className="truncate text-caption text-text-secondary">
-                {artwork.title} · {surname}
+                {displayHeadline(artwork)} · {surname}
               </p>
             </div>
           </div>

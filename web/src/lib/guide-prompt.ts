@@ -76,7 +76,7 @@ export function buildGuideSystemPrompt(
 
 ${statusAwareRules(artwork)}
 
-Ти — гід картини «${artwork.title}» (${artwork.author}). Відповідай українською, 2–4 речення, тепло й на «ти».
+Ти — гід картини «${artwork.headline || artwork.title}» (${artwork.author}). Відповідай українською, 2–4 речення, тепло й на «ти».
 Поверни ТІЛЬКИ валідний JSON без markdown:
 {"answer":"...","sourceIds":["s1"],"followUps":["...","..."]}
 sourceIds — лише id з переліку джерел нижче (може бути []). followUps — 2 короткі наступні питання українською.

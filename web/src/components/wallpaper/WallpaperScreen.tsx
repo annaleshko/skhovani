@@ -2,6 +2,7 @@
 
 import { Button, IconButton } from "@/components/ui";
 import type { Artwork } from "@/data/types";
+import { displayHeadline, displayYear } from "@/lib/artwork-display";
 import { motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -83,11 +84,13 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     ctx.textAlign = "center";
     ctx.fillStyle = "#f5f5f2";
     ctx.font = `600 ${14 * SCALE}px Manrope, sans-serif`;
-    ctx.fillText(artwork.title, EXPORT.w / 2, cy);
+    const headline = displayHeadline(artwork);
+    const year = displayYear(artwork.year);
+    ctx.fillText(headline, EXPORT.w / 2, cy);
     ctx.fillStyle = "#98928c";
     ctx.font = `400 ${12 * SCALE}px Manrope, sans-serif`;
     ctx.fillText(
-      `${artwork.author} · ${artwork.year} · Сховані`,
+      `${artwork.author} · ${year} · Сховані`,
       EXPORT.w / 2,
       cy + 18 * SCALE,
     );
@@ -97,7 +100,7 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     return await new Promise((resolve) => {
       canvas.toBlob((b) => resolve(b), "image/png");
     });
-  }, [artSrc, artwork.author, artwork.photoCredit, artwork.title, artwork.year]);
+  }, [artSrc, artwork]);
 
   const save = useCallback(async () => {
     if (busy) return;
@@ -114,7 +117,7 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: artwork.title,
+          title: displayHeadline(artwork),
         });
       } else {
         const a = document.createElement("a");
@@ -129,7 +132,7 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     } finally {
       setBusy(false);
     }
-  }, [artwork.slug, artwork.title, busy, composeExport, onSaved]);
+  }, [artwork, busy, composeExport, onSaved]);
 
   return (
     <AnimatePresence>
@@ -197,9 +200,11 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
                 ) : null}
               </div>
               <div className="absolute inset-x-[11px] top-[379px] flex flex-col items-center gap-[2px] text-center">
-                <p className="text-label-md text-text-primary">{artwork.title}</p>
+                <p className="text-label-md text-text-primary">
+                  {displayHeadline(artwork)}
+                </p>
                 <p className="text-caption text-text-secondary">
-                  {artwork.author} · {artwork.year} · Сховані
+                  {artwork.author} · {displayYear(artwork.year)} · Сховані
                 </p>
                 <p className="text-[8px] leading-4 text-text-secondary">
                   {artwork.photoCredit}

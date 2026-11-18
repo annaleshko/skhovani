@@ -26,6 +26,7 @@ import {
   type ResolvedPath,
 } from "@/data/journey";
 import { getMuseumShortLabel } from "@/data/museums";
+import { displayHeadline, displayYear } from "@/lib/artwork-display";
 import {
   easings,
   motionTokens,
@@ -66,13 +67,6 @@ type Props = {
   pathN: number | null;
   artworkId: number;
 };
-
-/** Hall meta line uses the short year as in Figma («· 1910»), not the passport note. */
-function shortYear(year: string): string {
-  const m = year.match(/\d{4}/);
-  if (m) return m[0];
-  return year.split(/[;(]/)[0]?.trim() || year;
-}
 
 function scrollLeftTo(
   el: HTMLElement,
@@ -529,7 +523,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                       type="button"
                       aria-label={
                         art
-                          ? `${art.title}, ${art.author}`
+                          ? `${displayHeadline(art)}, ${art.author}`
                           : `Твір ${slot.artworkId}`
                       }
                       className="absolute inset-0 z-[1] min-h-[44px] min-w-[44px] cursor-pointer bg-transparent"
@@ -765,7 +759,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                     exit={{ opacity: 0, x: "-50%" }}
                   >
                     <p className="w-full text-h3 text-text-primary">
-                      {(getArtwork(artworkId) ?? focus).title}
+                      {displayHeadline(getArtwork(artworkId) ?? focus!)}
                     </p>
                     <p
                       className="w-full text-body-md text-text-caption"
@@ -778,7 +772,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                       }}
                     >
                       {(getArtwork(artworkId) ?? focus).author} ·{" "}
-                      {shortYear((getArtwork(artworkId) ?? focus).year)}
+                      {displayYear((getArtwork(artworkId) ?? focus).year)}
                     </p>
                     <div
                       className="flex w-full justify-center"
@@ -1041,7 +1035,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
       <WallpaperSavedScreen
         open={phase === "wallpaper-saved"}
         previewSrc={focus.image ?? focus.wallpaper}
-        artworkTitle={focus.headline || focus.title}
+        artworkTitle={displayHeadline(focus)}
         onContinue={() => {
           setPhase("about");
         }}
