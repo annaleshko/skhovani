@@ -471,13 +471,26 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
               {/* 2. ALL frames under darkness */}
               {slots.map((slot) => {
                 const art = getArtwork(slot.artworkId);
-                const open = slot.artworkId === focus.id;
+                const isPathFocus = slot.artworkId === artworkId;
+                const isOpenedFrame = openedIds.has(slot.artworkId);
                 const r = slot.frameRect;
                 const focusEmpty =
-                  open && isStolen && stolenPhase === "empty";
+                  isPathFocus && isStolen && stolenPhase === "empty";
+                // Not-yet-opened: dim/hidden plate. Opened (or current): real frame.
                 const src =
-                  !open && slot.hiddenSrc ? slot.hiddenSrc : slot.frameSrc;
+                  !isPathFocus && !isOpenedFrame && slot.hiddenSrc
+                    ? slot.hiddenSrc
+                    : slot.frameSrc;
                 const inset = paintingOpeningInset(slot.artworkId);
+                // Opened neighbors: revealed memory look under their lamp (never dark).
+                const showOpenedMemory =
+                  isOpenedFrame &&
+                  !isPathFocus &&
+                  art?.status === "stolen";
+                const openedShelter =
+                  isOpenedFrame &&
+                  !isPathFocus &&
+                  (art?.status === "shelter" || art?.status === "saved");
                 return (
                   <motion.div
                     key={`base-${slot.artworkId}`}
@@ -502,7 +515,27 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                       alt=""
                       className="pointer-events-none absolute inset-0 size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
                       draggable={false}
+                      style={{
+                        filter: openedShelter
+                          ? "brightness(0.85) sepia(0.1)"
+                          : undefined,
+                      }}
                     />
+                    {showOpenedMemory ? (
+                      <div
+                        className="pointer-events-none absolute inset-0 overflow-hidden"
+                        style={{ clipPath: openingClipPath(inset) }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={slot.frameSrc}
+                          alt=""
+                          className="absolute inset-0 size-full object-contain"
+                          draggable={false}
+                          style={{ filter: STOLEN_MEMORY_FILTER }}
+                        />
+                      </div>
+                    ) : null}
                     {/* Stolen focus before tap: blur cover so painting never flashes clear */}
                     {focusEmpty ? (
                       <div
@@ -693,7 +726,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                       .filter((s) => litSlotIds.has(s.artworkId))
                       .map((slot) => {
                         const isActive = slot.artworkId === artworkId;
-                        const targetOpacity = isActive ? 1 : 0.32;
+                        // Opened neighbors: dim but clearly lit (never dark).
+                        const targetOpacity = isActive ? 1 : 0.48;
                         return (
                           <motion.div
                             key={`lamp-${slot.artworkId}`}
