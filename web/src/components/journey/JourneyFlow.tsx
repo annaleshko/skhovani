@@ -216,6 +216,9 @@ export function JourneyFlow({
   const doorCamScale = useMotionValue(1);
 
   const facadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Dedicated revisit→hall timer — never cleared by goFacade fade restarts. */
+  const revisitEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enterDoorRef = useRef<() => void>(() => {});
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mapStageRef = useRef<HTMLDivElement>(null);
   const facadeRootRef = useRef<HTMLDivElement>(null);
@@ -649,9 +652,26 @@ export function JourneyFlow({
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  const clearRevisitEnterTimer = useCallback((reason: string) => {
+    if (!revisitEnterTimer.current) return;
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[revisit] timer cancelled: ${reason}`);
+    }
+    clearTimeout(revisitEnterTimer.current);
+    revisitEnterTimer.current = null;
+  }, []);
+
   const enterDoor = useCallback(() => {
-    if (!path || !museumUi) return;
+    if (!path || !museumUi) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          `[revisit] enterDoor early-return path=${Boolean(path)} museumUi=${Boolean(museumUi)}`,
+        );
+      }
+      return;
+    }
     if (facadeTimer.current) clearTimeout(facadeTimer.current);
+    clearRevisitEnterTimer("enterDoor");
     setPhase("entering");
     const reopenQs = reopenHall ? "&reopen=1" : "";
     const hallUrl = `/hall/${path.museumId}?path=${path.n}&artwork=${path.artworkId}${reopenQs}`;
@@ -672,7 +692,39 @@ export function JourneyFlow({
       else router.push(hallUrl);
     };
     requestAnimationFrame(fade);
-  }, [doorCamScale, museumUi, path, reduced, reopenHall, router]);
+  }, [
+    clearRevisitEnterTimer,
+    doorCamScale,
+    museumUi,
+    path,
+    reduced,
+    reopenHall,
+    router,
+  ]);
+
+  useEffect(() => {
+    enterDoorRef.current = enterDoor;
+  }, [enterDoor]);
+
+  useEffect(() => {
+    return () => {
+      clearRevisitEnterTimer("unmount");
+      if (facadeTimer.current) clearTimeout(facadeTimer.current);
+    };
+  }, [clearRevisitEnterTimer]);
+
+  const scheduleRevisitEnter = useCallback(() => {
+    // Revisit auto-enter never for path 1
+    if (!revisit || !path || path.n === 1) return;
+    clearRevisitEnterTimer("reschedule");
+    const ms = reduced
+      ? motionTokens.reducedCrossfade * 1000
+      : REVISIT_FACADE_MS;
+    revisitEnterTimer.current = setTimeout(() => {
+      revisitEnterTimer.current = null;
+      enterDoorRef.current();
+    }, ms);
+  }, [clearRevisitEnterTimer, path, reduced, revisit]);
 
   const goFacade = useCallback(() => {
     if (facadeTimer.current) clearTimeout(facadeTimer.current);
@@ -680,19 +732,10 @@ export function JourneyFlow({
     setPhase("facade");
     setFacadeOpacity(0);
     facadeScale.set(1.05);
-    const autoEnter = () => {
-      // Revisit auto-enter never for path 1
-      if (revisit && path && path.n !== 1) {
-        facadeTimer.current = setTimeout(
-          () => enterDoor(),
-          reduced ? motionTokens.reducedCrossfade * 1000 : REVISIT_FACADE_MS,
-        );
-      }
-    };
     if (reduced) {
       setFacadeOpacity(1);
       facadeScale.set(1);
-      autoEnter();
+      scheduleRevisitEnter();
       return;
     }
     animate(facadeScale, 1, { duration: motionTokens.facadeScale, ease: easings.easeOut });
@@ -701,10 +744,10 @@ export function JourneyFlow({
       const p = Math.min(1, (performance.now() - t0) / (motionTokens.facadeCrossfade * 1000));
       setFacadeOpacity(p);
       if (p < 1) requestAnimationFrame(fade);
-      else autoEnter();
+      else scheduleRevisitEnter();
     };
     requestAnimationFrame(fade);
-  }, [enterDoor, facadeScale, path, reduced, revisit]);
+  }, [facadeScale, reduced, scheduleRevisitEnter]);
 
   const afterZoom = useCallback(() => {
     // Revisit: skip occupation note — straight to short facade hold (not path 1)
@@ -873,7 +916,7 @@ export function JourneyFlow({
               aria-label="Карта України"
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
-              {/* Rays start → visited (~45%); active start → target (~80%) */}
+              {/* Rays start → visited (50%, 2px/6px); active start → target (85%) */}
               {phase === "map" && !hideFarLabels
                 ? visitedOrder.map((id) => {
                     const m = getMuseum(id);
@@ -885,9 +928,9 @@ export function JourneyFlow({
                         start={startPt}
                         ctrl={arcControl(startPt, end)}
                         end={end}
-                        dot={1.5}
-                        gap={5}
-                        opacity={0.45}
+                        dot={2}
+                        gap={6}
+                        opacity={0.5}
                         animateDraw={false}
                         routeKey={`ray-${id}`}
                       />
@@ -899,10 +942,10 @@ export function JourneyFlow({
                   start={startPt}
                   ctrl={ctrl}
                   end={targetPt}
-                  dot={1.5}
-                  gap={5}
+                  dot={2}
+                  gap={6}
                   routeKey={`path-${path?.n ?? 0}-${path?.museumId ?? ""}`}
-                  opacity={0.8}
+                  opacity={0.85}
                 />
               ) : null}
               {phase === "map" && !hideFarLabels
@@ -1208,24 +1251,24 @@ export function JourneyFlow({
               </div>
             </motion.div>
           ) : null}
-
-          {/* Revisit: eyebrow + full title sheet (no buttons), hold ≥1.2s then hall */}
-          {phase === "facade" && revisit ? (
-            <div
-              ref={facadeCardRef}
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
-              aria-hidden
-            >
-              <p className="text-overline uppercase text-text-accent">
-                Ласкаво просимо
-              </p>
-              <h2 className="mt-md text-h2 break-words">
-                {getMuseumDisplayName(path.museumId)}
-              </h2>
-            </div>
-          ) : null}
         </motion.div>
       )}
+
+      {/* Revisit sheet: screen-space (outside scaled/overflow facade) so it is never clipped */}
+      {phase === "facade" && revisit && path ? (
+        <div
+          ref={facadeCardRef}
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[45] rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
+          aria-hidden
+        >
+          <p className="text-overline uppercase text-text-accent">
+            Ласкаво просимо
+          </p>
+          <h2 className="mt-md text-h2 break-words">
+            {getMuseumDisplayName(path.museumId)}
+          </h2>
+        </div>
+      ) : null}
 
       <div
         className="pointer-events-none absolute inset-0 z-50 bg-black"

@@ -185,7 +185,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
               >
                 <image href="/map/map.svg" width={vb.w} height={vb.h} />
 
-                {/* Rays: start → each visited (#E9B872 ~45%, 1.5px dots) */}
+                {/* Rays: start → visited — #E9B872 50%, 2px dots, 6px gap */}
                 {visitedOrder.map((id) => {
                   const m = getMuseum(id);
                   if (!m) return null;
@@ -196,24 +196,24 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                       start={startPt}
                       ctrl={arcControl(startPt, end)}
                       end={end}
-                      dot={1.5}
-                      gap={5}
-                      opacity={0.45}
+                      dot={2}
+                      gap={6}
+                      opacity={0.5}
                       animateDraw={false}
                       routeKey={`ray-${id}`}
                     />
                   );
                 })}
 
-                {/* Active start → target (~80%) */}
+                {/* Active start → target — 85% */}
                 {targetMuseum ? (
                   <DottedRoute
                     start={startPt}
                     ctrl={ctrl}
                     end={targetPt}
-                    dot={1.5}
-                    gap={5}
-                    opacity={0.8}
+                    dot={2}
+                    gap={6}
+                    opacity={0.85}
                     routeKey={`sel-${selectedMuseumId}`}
                   />
                 ) : null}

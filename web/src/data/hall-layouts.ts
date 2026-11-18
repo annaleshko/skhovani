@@ -92,9 +92,8 @@ export const hallLayouts: Record<string, HallLayout> = {
     ],
   },
   /**
-   * Melitopol — Figma `171:6608`, single vitrine+pedestal.
-   * Captions sit on the pedestal face (below glass / pedestal top), not above
-   * the object — same rule as Kherson, even though Figma placed them higher.
+   * Melitopol — Figma `188:7356`: title/meta/badge ABOVE the vitrine;
+   * vitrine+pedestal at x25 y273 w340 (bottom-anchored via h=571).
    */
   melitopol: {
     museumId: "melitopol",
@@ -103,8 +102,7 @@ export const hallLayouts: Record<string, HallLayout> = {
     wallSrc: "/halls/melitopol/wall.webp",
     lamp: { w: 98, h: 72, y: 45 },
     cone: { w: 353, h: 745, y: 99 },
-    // Pedestal top ≈ y 513 (glass ends ~42% into frameRect); title below it.
-    captions: { titleY: 528, metaY: 556, badgeY: 600 },
+    captions: { titleY: 170, metaY: 198, badgeY: 254 },
     slots: [
       {
         artworkId: 3,

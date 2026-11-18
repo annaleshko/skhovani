@@ -76,6 +76,16 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
 
+## Revisit + Melitopol + Figma wallpapers (2026-11-18)
+
+| # | Fix | Check |
+|---|---|---|
+| 1 | Revisit: dedicated `revisitEnterTimer` + sheet outside scaled facade; ≥1.2s → hall | [ ] Melitopol / Kharkiv / Kherson |
+| 2 | Melitopol hall = Figma `188:7356` (title y170, badge y254 above vitrine; glass blur) | [ ] 390×844 / 667 |
+| 3 | 02в rays: visited 50% 2px/6px; target 85% | [ ] |
+| 4 | Meta «Автор · рік» via first date segment; drop find-year / unknown | [ ] |
+| 5 | Screen 11 uses `/wallpapers/<slug>.png` (1170×2532 Figma covers); no canvas compose | [ ] Великодня download |
+
 ## Melitopol hall + flight + labels + context (2026-11-18)
 
 | # | Fix | Check |

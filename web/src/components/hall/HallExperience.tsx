@@ -59,8 +59,8 @@ type StolenPhase = "empty" | "revealing" | "remembered";
 
 /** Focus stolen before tap — heavy blur clipped to the painting / glass opening. */
 const STOLEN_BLUR_FILTER = "blur(18px) brightness(0.45) saturate(0.55)";
-/** Melitopol vitrine interior only. */
-const VITRINE_BLUR_FILTER = "blur(14px) brightness(0.5) saturate(0.6)";
+/** Melitopol vitrine interior only (Figma stolen state). */
+const VITRINE_BLUR_FILTER = "blur(14px) brightness(0.5)";
 
 function stolenBlurFor(artworkId: number): string {
   return artworkId === 3 ? VITRINE_BLUR_FILTER : STOLEN_BLUR_FILTER;
@@ -1049,26 +1049,37 @@ export function HallExperience({
                   : null}
               </AnimatePresence>
 
-              {/* Memory line above glass/frame (06); hide if it would hit lamp/title at short heights */}
+              {/* Memory line (06): Melitopol between badge & vitrine; else above frame */}
               <AnimatePresence>
                 {showMemoryLine
                   ? (() => {
                       const r = hallFocusSlot.frameRect;
                       const glassTop = r.y + r.h * emptyInset.top;
                       const lineH = 20;
-                      const gap = 16;
-                      const topDes = glassTop - gap - lineH;
-                      const lampBottom =
-                        layout.lamp.y + layout.lamp.h + 8;
+                      const badgeBottom = layout.captions.badgeY + 28;
+                      // Figma Melitopol: between badge and vitrine top
+                      const topDes =
+                        museumId === "melitopol"
+                          ? Math.min(
+                              badgeBottom + 4,
+                              glassTop - lineH - 4,
+                            )
+                          : glassTop - 16 - lineH;
+                      const lampBottom = layout.lamp.y + layout.lamp.h + 8;
                       const titleTop = layout.captions.titleY;
-                      // Title is below object for Melitopol; for others title is below frame.
-                      // Hide when no room above glass without overlapping lamp (or title if above).
-                      const titleAbove =
-                        titleTop + 24 < glassTop;
+                      const overlapsTitle =
+                        titleTop < glassTop &&
+                        topDes < titleTop + 48 &&
+                        topDes + lineH > titleTop;
+                      const overlapsBadge =
+                        museumId === "melitopol" &&
+                        topDes < badgeBottom &&
+                        topDes + lineH > layout.captions.badgeY;
                       const fits =
                         topDes * px >= 16 &&
                         topDes >= lampBottom &&
-                        (!titleAbove || topDes + lineH + 8 <= titleTop);
+                        !overlapsTitle &&
+                        !overlapsBadge;
                       if (!fits) return null;
                       return (
                         <motion.p
@@ -1312,7 +1323,7 @@ export function HallExperience({
 
       <WallpaperSavedScreen
         open={phase === "wallpaper-saved"}
-        previewSrc={focus.image ?? focus.wallpaper}
+        previewSrc={focus.wallpaper ?? focus.image}
         artworkTitle={displayHeadline(focus)}
         sharedViaShare={wallpaperShared}
         onContinue={() => {

@@ -15,26 +15,28 @@ function isUnknownYear(year: string): boolean {
 }
 
 /**
- * Passport dating for meta lines.
- * Never present a find year (e.g. 1954) as the creation year.
- * Returns "" when year is missing / «не встановлено».
+ * First date part of passport `year` for meta lines («Автор · рік»).
+ * Cuts at «;» or «(»; strips «колекція —» / find-year; "" if unknown.
  */
 export function displayYear(year: string): string {
   const y = year.trim();
   if (isUnknownYear(y)) return "";
-  // «1910 (за даними музею; …)» → 1910
-  if (/^\d{4}\b/.test(y)) {
-    const paren = y.indexOf("(");
-    if (paren > 0) return y.slice(0, paren).trim();
-    const semi = y.indexOf(";");
-    if (semi > 0) return y.slice(0, semi).trim();
-    return y;
-  }
-  // Collection / century dating — keep the readable clause; find-year stays in passport body
-  let s = y.split(";")[0]?.trim() ?? y;
+  // First segment before «;» or «(»
+  let s = y;
+  const semi = s.indexOf(";");
+  if (semi > 0) s = s.slice(0, semi);
+  const paren = s.indexOf("(");
+  if (paren > 0) s = s.slice(0, paren);
+  s = s.trim();
   s = s.replace(/^колекція\s*[—–-]\s*/i, "");
   s = s.replace(/,?\s*знайдена?\s+у\s+\d{4}/i, "");
+  // «1846» / «1889–1896» / «IV ст. до н. е.» / «XVII ст.»
   s = s.replace(/\s+/g, " ").trim();
+  // Drop trailing material notes after comma when not century text
+  if (/^\d/.test(s)) {
+    const comma = s.indexOf(",");
+    if (comma > 0) s = s.slice(0, comma).trim();
+  }
   if (isUnknownYear(s)) return "";
   return s || "";
 }

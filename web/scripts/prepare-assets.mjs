@@ -193,10 +193,16 @@ for (const [museumId, filename] of Object.entries(HALL_WALLS)) {
 }
 
 // --- Wallpapers ---
-// MVP v2: screen 11 composes export from art webp at runtime (Figma 236:1720).
-// Do not ship separate multi-MB PNG wallpapers in public/.
+// Prefer designer Figma covers in public/wallpapers/<slug>.png (1170×2532).
 for (const artwork of content.artworks) {
-  if (artwork.image) {
+  if (!artwork.image) continue;
+  const cover = path.join(PUBLIC, "wallpapers", `${artwork.slug}.png`);
+  if (fs.existsSync(cover)) {
+    artwork.wallpaper = `/wallpapers/${artwork.slug}.png`;
+  } else if (
+    !artwork.wallpaper ||
+    !String(artwork.wallpaper).startsWith("/wallpapers/")
+  ) {
     artwork.wallpaper = artwork.image;
   }
 }
