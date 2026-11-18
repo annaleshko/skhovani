@@ -284,19 +284,24 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
     openTour();
   };
 
+  const completeCurrentPath = useCallback(() => {
+    if (pathN != null && focus) markPathComplete(pathN, focus.id);
+  }, [focus, markPathComplete, pathN]);
+
   const onTourDone = useCallback(() => {
     if (focus) markTourSeen(focus.id);
     // Reaching passport 16 marks the path completed.
-    if (pathN != null && focus) markPathComplete(pathN, focus.id);
+    completeCurrentPath();
     setDetailZone(null);
     // Passport screen 16 (painting + collapsed sheet); detail 08 overlays on tap.
     setPhase("about");
-  }, [focus, markPathComplete, markTourSeen, pathN]);
+  }, [completeCurrentPath, focus, markTourSeen]);
 
   const goToRouteMap = useCallback(() => {
+    completeCurrentPath();
     // Passport «×» → always 02в (even when next path is same museum).
     setPhase("route");
-  }, []);
+  }, [completeCurrentPath]);
 
   const departNext = useCallback(
     (path: ResolvedPath) => {
@@ -930,7 +935,10 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         artwork={focus}
         open={phase === "wallpaper"}
         onClose={() => setPhase("about")}
-        onSaved={() => setPhase("wallpaper-saved")}
+        onSaved={() => {
+          completeCurrentPath();
+          setPhase("wallpaper-saved");
+        }}
       />
 
       <WallpaperSavedScreen
@@ -938,7 +946,10 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         next={nextPath ?? null}
         previewSrc={focus.wallpaper ?? focus.image}
         artworkTitle={focus.title}
-        onContinue={continueAfterWallpaper}
+        onContinue={() => {
+          completeCurrentPath();
+          continueAfterWallpaper();
+        }}
       />
 
       <RouteMapScreen
