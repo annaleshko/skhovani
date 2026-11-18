@@ -30,9 +30,9 @@ const bucket = new Map<string, { tokens: number; updated: number }>();
 
 function rateLimit(ip: string): boolean {
   const now = Date.now();
-  const row = bucket.get(ip) ?? { tokens: 8, updated: now };
+  const row = bucket.get(ip) ?? { tokens: 24, updated: now };
   const elapsed = (now - row.updated) / 1000;
-  row.tokens = Math.min(8, row.tokens + elapsed * 0.15);
+  row.tokens = Math.min(24, row.tokens + elapsed * 0.4);
   row.updated = now;
   if (row.tokens < 1) {
     bucket.set(ip, row);

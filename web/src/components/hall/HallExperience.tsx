@@ -54,7 +54,7 @@ type Phase =
 type StolenPhase = "empty" | "revealing" | "remembered";
 
 /** Focus stolen before tap — heavy blur clipped to the painting opening. */
-const STOLEN_BLUR_FILTER = "blur(14px) brightness(0.5) saturate(0.6)";
+const STOLEN_BLUR_FILTER = "blur(18px) brightness(0.45) saturate(0.55)";
 /** After reveal — muted memory look (painting only). */
 const STOLEN_MEMORY_FILTER =
   "blur(0px) saturate(0.55) sepia(0.15) brightness(0.92)";
