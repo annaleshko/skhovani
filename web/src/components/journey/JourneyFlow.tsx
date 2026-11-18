@@ -106,7 +106,10 @@ function stageCam09(pt: MapPoint): CameraTransform {
   return cameraPlaceAt(pt, ZOOM_SCALE, ZOOM_FOCUS.x, ZOOM_FOCUS.y);
 }
 
-/** Fit facade image into [availTop, availBottom]; scale down if needed (min 0.75). */
+/**
+ * Fit facade into [availTop, availBottom]; scale down if needed (min 0.75).
+ * `y` may only move up (≤ 0) — never leave a gap below the top of the screen.
+ */
 function fitFacadeLayout(
   screenW: number,
   availTop: number,
@@ -124,12 +127,8 @@ function fitFacadeLayout(
   }
   const width = screenW * scale;
   const height = fullH * scale;
-  // Prefer ground at availBottom; nudge down if the tower would hit the trail.
-  let y = availBottom - groundY * height;
-  const topPx = y + buildingTopY * height;
-  if (topPx < availTop) {
-    y = availTop - buildingTopY * height;
-  }
+  // Align ground to availBottom, but never shift the image down (Figma y=0 at 390×844).
+  const y = Math.min(0, availBottom - groundY * height);
   const x = (screenW - width) / 2;
   return { width, height, x, y, scale };
 }
@@ -939,7 +938,7 @@ export function JourneyFlow({ pathN }: Props) {
           className="absolute inset-0 z-40 overflow-hidden"
           style={{
             opacity: Math.max(facadeOpacity, phase === "entering" ? 1 : facadeOpacity),
-            backgroundColor: "var(--color-bg-hall-dark)",
+            backgroundColor: museumUi.facadeFill,
           }}
         >
           <motion.div
@@ -947,14 +946,9 @@ export function JourneyFlow({ pathN }: Props) {
             style={{
               scale: phase === "entering" ? doorCamScale : facadeScale,
               transformOrigin: `${museumUi.doorX}% ${museumUi.doorY}%`,
+              backgroundColor: museumUi.facadeFill,
             }}
           >
-            {/* Seam fill under the shifted image */}
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{ backgroundColor: "var(--color-bg-hall-dark)" }}
-              aria-hidden
-            />
             {phase === "facade" ? (
               <button
                 type="button"

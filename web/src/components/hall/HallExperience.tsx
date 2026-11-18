@@ -41,8 +41,8 @@ function shortYear(year: string): string {
 }
 
 /**
- * Hall 12 — dark wall + composed frame groups; one lamp/cone on the opened work.
- * Ref: docs/figma-refs/12-hall.png (Figma 92:4217).
+ * Hall 12 — wall → frames → darkness 70% → opened + lamp + cone → captions.
+ * Refs: docs/figma-refs/12-hall.png (Figma 92:4217), Kherson wall 156:15129.
  */
 export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const router = useRouter();
@@ -95,15 +95,18 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
     const center = () => {
       const centerX = (slot.frameRect.x + slot.frameRect.w / 2) * px;
       const left = Math.max(0, centerX - el.clientWidth / 2);
-      el.scrollTo({ left, behavior: didScroll.current || reduced ? "auto" : "smooth" });
+      el.scrollTo({
+        left,
+        behavior: didScroll.current || reduced ? "auto" : "smooth",
+      });
       didScroll.current = true;
     };
     center();
     const t = window.setTimeout(center, 50);
-    return () => clearTimeout(t);
+    return () => window.clearTimeout(t);
   }, [focusSlotIndex, phase, reduced, slots, px]);
 
-  // Entry animation: black → lamp flicker → cone → brighten → UI (timers only)
+  // Entry: darkness 100%→70% (400) → lamp flicker (300) → cone (500) → bright → UI
   useEffect(() => {
     if (phase !== "hall") return;
     if (reduced) return;
@@ -120,6 +123,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const showCone = intro === "cone" || intro === "bright" || showUi;
   const showLamp = intro !== "black";
   const paintingBright = intro === "bright" || showUi;
+  /** Darkness stays semi-transparent (never opaque after intro). */
+  const darknessOpacity = reduced || intro !== "black" ? 0.7 : 1;
 
   const onFrameTap = (slot: HallSlot) => {
     const art = getArtwork(slot.artworkId);
@@ -157,10 +162,14 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
 
   const showHall = phase === "hall" || covered != null;
   const focusSlot = slots[focusSlotIndex]!;
-  const lampX =
-    focusSlot.frameRect.x + focusSlot.frameRect.w / 2 - layout.lamp.w / 2;
-  const coneX =
-    focusSlot.frameRect.x + focusSlot.frameRect.w / 2 - layout.cone.w / 2;
+  const lampX = focusSlot.lampX;
+  /** Figma 92:4276 — 353×745 at y 99, centered on lamp (not scaled to the frame). */
+  const coneX = lampX + layout.lamp.w / 2 - layout.cone.w / 2;
+  const coneTop = layout.cone.y;
+  /** Figma 93:4551 — ring center is 26.5 left / 11.5 below the frame's top-right. */
+  const markerCx =
+    focusSlot.frameRect.x + focusSlot.frameRect.w - 26.5;
+  const markerCy = focusSlot.frameRect.y + 11.5;
 
   return (
     <div
@@ -174,25 +183,27 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
             className="absolute inset-0 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <div className="relative h-dvh" style={{ width: hallWidthPx }}>
+              {/* 1. Wall */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={layout.wallSrc}
                 alt=""
-                className="pointer-events-none absolute left-0 top-0 h-dvh w-auto max-w-none select-none"
+                className="pointer-events-none absolute left-0 top-0 z-0 h-dvh w-auto max-w-none select-none"
                 draggable={false}
               />
 
-              {/* Frame groups */}
+              {/* 2. ALL artworks under darkness (normal PNG; hidden art for covered) */}
               {slots.map((slot) => {
                 const art = getArtwork(slot.artworkId);
                 const open = slot.artworkId === focus.id;
                 const r = slot.frameRect;
-                const p = slot.paintingRect;
+                const src =
+                  !open && slot.hiddenSrc ? slot.hiddenSrc : slot.frameSrc;
                 return (
                   <motion.div
-                    key={slot.artworkId}
+                    key={`base-${slot.artworkId}`}
                     data-hall-idx={slot.artworkId}
-                    className="absolute snap-center"
+                    className="absolute z-[1] snap-center"
                     style={{
                       left: r.x * px,
                       top: r.y * px,
@@ -208,36 +219,17 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={slot.frameSrc}
+                      src={src}
                       alt=""
                       className="pointer-events-none absolute inset-0 size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
-                      style={{
-                        filter:
-                          open && paintingBright
-                            ? "brightness(1.15) contrast(1.06)"
-                            : open
-                              ? "brightness(0.6)"
-                              : "brightness(0.32)",
-                      }}
                       draggable={false}
                     />
-                    {/* Covered: solid dark over painting rect only (frame stays) */}
-                    {!open ? (
-                      <div
-                        className="pointer-events-none absolute bg-hall-dark"
-                        style={{
-                          left: (p.x - r.x) * px,
-                          top: (p.y - r.y) * px,
-                          width: p.w * px,
-                          height: p.h * px,
-                          opacity: 0.94,
-                        }}
-                      />
-                    ) : null}
                     <button
                       type="button"
                       aria-label={
-                        art ? `${art.title}, ${art.author}` : `Твір ${slot.artworkId}`
+                        art
+                          ? `${art.title}, ${art.author}`
+                          : `Твір ${slot.artworkId}`
                       }
                       className="absolute inset-0 z-[1] min-h-[44px] min-w-[44px] cursor-pointer bg-transparent"
                       onClick={() => onFrameTap(slot)}
@@ -246,12 +238,84 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                 );
               })}
 
-              {/* Single lamp + cone for opened artwork */}
+              {/* 3. Darkness over the whole wall — 70% alpha (never opaque after intro) */}
+              <motion.div
+                data-hall-darkness
+                className="pointer-events-none absolute inset-0 z-[5]"
+                style={{ backgroundColor: "rgba(0, 0, 0, 1)" }}
+                initial={false}
+                animate={{ opacity: darknessOpacity }}
+                transition={{ duration: reduced ? 0 : 0.4, ease: easings.easeOut }}
+              />
+
+              {/* 4. Cone (above darkness, below opened frame) + opened art + lamp */}
+              {showCone ? (
+                <motion.div
+                  data-hall-cone
+                  className="pointer-events-none absolute z-[6]"
+                  style={{
+                    left: coneX * px,
+                    top: coneTop * px,
+                    width: layout.cone.w * px,
+                    height: layout.cone.h * px,
+                  }}
+                  initial={reduced ? false : { opacity: 0 }}
+                  animate={
+                    reduced
+                      ? { opacity: 0.9 }
+                      : intro === "done" || intro === "ui"
+                        ? { opacity: [0.85, 1, 0.85] }
+                        : { opacity: 0.9 }
+                  }
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : intro === "cone"
+                        ? { duration: 0.5, ease: easings.easeOut }
+                        : intro === "done" || intro === "ui"
+                          ? { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                          : { duration: 0.5, ease: easings.easeOut }
+                  }
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={hallUi.cone}
+                    alt=""
+                    /* Figma 92:4276 «projector» is authored wide-top; on screen it's rotated 180°. */
+                    className="size-full origin-center rotate-180 object-fill mix-blend-screen"
+                    draggable={false}
+                  />
+                </motion.div>
+              ) : null}
+
+              {paintingBright ? (
+                <motion.div
+                  className="pointer-events-none absolute z-[7]"
+                  style={{
+                    left: focusSlot.frameRect.x * px,
+                    top: focusSlot.frameRect.y * px,
+                    width: focusSlot.frameRect.w * px,
+                    height: focusSlot.frameRect.h * px,
+                  }}
+                  initial={reduced ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: reduced ? 0 : 0.35, ease: easings.easeOut }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={focusSlot.frameSrc}
+                    alt=""
+                    className="size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
+                    draggable={false}
+                  />
+                </motion.div>
+              ) : null}
+
               <AnimatePresence>
                 {showLamp ? (
                   <motion.div
                     key="lamp"
-                    className="pointer-events-none absolute z-[2]"
+                    className="pointer-events-none absolute z-[8]"
                     style={{
                       left: lampX * px,
                       top: layout.lamp.y * px,
@@ -285,96 +349,104 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                 ) : null}
               </AnimatePresence>
 
-              {showCone ? (
-                <motion.div
-                  className="pointer-events-none absolute z-[1]"
-                  style={{
-                    left: coneX * px,
-                    top: (layout.lamp.y + layout.lamp.h * 0.4) * px,
-                    width: layout.cone.w * px,
-                    height: Math.min(layout.cone.h, designH - layout.lamp.y) * px,
-                  }}
-                  initial={reduced ? false : { opacity: 0 }}
-                  animate={
-                    reduced
-                      ? { opacity: 0.9 }
-                      : intro === "done" || intro === "ui"
-                        ? { opacity: [0.85, 1, 0.85] }
-                        : { opacity: 0.9 }
-                  }
-                  transition={
-                    reduced
-                      ? { duration: 0 }
-                      : intro === "cone"
-                        ? { duration: 0.5, ease: easings.easeOut }
-                        : intro === "done" || intro === "ui"
-                          ? { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                          : { duration: 0.5, ease: easings.easeOut }
-                  }
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={hallUi.cone}
-                    alt=""
-                    className="size-full object-contain mix-blend-screen"
-                    draggable={false}
-                  />
-                </motion.div>
-              ) : null}
-
-              {/* Title + meta + badge under opened frame */}
+              {/* 5. Captions under every frame (above darkness) + hint on opened.
+                  Framer Motion owns `transform`, so centering uses x:"-50%" (not Tailwind -translate-x-1/2). */}
               <AnimatePresence>
-                {showUi ? (
-                  <motion.div
-                    className="pointer-events-none absolute z-[3] flex w-[226px] -translate-x-1/2 flex-col items-center gap-2xs text-center"
-                    style={{
-                      left:
-                        (focusSlot.frameRect.x + focusSlot.frameRect.w / 2) * px,
-                      top: (focusSlot.frameRect.y + focusSlot.frameRect.h + 20) * px,
-                    }}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <p className="text-h3 text-text-primary">{focus.title}</p>
-                    <p className="text-body-md text-text-caption">
-                      {focus.author} · {shortYear(focus.year)}
-                    </p>
-                    <StatusBadge status={focus.status} className="mt-2xs" />
-                  </motion.div>
-                ) : null}
+                {showUi
+                  ? slots.map((slot) => {
+                      const art = getArtwork(slot.artworkId);
+                      if (!art) return null;
+                      const open = slot.artworkId === focus.id;
+                      const cx =
+                        (slot.frameRect.x + slot.frameRect.w / 2) * px;
+                      // Covered titles sit under darkness so they don't spoil 12б.
+                      const z = open ? 9 : 4;
+                      return (
+                        <motion.div
+                          key={`cap-${slot.artworkId}`}
+                          data-hall-caption={slot.artworkId}
+                          className="pointer-events-none absolute flex max-w-[226px] flex-col items-center text-center"
+                          style={{
+                            left: cx,
+                            top: layout.captions.titleY * px,
+                            width: 226 * px,
+                            zIndex: z,
+                          }}
+                          initial={{ opacity: 0, x: "-50%", y: 6 }}
+                          animate={{ opacity: 1, x: "-50%", y: 0 }}
+                          exit={{ opacity: 0, x: "-50%" }}
+                        >
+                          <p className="w-full text-h3 text-text-primary">
+                            {art.title}
+                          </p>
+                          <p
+                            className="w-full text-body-md text-text-caption"
+                            style={{
+                              marginTop:
+                                (layout.captions.metaY -
+                                  layout.captions.titleY -
+                                  24) *
+                                px,
+                            }}
+                          >
+                            {art.author} · {shortYear(art.year)}
+                          </p>
+                          <div
+                            className="flex w-full justify-center"
+                            style={{
+                              marginTop:
+                                (layout.captions.badgeY -
+                                  layout.captions.metaY -
+                                  20) *
+                                px,
+                            }}
+                          >
+                            <StatusBadge status={art.status} />
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  : null}
               </AnimatePresence>
 
-              {/* Hint + gold marker */}
               <AnimatePresence>
                 {showUi ? (
                   <>
+                    {/* Hint: right-aligned above the ring (Figma 125:6469) */}
                     <motion.p
-                      className="pointer-events-none absolute z-[4] w-[145px] -translate-x-1/2 text-center text-label-md leading-4 text-text-primary"
+                      className="pointer-events-none absolute z-[10] text-right text-label-md leading-4 text-text-primary"
                       style={{
-                        left:
-                          (focusSlot.frameRect.x + focusSlot.frameRect.w * 0.92) *
-                          px,
-                        top: (focusSlot.frameRect.y - 55) * px,
+                        left: markerCx * px,
+                        top: (markerCy - 11.5 - 55) * px,
+                        width: 145 * px,
                       }}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, x: "-50%" }}
+                      animate={{ opacity: 1, x: "-50%" }}
                     >
                       Торкнись картини,
                       <br />
                       щоб почати тур
                     </motion.p>
+                    {/* Ring: Figma 93:4551 center = frame TR + (−26.5, +11.5) */}
                     <motion.div
-                      className="pointer-events-none absolute z-[4] size-[57px] -translate-x-1/2"
+                      data-hall-marker
+                      className="pointer-events-none absolute z-[10]"
                       style={{
-                        left:
-                          (focusSlot.frameRect.x + focusSlot.frameRect.w) * px,
-                        top: (focusSlot.frameRect.y - 17) * px,
+                        left: markerCx * px,
+                        top: markerCy * px,
+                        width: 57 * px,
+                        height: 57 * px,
                       }}
+                      initial={false}
                       animate={
                         reduced
-                          ? { opacity: 1, scale: 1 }
-                          : { opacity: [0.85, 1, 0.85], scale: [1, 1.08, 1] }
+                          ? { opacity: 1, scale: 1, x: "-50%", y: "-50%" }
+                          : {
+                              opacity: [0.85, 1, 0.85],
+                              scale: [1, 1.08, 1],
+                              x: "-50%",
+                              y: "-50%",
+                            }
                       }
                       transition={
                         reduced
@@ -397,14 +469,6 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                   </>
                 ) : null}
               </AnimatePresence>
-
-              {/* Entry black veil */}
-              <motion.div
-                className="pointer-events-none absolute inset-0 z-[5] bg-hall-dark"
-                initial={false}
-                animate={{ opacity: intro === "black" && !reduced ? 1 : 0 }}
-                transition={{ duration: 0.4, ease: easings.easeOut }}
-              />
             </div>
           </div>
         </div>

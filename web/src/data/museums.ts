@@ -25,6 +25,8 @@ export type MuseumUi = {
    * Used with buildingTopY to fit the facade between trail and card.
    */
   groundY: number;
+  /** Top-left pixel of the facade export — fill above/below so no seam shows. */
+  facadeFill: string;
 };
 
 /**
@@ -41,6 +43,7 @@ export const museumUi: Record<string, MuseumUi> = {
     doorY: 45,
     buildingTopY: 0.22,
     groundY: 0.6,
+    facadeFill: "#0e0c0b",
   },
   melitopol: {
     id: "melitopol",
@@ -51,6 +54,7 @@ export const museumUi: Record<string, MuseumUi> = {
     doorY: 45,
     buildingTopY: 0.29,
     groundY: 0.62,
+    facadeFill: "#0d0503",
   },
   kharkiv: {
     id: "kharkiv",
@@ -61,6 +65,7 @@ export const museumUi: Record<string, MuseumUi> = {
     doorY: 45,
     buildingTopY: 0.27,
     groundY: 0.7,
+    facadeFill: "#0d0503",
   },
   lviv: {
     id: "lviv",
@@ -71,6 +76,7 @@ export const museumUi: Record<string, MuseumUi> = {
     doorY: 45,
     buildingTopY: 0.23,
     groundY: 0.64,
+    facadeFill: "#0d0503",
   },
   chernihiv: {
     id: "chernihiv",
@@ -81,6 +87,7 @@ export const museumUi: Record<string, MuseumUi> = {
     doorY: 45,
     buildingTopY: 0.28,
     groundY: 0.66,
+    facadeFill: "#0d0503",
   },
 };
 

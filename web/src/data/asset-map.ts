@@ -54,27 +54,27 @@ export const assetMap = {
     },
     "melitopol": {
       "facade": "/museums/melitopol.webp",
-      "hall": "/halls/melitopol/hall.webp"
+      "hall": "/halls/melitopol/wall.webp"
     },
     "kharkiv": {
       "facade": "/museums/kharkiv.webp",
-      "hall": "/halls/kharkiv/hall.webp"
+      "hall": "/halls/kharkiv/wall.webp"
     },
     "lviv": {
       "facade": "/museums/lviv.webp",
-      "hall": "/halls/lviv/hall.webp"
+      "hall": "/halls/lviv/wall.webp"
     },
     "chernihiv": {
       "facade": "/museums/chernihiv.webp",
-      "hall": "/halls/chernihiv/hall.webp"
+      "hall": "/halls/chernihiv/wall.webp"
     }
   },
   "hallUi": {
-    "frame": "/hall/frame.webp",
     "marker": "/hall/marker.svg",
     "lamp": "/hall/lamp.png",
     "cone": "/hall/cone.svg",
     "tourCone": "/hall/tour-cone.svg",
+    "darkness": "/hall/darkness.webp",
     "trailCurrent": "/ui/trail-current.svg"
   }
 } as const;

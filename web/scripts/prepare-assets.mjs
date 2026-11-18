@@ -2,6 +2,8 @@
 /**
  * Copies root asset folders into web/public with Latin kebab-case names.
  * Run from web/: node scripts/prepare-assets.mjs
+ *
+ * Hall frames: ALWAYS from art/*.png (alpha). Never flatten via jpg.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -23,17 +25,33 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-function slugifyFilename(name) {
-  return name
-    .normalize("NFC")
-    .replace(/\.[^.]+$/, "")
-    .toLowerCase()
-    .replace(/['ʼ`]/g, "")
-    .replace(/[^a-z0-9а-яіїєґ]+/gi, "-")
-    .replace(/^-+|-+$/g, "");
+function track(original, next) {
+  renameTable.push({ original, next });
+  console.log(`${original}  →  ${next}`);
 }
 
-async function toWebp(src, dest, maxSide) {
+/** Prefer transparent PNG sibling when source path points at a jpg. */
+function resolveRasterSrc(srcRel) {
+  const abs = path.join(REPO_ROOT, srcRel);
+  if (fs.existsSync(abs) && /\.png$/i.test(srcRel)) return abs;
+  const pngRel = srcRel.replace(/\.jpe?g$/i, ".png");
+  const pngAbs = path.join(REPO_ROOT, pngRel);
+  if (fs.existsSync(pngAbs)) return pngAbs;
+  if (fs.existsSync(abs)) return abs;
+  return null;
+}
+
+/** Find a file under a directory by NFC-normalized basename match. */
+function findByBasename(dir, basename) {
+  if (!fs.existsSync(dir)) return null;
+  const want = basename.normalize("NFC");
+  for (const name of fs.readdirSync(dir)) {
+    if (name.normalize("NFC") === want) return path.join(dir, name);
+  }
+  return null;
+}
+
+async function toWebp(src, dest, maxSide, { keepAlpha = true } = {}) {
   ensureDir(path.dirname(dest));
   const image = sharp(src);
   const meta = await image.metadata();
@@ -49,7 +67,14 @@ async function toWebp(src, dest, maxSide) {
           withoutEnlargement: true,
         })
       : image;
-  await pipeline.webp({ quality: 82 }).toFile(dest);
+  await pipeline
+    .webp({
+      quality: 82,
+      alphaQuality: keepAlpha ? 100 : 80,
+      // Preserve alpha channel when present (hall frames / walls).
+      force: true,
+    })
+    .toFile(dest);
 }
 
 async function copyFile(src, dest) {
@@ -57,39 +82,101 @@ async function copyFile(src, dest) {
   fs.copyFileSync(src, dest);
 }
 
-function track(original, next) {
-  renameTable.push({ original, next });
-  console.log(`${original}  →  ${next}`);
-}
-
-// --- Art (jpg only; ignore png duplicates) ---
-const ART_SLUGS = Object.fromEntries(
-  content.artworks
-    .filter((a) => a.sourceAssets?.image)
-    .map((a) => [a.sourceAssets.image, a.slug]),
-);
-
+// --- Art (prefer PNG with alpha; fall back to jpg) ---
 for (const artwork of content.artworks) {
   const srcRel = artwork.sourceAssets?.image;
   if (!srcRel) continue;
-  const src = path.join(REPO_ROOT, srcRel);
-  if (!fs.existsSync(src)) {
+  const src = resolveRasterSrc(srcRel);
+  if (!src) {
     console.warn(`MISSING art: ${srcRel}`);
     continue;
   }
   const destRel = `art/${artwork.slug}.webp`;
-  const dest = path.join(PUBLIC, destRel);
-  await toWebp(src, dest, 2000);
-  track(srcRel, `/` + destRel);
+  await toWebp(src, path.join(PUBLIC, destRel), 2000);
+  track(path.relative(REPO_ROOT, src), `/` + destRel);
 
   const alt = artwork.sourceAssets?.imageAlt;
   if (alt) {
-    const altSrc = path.join(REPO_ROOT, alt);
-    if (fs.existsSync(altSrc)) {
+    const altSrc = resolveRasterSrc(alt);
+    if (altSrc) {
       const altDestRel = `art/${artwork.slug}-open.webp`;
       await toWebp(altSrc, path.join(PUBLIC, altDestRel), 2000);
-      track(alt, `/` + altDestRel);
+      track(path.relative(REPO_ROOT, altSrc), `/` + altDestRel);
     }
+  }
+}
+
+// --- Hall framed art from art/<name>.png (≥2× display, keep alpha) ---
+const ART_DIR = path.join(REPO_ROOT, "art");
+const HIDDEN_DIR = path.join(REPO_ROOT, "hidden art");
+const HALL_FRAMES = path.join(PUBLIC, "hall/frames");
+ensureDir(HALL_FRAMES);
+
+/** Display-size max side → encode at ≥2× (cap 2000). */
+const HALL_FRAME_MAX = 1200;
+
+for (const artwork of content.artworks) {
+  const srcRel = artwork.sourceAssets?.image;
+  if (!srcRel || artwork.image == null) continue;
+  const base = path.basename(srcRel).replace(/\.jpe?g$/i, ".png");
+  const src = findByBasename(ART_DIR, base) ?? resolveRasterSrc(srcRel);
+  if (!src || !/\.png$/i.test(src)) {
+    console.warn(`MISSING hall frame PNG for #${artwork.id}: ${base}`);
+    continue;
+  }
+  const destRel = `hall/frames/${artwork.id}.webp`;
+  await toWebp(src, path.join(PUBLIC, destRel), HALL_FRAME_MAX);
+  track(path.relative(REPO_ROOT, src), `/` + destRel);
+
+  const hiddenSrc = findByBasename(HIDDEN_DIR, base);
+  if (hiddenSrc) {
+    const hiddenRel = `hall/frames/${artwork.id}-hidden.webp`;
+    await toWebp(hiddenSrc, path.join(PUBLIC, hiddenRel), HALL_FRAME_MAX);
+    track(path.relative(REPO_ROOT, hiddenSrc), `/` + hiddenRel);
+  }
+}
+
+// --- Hall walls from backgrounds/ (keep alpha; ≥2× of design) ---
+const HALL_WALLS = {
+  kherson: "херсонський музей.png",
+  melitopol: "мелітопольский музей.png",
+  kharkiv: "Харківський художній музей.png",
+  chernihiv: "Чернігівський художній музей імені Григорія Галагана.png",
+  lviv: "національний музей во Львові.png",
+};
+
+const BG_DIR = path.join(REPO_ROOT, "backgrounds");
+for (const [museumId, filename] of Object.entries(HALL_WALLS)) {
+  const src = findByBasename(BG_DIR, filename);
+  if (!src) {
+    console.warn(`MISSING hall wall: backgrounds/${filename}`);
+    continue;
+  }
+  const destRel = `halls/${museumId}/wall.webp`;
+  // Kherson source is already 3318×1688 (2× of 1659×844). Others ~956×1788.
+  await toWebp(src, path.join(PUBLIC, destRel), 3600);
+  track(path.relative(REPO_ROOT, src), `/` + destRel);
+}
+
+// Darkness reference image (optional; runtime uses rgba(0,0,0,0.7))
+{
+  const src = findByBasename(BG_DIR, "blur backgrounds.png");
+  if (src) {
+    const destRel = "hall/darkness.webp";
+    await toWebp(src, path.join(PUBLIC, destRel), 3600);
+    track(path.relative(REPO_ROOT, src), `/` + destRel);
+  }
+}
+
+// Lamp (transparent PNG)
+{
+  const src = findByBasename(ART_DIR, "lamp.png");
+  if (src) {
+    const destRel = "hall/lamp.png";
+    await copyFile(src, path.join(PUBLIC, destRel));
+    track(path.relative(REPO_ROOT, src), `/` + destRel);
+  } else {
+    console.warn("MISSING art/lamp.png");
   }
 }
 
@@ -116,7 +203,6 @@ const MUSEUM_SLUGS = {
   chernihiv: "chernihiv",
 };
 
-/** Designer re-exports: building on black, 390×844 @2×. */
 const FACADE_W = 780;
 const FACADE_H = 1688;
 
@@ -140,12 +226,6 @@ for (const museum of content.museums) {
     } else {
       console.warn(`MISSING facade: ${facadeRel}`);
     }
-  }
-  // Hall panoramas are Figma whole-node exports at public/halls/<id>/hall.webp
-  // (see download_assets → hall@3x.jpg → webp). Do not overwrite from sourceAssets.
-  const hallWebp = path.join(PUBLIC, `halls/${slug}/hall.webp`);
-  if (!fs.existsSync(hallWebp)) {
-    console.warn(`MISSING hall export: halls/${slug}/hall.webp`);
   }
 }
 
@@ -178,19 +258,16 @@ const assetMap = {
       m.id,
       {
         facade: `/museums/${m.id}.webp`,
-        hall:
-          m.id === "kherson"
-            ? `/halls/kherson/wall.webp`
-            : `/halls/${m.id}/hall.webp`,
+        hall: `/halls/${m.id}/wall.webp`,
       },
     ]),
   ),
   hallUi: {
-    frame: "/hall/frame.webp",
     marker: "/hall/marker.svg",
     lamp: "/hall/lamp.png",
     cone: "/hall/cone.svg",
     tourCone: "/hall/tour-cone.svg",
+    darkness: "/hall/darkness.webp",
     trailCurrent: "/ui/trail-current.svg",
   },
 };
@@ -206,4 +283,6 @@ fs.writeFileSync(path.join(WEB_ROOT, "src/data/asset-map.ts"), assetMapTs);
 
 console.log("\n=== Asset rename table ===");
 console.table(renameTable);
-console.log(`Wrote src/data/asset-map.ts (${Object.keys(assetMap.artworks).length} artworks, ${Object.keys(assetMap.museums).length} museums)`);
+console.log(
+  `Wrote src/data/asset-map.ts (${Object.keys(assetMap.artworks).length} artworks, ${Object.keys(assetMap.museums).length} museums)`,
+);

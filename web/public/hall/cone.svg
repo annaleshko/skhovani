@@ -1,18 +1,16 @@
-<svg width="390" height="520" viewBox="0 0 390 520" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g filter="url(#coneBlur)">
-    <path
-      d="M18 520C18 520 113.385 220 139.672 110C165.96 0 236.934 -20 267.011 110C297.087 240 371 520 371 520H18Z"
-      fill="url(#coneGrad)"
-      fill-opacity="0.55"
-    />
-  </g>
-  <defs>
-    <filter id="coneBlur" x="-10" y="-40" width="410" height="580" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feGaussianBlur stdDeviation="12" />
-    </filter>
-    <linearGradient id="coneGrad" x1="195" y1="480" x2="195" y2="40" gradientUnits="userSpaceOnUse">
-      <stop stop-opacity="0" />
-      <stop offset="1" stop-color="#E9B872" />
-    </linearGradient>
-  </defs>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="393" height="785" viewBox="0 0 393 785" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="projector" filter="url(#filter0_f_0_4)">
+<path d="M20 20C20 20 115.385 497.938 141.672 644.853C167.96 791.767 238.934 817.803 269.011 644.853C299.087 471.902 373 20 373 20H20Z" fill="url(#paint0_linear_0_4)" fill-opacity="0.4"/>
+</g>
+<defs>
+<filter id="filter0_f_0_4" x="0" y="0" width="393" height="785" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_0_4"/>
+</filter>
+<linearGradient id="paint0_linear_0_4" x1="197.251" y1="155.955" x2="197.251" y2="648.77" gradientUnits="userSpaceOnUse">
+<stop stop-opacity="0"/>
+<stop offset="1" stop-color="#E9B872"/>
+</linearGradient>
+</defs>
 </svg>
