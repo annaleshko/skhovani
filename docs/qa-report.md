@@ -136,6 +136,39 @@ Viewports: 360×640, 390×667, 390×844, 430×932. Screenshots in `docs/verify/r
 
 Lint / `tsc --noEmit` / `npm run build` — OK.
 
+### Stage 5 — Regression + push
+
+Automated @ 390×844 (`reducedMotion`) + `/api/guide`. Guide chat UI / detail / Figma wallpapers / end sheet code untouched this stage.
+
+| Path | Museum | Artwork | Hall |
+|---|---|---|---|
+| 1 | kherson | 1 Великодня | OK |
+| 2 | melitopol | 3 Скіфське | OK |
+| 3 | kharkiv | 8 Запорожці | OK |
+| 4 | lviv | 9 Іконостас | OK |
+| 5 | chernihiv | 10 Козак | OK |
+| 6 | kherson | 2 Колядки | OK |
+| 7 | kherson | 4 Одеса | OK |
+| 8 | kherson | 5 Дама | OK |
+| 9 | kherson | 6 Околиці | OK |
+| 10 | kherson | 7 Капуцин | OK |
+| All done → 02в | — | — | «Шлях пройдено» OK |
+
+| Revisit | Result |
+|---|---|
+| Мелітополь reopen | `/hall/melitopol?...&reopen=1` OK |
+| Херсон reopen | `/hall/kherson?...&reopen=1` OK |
+
+| Guide | Result |
+|---|---|
+| 1 «Де зараз ця картина?» | OK — stolen/Russia passport; no facility leak; sources s1,s8 |
+| 3 «Де зараз ця картина?» | OK — exact place unknown |
+| 3 «Чи є ще скіфське золото?» | OK — «Якщо говорити ширше…» + Товста Могила + 2023; xk_* chips |
+| 8 «Де зараз ця картина?» | OK — «Твір в укритті…» |
+| 10 «Де зараз ця картина?» | OK — «Твір врятовано…» |
+
+**Push:** single `git push` after commit `final polish`.
+
 ## Release candidate stages (2026-11-18 evening)
 
 ### Stage 1 — Revisit stuck (root cause)
