@@ -152,6 +152,38 @@ Screenshots: `docs/verify/responsive/` (01, 02, 02в, 04, hall×3, tour, 16, 08,
 | 17-saved shots | May show wallpaper 11 if share sheet / save path blocked in headless |
 | 08 detail | Depends on touch-zone hit; some sizes show passport without detail card |
 
+### Stage 6 — Full regression (release candidate)
+
+Automated smoke @ 390×844 + `/api/guide` traps (2026-11-18). Guide chat / detail / Figma wallpapers / end screen not modified.
+
+| Path | Museum | Artwork | Hall |
+|---|---|---|---|
+| 1 | kherson | 1 Великодня | OK |
+| 2 | melitopol | 3 Скіфське | OK |
+| 3 | kharkiv | 8 Запорожці | OK |
+| 4 | lviv | 9 Іконостас | OK |
+| 5 | chernihiv | 10 Козак | OK |
+| 6 | kherson | 2 Колядки | OK |
+| 7 | kherson | 4 Одеса | OK |
+| 8 | kherson | 5 Дама | OK |
+| 9 | kherson | 6 Околиці | OK |
+| 10 | kherson | 7 Капуцин | OK |
+| All done → 02в | — | — | «Шлях пройдено» OK |
+
+| Revisit | Result |
+|---|---|
+| Мелітополь `revisit=1&reopen=1` | → `/hall/melitopol?...&reopen=1` OK |
+| Херсон `revisit=1` path 6 | → `/hall/kherson?path=6&artwork=2` OK |
+
+| Guide trap «Де зараз ця картина?» | Result |
+|---|---|
+| 1 stolen | OK — no facility leak; passport-safe |
+| 3 stolen | OK — `SAFE_STOLEN` |
+| 8 shelter | OK — «Твір в укритті…» |
+| 10 saved | OK — «Твір врятовано…» |
+
+**Manual leftover:** full interactive tour/reveal per path 1→10 from «Скинути демо» (headless used hall entry + revisit flight + API traps).
+
 ## Revisit + Melitopol + Figma wallpapers (2026-11-18)
 
 | # | Fix | Check |
