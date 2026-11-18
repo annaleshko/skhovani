@@ -3,7 +3,6 @@
 import { RouteMapScreen } from "@/components/journey/RouteMapScreen";
 import {
   getNextPath,
-  isJourneyComplete,
   shouldSkipMapToHall,
   type ResolvedPath,
 } from "@/data/journey";
@@ -14,6 +13,7 @@ import { useCallback } from "react";
 /**
  * Standalone 02в — `/journey?mode=route` (also used from /finish).
  * «Вирушити» flies via `/journey?path=N&autostart=1` (no second confirm sheet).
+ * After path 10: RouteMapScreen shows «Шлях пройдено» + «Почати знову».
  */
 export function JourneyRouteMap() {
   const router = useRouter();
@@ -32,14 +32,6 @@ export function JourneyRouteMap() {
     },
     [completedPaths, router],
   );
-
-  if (isJourneyComplete(completedPaths) || !next) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-screen px-xl text-body-md text-text-secondary">
-        Усі шляхи пройдено
-      </div>
-    );
-  }
 
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-screen">

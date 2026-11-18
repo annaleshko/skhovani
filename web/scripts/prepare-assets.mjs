@@ -189,18 +189,13 @@ for (const [museumId, filename] of Object.entries(HALL_WALLS)) {
   }
 }
 
-// --- Wallpapers (keep PNG) ---
+// --- Wallpapers ---
+// MVP v2: screen 11 composes export from art webp at runtime (Figma 236:1720).
+// Do not ship separate multi-MB PNG wallpapers in public/.
 for (const artwork of content.artworks) {
-  const srcRel = artwork.sourceAssets?.wallpaper;
-  if (!srcRel) continue;
-  const src = path.join(REPO_ROOT, srcRel);
-  if (!fs.existsSync(src)) {
-    console.warn(`MISSING wallpaper: ${srcRel}`);
-    continue;
+  if (artwork.image) {
+    artwork.wallpaper = artwork.image;
   }
-  const destRel = `wallpapers/${artwork.slug}.png`;
-  await copyFile(src, path.join(PUBLIC, destRel));
-  track(srcRel, `/` + destRel);
 }
 
 // --- Museums (full-screen facades 390×844 @2× → 780×1688 WebP) ---

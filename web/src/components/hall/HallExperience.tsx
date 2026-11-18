@@ -1016,7 +1016,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
       <WallpaperSavedScreen
         open={phase === "wallpaper-saved"}
         next={isReplayPassport ? null : nextPath ?? null}
-        previewSrc={focus.wallpaper ?? focus.image}
+        previewSrc={focus.image ?? focus.wallpaper}
         artworkTitle={focus.title}
         onContinue={() => {
           if (!isReplayPassport) completeCurrentPath();

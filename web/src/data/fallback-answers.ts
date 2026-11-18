@@ -4,6 +4,7 @@
  */
 import { getArtwork } from "@/data";
 import {
+  GUIDE_SAFE_SAVED,
   GUIDE_SAFE_SHELTER,
   GUIDE_SAFE_STOLEN,
   isLocationTrapQuestion,
@@ -433,10 +434,18 @@ export function findFallbackAnswer(
         reviewed: false,
       };
     }
-    if (a?.status === "shelter" || a?.status === "saved") {
+    if (a?.status === "shelter") {
       return {
         question,
         answer: GUIDE_SAFE_SHELTER,
+        sourceIds: [],
+        reviewed: false,
+      };
+    }
+    if (a?.status === "saved") {
+      return {
+        question,
+        answer: GUIDE_SAFE_SAVED,
         sourceIds: [],
         reviewed: false,
       };
@@ -459,9 +468,26 @@ export function findFallbackAnswer(
   if (partial?.answer) return partial;
 
   const art = getArtwork(artworkId);
+  const outOfPassport =
+    /цін[аи]|кошт|вартіст|аукціон|символізу|що означає|навіщо червон/i.test(q);
+  if (outOfPassport) {
+    const offer =
+      art?.chat.defaultQuestions[0] ??
+      "Спитай про сюжет, автора чи долю твору.";
+    return {
+      question,
+      answer: `Про це в моїх джерелах даних немає. Можу розказати: «${offer}»`,
+      sourceIds: [],
+      reviewed: false,
+    };
+  }
+
   if (art) {
     const about = art.tabs.about[0];
-    if (about && /сюжет|картин|полотн|що (там|відбува|зображ)/i.test(q)) {
+    if (
+      about &&
+      /сюжет|що (там|відбува|зображ)|про (що|полотно)/i.test(q)
+    ) {
       return {
         question,
         answer: about,

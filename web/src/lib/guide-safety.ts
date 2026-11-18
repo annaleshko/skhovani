@@ -7,6 +7,9 @@ import type { ArtworkStatus } from "@/data/types";
 const SAFE_SHELTER =
   "Твір в укритті. Точне місце зберігання я не називаю і не вгадую.";
 
+const SAFE_SAVED =
+  "Твір врятовано. Точне місце зберігання я не називаю і не вгадую.";
+
 const SAFE_STOLEN =
   "Окупанти вивезли її з музею. Точне місце зараз невідоме.";
 
@@ -38,11 +41,13 @@ export function sanitizeGuideAnswer(
 ): string {
   if (!looksLikeLocationLeak(text, status)) return text.trim();
   if (status === "stolen") return SAFE_STOLEN;
-  if (status === "shelter" || status === "saved") return SAFE_SHELTER;
+  if (status === "shelter") return SAFE_SHELTER;
+  if (status === "saved") return SAFE_SAVED;
   return SAFE_SHELTER;
 }
 
 export const GUIDE_SAFE_SHELTER = SAFE_SHELTER;
+export const GUIDE_SAFE_SAVED = SAFE_SAVED;
 export const GUIDE_SAFE_STOLEN = SAFE_STOLEN;
 
 /** Trap / location questions — answer from passport without inventing a place. */

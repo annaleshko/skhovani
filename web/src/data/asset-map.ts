@@ -3,44 +3,44 @@ export const assetMap = {
   "artworks": {
     "velykodnia-zautrenia": {
       "image": "/art/velykodnia-zautrenia.webp",
-      "wallpaper": "/wallpapers/velykodnia-zautrenia.png"
+      "wallpaper": "/art/velykodnia-zautrenia.webp"
     },
     "koliadky": {
       "image": "/art/koliadky.webp",
-      "wallpaper": "/wallpapers/koliadky.png"
+      "wallpaper": "/art/koliadky.webp"
     },
     "skifske-zoloto-melitopolia": {
       "image": "/art/skifske-zoloto-melitopolia.webp",
-      "wallpaper": "/wallpapers/skifske-zoloto-melitopolia.png",
+      "wallpaper": "/art/skifske-zoloto-melitopolia.webp",
       "imageAlt": "/art/skifske-zoloto-melitopolia-open.webp"
     },
     "vyd-mista-odesy": {
       "image": "/art/vyd-mista-odesy.webp",
-      "wallpaper": "/wallpapers/vyd-mista-odesy.png"
+      "wallpaper": "/art/vyd-mista-odesy.webp"
     },
     "dama-z-sobakoiu": {
       "image": "/art/dama-z-sobakoiu.webp",
-      "wallpaper": "/wallpapers/dama-z-sobakoiu.png"
+      "wallpaper": "/art/dama-z-sobakoiu.webp"
     },
     "okolytsi-kyieva": {
       "image": "/art/okolytsi-kyieva.webp",
-      "wallpaper": "/wallpapers/okolytsi-kyieva.png"
+      "wallpaper": "/art/okolytsi-kyieva.webp"
     },
     "kaputsyn": {
       "image": "/art/kaputsyn.webp",
-      "wallpaper": "/wallpapers/kaputsyn.png"
+      "wallpaper": "/art/kaputsyn.webp"
     },
     "zaporozhtsi-pyshut-lysta-turetskomu-sultanovi": {
       "image": "/art/zaporozhtsi-pyshut-lysta-turetskomu-sultanovi.webp",
-      "wallpaper": "/wallpapers/zaporozhtsi-pyshut-lysta-turetskomu-sultanovi.png"
+      "wallpaper": "/art/zaporozhtsi-pyshut-lysta-turetskomu-sultanovi.webp"
     },
     "bohorodchanskyi-ikonostas": {
       "image": "/art/bohorodchanskyi-ikonostas.webp",
-      "wallpaper": "/wallpapers/bohorodchanskyi-ikonostas.png"
+      "wallpaper": "/art/bohorodchanskyi-ikonostas.webp"
     },
     "kozak-banduryst": {
       "image": "/art/kozak-banduryst.webp",
-      "wallpaper": "/wallpapers/kozak-banduryst.png"
+      "wallpaper": "/art/kozak-banduryst.webp"
     },
     "plafon-z-osobniaka-sokolova": {
       "image": null,
