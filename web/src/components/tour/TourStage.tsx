@@ -436,7 +436,7 @@ export function TourStage({
     const rect = e.currentTarget.getBoundingClientRect();
     const nx = (e.clientX - rect.left) / rect.width;
     const ny = (e.clientY - rect.top) / rect.height;
-    const hit = hitTestZonePoint(nx, ny, zones, zoneGrid, 0.12);
+    const hit = hitTestZonePoint(nx, ny, zones, zoneGrid, 0.1);
     if (hit < 0) {
       selectZone(null);
       pulseHint();
@@ -582,6 +582,35 @@ export function TourStage({
                     ev.stopPropagation();
                     selectZone(i);
                   }}
+                />
+              );
+            })
+          : null}
+
+        {/* Brief gold dots (~1.5s) so people see where to tap */}
+        {mode === "explore" && !reduced
+          ? zones.map((z, i) => {
+              const p = getZonePoint(z, zoneGrid);
+              return (
+                <motion.span
+                  key={`zone-hint-${artwork.id}-${z.position}-${i}`}
+                  className="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent"
+                  style={{
+                    left: `${p.x * 100}%`,
+                    top: `${p.y * 100}%`,
+                    boxShadow: "0 0 8px var(--color-bg-accent)",
+                  }}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{
+                    opacity: [0, 0.95, 0.4, 0.95, 0],
+                    scale: [0.7, 1.2, 1, 1.25, 0.8],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    ease: "easeInOut",
+                    times: [0, 0.2, 0.45, 0.7, 1],
+                  }}
+                  aria-hidden
                 />
               );
             })
