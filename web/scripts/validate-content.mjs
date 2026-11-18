@@ -38,6 +38,13 @@ for (const a of content.artworks) {
       fail(`artwork ${a.id}: knowledgeBase sourceId "${kb.sourceId}" missing`);
     }
   }
+  for (const ek of a.extendedKnowledge ?? []) {
+    if (!ek.fact || !ek.sourceId) {
+      fail(`artwork ${a.id}: extendedKnowledge entry missing fact/sourceId`);
+    } else if (!sourceIds.has(ek.sourceId)) {
+      fail(`artwork ${a.id}: extendedKnowledge sourceId "${ek.sourceId}" missing`);
+    }
+  }
 }
 
 for (const m of content.museums) {

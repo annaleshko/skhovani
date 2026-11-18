@@ -195,6 +195,72 @@
           "label": "WikiArt: оригінал 1891 у Рибінську",
           "url": "https://www.wikiart.org/uk/mikola-pimonenko/velikodnya-utrenya-1891",
           "note": null
+        },
+        {
+          "id": "xk_c14ce9ff",
+          "label": "Суспільне Херсон: «Херсонському художньому музею — 45»",
+          "url": "https://suspilne.media/488980-hersonskomu-hudoznomu-muzeu-45-imena-j-podii/",
+          "note": null
+        },
+        {
+          "id": "xk_2cf19897",
+          "label": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»",
+          "url": "https://suspilne.media/130939-vizitivka-hersona-budivla-hudoznogo-muzeu-im-o-sovkunenka/",
+          "note": null
+        },
+        {
+          "id": "xk_2ba7d22a",
+          "label": "Encyclopedia of Ukraine: Shovkunenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CS%5CH%5CShovkunenkoOleksii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_83b401c6",
+          "label": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»",
+          "url": "https://life.pravda.com.ua/culture/u-hersoni-identifikuvali-shche-odnu-vikradenu-rosiyanami-kartinu-z-hudozhnogo-muzeyu-315488/index.amp",
+          "note": null
+        },
+        {
+          "id": "xk_781cb8a7",
+          "label": "Art Renewal Center: Rybinsk History and Art Museum",
+          "url": "https://artrenewal.org/ArtCollection/Index/1749",
+          "note": null
+        },
+        {
+          "id": "xk_f704fd41",
+          "label": "uahistory.com: Микола Пимоненко",
+          "url": "https://uahistory.com/topics/famous_people/16232",
+          "note": "⚠ verify"
+        },
+        {
+          "id": "xk_f69b8aec",
+          "label": "DailyArt Magazine: Mykola Pymonenko",
+          "url": "https://www.dailyartmagazine.com/mykola-pymonenko/",
+          "note": null
+        },
+        {
+          "id": "xk_417409f9",
+          "label": "Kyiv Post: «Ранок Христового Воскресіння»",
+          "url": "https://www.kyivpost.com/uk/amp/post/51120",
+          "note": null
+        },
+        {
+          "id": "xk_47c9c521",
+          "label": "Вікна: картини та біографія Миколи Пимоненка",
+          "url": "https://vikna.tv/video/lifestyle/kartyny-ta-biografiya-mykoly-pymonenka-shho-potribno-znaty/",
+          "note": null
+        },
+        {
+          "id": "xk_e2d9326b",
+          "label": "Encyclopedia of Ukraine: Pymonenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CP%5CY%5CPymonenkoMykola.htm",
+          "note": null
+        },
+        {
+          "id": "xk_2e94402e",
+          "label": "КПІ ім. Ігоря Сікорського: Пимоненко Микола",
+          "url": "https://kpi.ua/en/node/9357",
+          "note": null
         }
       ],
       "chat": {
@@ -256,7 +322,70 @@
       "sourceAssets": {
         "image": "art/Великодня заутреня.jpg",
         "wallpaper": "wallpapers/Великодня заутреня.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стали збірка Марії Корніловської, яка заповіла її Херсону, і художня частина фондів краєзнавчого музею.",
+          "sourceId": "xk_c14ce9ff",
+          "sourceLabel": "Суспільне Херсон: «Херсонському художньому музею — 45»"
+        },
+        {
+          "fact": "Музей розміщується в будівлі колишньої міської думи — памʼятці архітектури; її передали музею 1978 року, на 200-річчя Херсона.",
+          "sourceId": "xk_2cf19897",
+          "sourceLabel": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»"
+        },
+        {
+          "fact": "Музей носить імʼя Олексія Шовкуненка (1884–1974) — художника, який народився в Херсоні.",
+          "sourceId": "xk_2ba7d22a",
+          "sourceLabel": "Encyclopedia of Ukraine: Shovkunenko"
+        },
+        {
+          "fact": "Працівники музею й далі шукають викрадені роботи: вони розпізнають їх на фото та в новинних сюжетах. Так, натюрморт Ніни Марченко впізнали на фото, зробленому в березні 2023 року в окупованому Сімферополі.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Після відступу з Херсона російські війська ще й обстріляли будівлю музею.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Перша, найвідоміша версія 1891 року — велике полотно розміром приблизно 133 × 193 см; вона в музеї Рибінська в Росії.",
+          "sourceId": "xk_781cb8a7",
+          "sourceLabel": "Art Renewal Center: Rybinsk History and Art Museum"
+        },
+        {
+          "fact": "Пимоненко — син і онук кріпаків, киянин. Підлітком він навчався в іконописній школі Києво-Печерської лаври.",
+          "sourceId": "xk_f704fd41",
+          "verify": true,
+          "sourceLabel": "uahistory.com: Микола Пимоненко"
+        },
+        {
+          "fact": "Талант юного Пимоненка у 1876 році помітив Микола Мурашко і взяв його до своєї Київської рисувальної школи безкоштовно.",
+          "sourceId": "xk_f69b8aec",
+          "sourceLabel": "DailyArt Magazine: Mykola Pymonenko"
+        },
+        {
+          "fact": "Пимоненко щоліта працював у селі Малютянка під Києвом, де мав власну майстерню. Там написано багато його картин про повсякденне життя українців.",
+          "sourceId": "xk_417409f9",
+          "sourceLabel": "Kyiv Post: «Ранок Христового Воскресіння»"
+        },
+        {
+          "fact": "За словами завідувачки музею в Малютянці, героями картин Пимоненка були справжні мешканці села.",
+          "sourceId": "xk_47c9c521",
+          "sourceLabel": "Вікна: картини та біографія Миколи Пимоненка"
+        },
+        {
+          "fact": "Загалом Пимоненко створив понад 700 жанрових сцен, пейзажів і портретів; багато з них друкували на поштівках. Його «Гопак» (1908) купив Лувр.",
+          "sourceId": "xk_e2d9326b",
+          "sourceLabel": "Encyclopedia of Ukraine: Pymonenko"
+        },
+        {
+          "fact": "З 1900 року до смерті в 1912-му Пимоненко викладав у Київському політехнічному інституті.",
+          "sourceId": "xk_2e94402e",
+          "sourceLabel": "КПІ ім. Ігоря Сікорського: Пимоненко Микола"
+        }
+      ]
     },
     {
       "id": 2,
@@ -439,6 +568,48 @@
           "label": "Енциклопедія сучасної України: Пимоненко",
           "url": "https://www.esu.com.ua/pdf/file/883685.pdf",
           "note": "2024"
+        },
+        {
+          "id": "xk_c14ce9ff",
+          "label": "Суспільне Херсон: «Херсонському художньому музею — 45»",
+          "url": "https://suspilne.media/488980-hersonskomu-hudoznomu-muzeu-45-imena-j-podii/",
+          "note": null
+        },
+        {
+          "id": "xk_2cf19897",
+          "label": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»",
+          "url": "https://suspilne.media/130939-vizitivka-hersona-budivla-hudoznogo-muzeu-im-o-sovkunenka/",
+          "note": null
+        },
+        {
+          "id": "xk_2ba7d22a",
+          "label": "Encyclopedia of Ukraine: Shovkunenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CS%5CH%5CShovkunenkoOleksii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_83b401c6",
+          "label": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»",
+          "url": "https://life.pravda.com.ua/culture/u-hersoni-identifikuvali-shche-odnu-vikradenu-rosiyanami-kartinu-z-hudozhnogo-muzeyu-315488/index.amp",
+          "note": null
+        },
+        {
+          "id": "xk_417409f9",
+          "label": "Kyiv Post: «Ранок Христового Воскресіння»",
+          "url": "https://www.kyivpost.com/uk/amp/post/51120",
+          "note": null
+        },
+        {
+          "id": "xk_e2d9326b",
+          "label": "Encyclopedia of Ukraine: Pymonenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CP%5CY%5CPymonenkoMykola.htm",
+          "note": null
+        },
+        {
+          "id": "xk_f69b8aec",
+          "label": "DailyArt Magazine: Mykola Pymonenko",
+          "url": "https://www.dailyartmagazine.com/mykola-pymonenko/",
+          "note": null
         }
       ],
       "chat": {
@@ -487,7 +658,59 @@
       "sourceAssets": {
         "image": "art/Колядки.jpg",
         "wallpaper": "wallpapers/Колядки.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стали збірка Марії Корніловської, яка заповіла її Херсону, і художня частина фондів краєзнавчого музею.",
+          "sourceId": "xk_c14ce9ff",
+          "sourceLabel": "Суспільне Херсон: «Херсонському художньому музею — 45»"
+        },
+        {
+          "fact": "Музей розміщується в будівлі колишньої міської думи — памʼятці архітектури; її передали музею 1978 року, на 200-річчя Херсона.",
+          "sourceId": "xk_2cf19897",
+          "sourceLabel": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»"
+        },
+        {
+          "fact": "Музей носить імʼя Олексія Шовкуненка (1884–1974) — художника, який народився в Херсоні.",
+          "sourceId": "xk_2ba7d22a",
+          "sourceLabel": "Encyclopedia of Ukraine: Shovkunenko"
+        },
+        {
+          "fact": "Працівники музею й далі шукають викрадені роботи: вони розпізнають їх на фото та в новинних сюжетах. Так, натюрморт Ніни Марченко впізнали на фото, зробленому в березні 2023 року в окупованому Сімферополі.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Після відступу з Херсона російські війська ще й обстріляли будівлю музею.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Пимоненко жив у Києві в окремому будинку на території садиби свого тестя — художника Володимира Орловського (нині вулиця Гоголівська, 28). Орловський — автор «Околиць Києва», які теж викрали з Херсонського музею.",
+          "sourceId": "xk_417409f9",
+          "sourceLabel": "Kyiv Post: «Ранок Христового Воскресіння»"
+        },
+        {
+          "fact": "Пимоненко щоліта працював у селі Малютянка під Києвом, де мав власну майстерню, і писав там сцени сільського життя.",
+          "sourceId": "xk_417409f9",
+          "sourceLabel": "Kyiv Post: «Ранок Христового Воскресіння»"
+        },
+        {
+          "fact": "Загалом Пимоненко створив понад 700 жанрових сцен, пейзажів і портретів; багато з них друкували на поштівках, тож його сюжети знали в багатьох домівках.",
+          "sourceId": "xk_e2d9326b",
+          "sourceLabel": "Encyclopedia of Ukraine: Pymonenko"
+        },
+        {
+          "fact": "У 1909 році Пимоненка обрали членом Паризької міжнародної асоціації мистецтв і літератури; його «Гопак» (1908) купив Лувр.",
+          "sourceId": "xk_e2d9326b",
+          "sourceLabel": "Encyclopedia of Ukraine: Pymonenko"
+        },
+        {
+          "fact": "Талант юного Пимоненка у 1876 році помітив Микола Мурашко і взяв його до Київської рисувальної школи безкоштовно.",
+          "sourceId": "xk_f69b8aec",
+          "sourceLabel": "DailyArt Magazine: Mykola Pymonenko"
+        }
+      ]
     },
     {
       "id": 3,
@@ -670,6 +893,36 @@
           "label": "УП Життя: раннє спростування Запорізької ОВА",
           "url": "https://life.pravda.com.ua/culture/2022/04/29/248457/",
           "note": "29.04.2022 (пізніше спростоване)"
+        },
+        {
+          "id": "xk_f77d1882",
+          "label": "Національний музей історії України, museum-digital: намисто з Мелітопольського кургану",
+          "url": "https://kyiv.ua.museum-digital.org/object/12769",
+          "note": null
+        },
+        {
+          "id": "xk_70bead70",
+          "label": "Національний музей історії України, museum-digital: золота пластина з Мелітопольського кургану",
+          "url": "https://kyiv.ua.museum-digital.org/object/25096",
+          "note": null
+        },
+        {
+          "id": "xk_1f8607af",
+          "label": "Р. Клочко: «Золоті прикраси з Мелітопольського кургану у фондах Мелітопольського міського краєзнавчого музею»",
+          "url": "https://goldenukr.com.ua/ffiles/conferentsii/2013_zbirnyk-miku/04_klochko-r.v._2013.pdf",
+          "note": null
+        },
+        {
+          "id": "xk_732df5bd",
+          "label": "Р. Клочко, 2013",
+          "url": "https://goldenukr.com.ua/ffiles/conferentsii/2013_zbirnyk-miku/04_klochko-r.v._2013.pdf",
+          "note": null
+        },
+        {
+          "id": "xk_ea3f33b7",
+          "label": "УП Життя: окупанти захопили музей зі скіфським золотом",
+          "url": "https://life.pravda.com.ua/culture/2022/04/28/248445/",
+          "note": null
         }
       ],
       "chat": {
@@ -738,7 +991,44 @@
         "image": "art/Скіфське золото Мелітополя.jpg",
         "wallpaper": "wallpapers/Скіфське золото Мелітополя.png",
         "imageAlt": "art/Скіфське золото Мелітополя відкрите.jpg"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Мелітопольський курган дослідила у 1954 році експедиція під керівництвом археолога Олексія Тереножкіна.",
+          "sourceId": "xk_f77d1882",
+          "sourceLabel": "Національний музей історії України, museum-digital: намисто з Мелітопольського кургану"
+        },
+        {
+          "fact": "У похованні знайшли близько 4000 золотих прикрас і рештки поховального візка; його повʼязують із заможною скіф'янкою.",
+          "sourceId": "xk_f77d1882",
+          "sourceLabel": "Національний музей історії України, museum-digital: намисто з Мелітопольського кургану"
+        },
+        {
+          "fact": "Музейні описи датують поховання приблизно 330–310 роками до н. е.",
+          "sourceId": "xk_70bead70",
+          "sourceLabel": "Національний музей історії України, museum-digital: золота пластина з Мелітопольського кургану"
+        },
+        {
+          "fact": "Частина знахідок із Мелітопольського кургану зберігається в Національному музеї історії України в Києві — вони не постраждали від пограбування в Мелітополі.",
+          "sourceId": "xk_70bead70",
+          "sourceLabel": "Національний музей історії України, museum-digital: золота пластина з Мелітопольського кургану"
+        },
+        {
+          "fact": "Золоті прикраси надійшли до Мелітопольського краєзнавчого музею в травні 1954 року завдяки науковій співробітниці Н. Волчковій та директору Ф. Кулику, які провели на памʼятці попередні розкопки.",
+          "sourceId": "xk_1f8607af",
+          "sourceLabel": "Р. Клочко: «Золоті прикраси з Мелітопольського кургану у фондах Мелітопольського міського краєзнавчого музею»"
+        },
+        {
+          "fact": "Про знахідку мелітопольці дізналися ще 2 червня 1954 року з місцевої газети «Радянський степ», а науковий опис вийшов у 1955 році.",
+          "sourceId": "xk_732df5bd",
+          "sourceLabel": "Р. Клочко, 2013"
+        },
+        {
+          "fact": "Окупанти поширювали версію, що нібито «врятували» золото від працівників музею; Запорізька ОВА назвала це брехнею. За словами міського голови, місце, де сховали колекцію, видали колаборанти.",
+          "sourceId": "xk_ea3f33b7",
+          "sourceLabel": "УП Життя: окупанти захопили музей зі скіфським золотом"
+        }
+      ]
     },
     {
       "id": 4,
@@ -913,6 +1203,48 @@
           "label": "УП Життя: підозра за пограбування музею",
           "url": "https://life.pravda.com.ua/culture/rozkrito-pograbuvannya-hersonskogo-hudozhnogo-muzeyu-pid-chas-okupaciji-313160",
           "note": "10.02.2026"
+        },
+        {
+          "id": "xk_c14ce9ff",
+          "label": "Суспільне Херсон: «Херсонському художньому музею — 45»",
+          "url": "https://suspilne.media/488980-hersonskomu-hudoznomu-muzeu-45-imena-j-podii/",
+          "note": null
+        },
+        {
+          "id": "xk_2cf19897",
+          "label": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»",
+          "url": "https://suspilne.media/130939-vizitivka-hersona-budivla-hudoznogo-muzeu-im-o-sovkunenka/",
+          "note": null
+        },
+        {
+          "id": "xk_2ba7d22a",
+          "label": "Encyclopedia of Ukraine: Shovkunenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CS%5CH%5CShovkunenkoOleksii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_83b401c6",
+          "label": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»",
+          "url": "https://life.pravda.com.ua/culture/u-hersoni-identifikuvali-shche-odnu-vikradenu-rosiyanami-kartinu-z-hudozhnogo-muzeyu-315488/index.amp",
+          "note": null
+        },
+        {
+          "id": "xk_b3d012b2",
+          "label": "Російський музей: View of Odessa on a Moonlit Night",
+          "url": "https://rusmuseumvrm.ru/data/collections/painting/18_19/zh_2201/?lang=en",
+          "note": null
+        },
+        {
+          "id": "xk_cbce86c2",
+          "label": "Tretyakov Gallery Magazine: Aivazovsky's House and Guests",
+          "url": "https://www.tretyakovgallerymagazine.com/node/5193",
+          "note": null
+        },
+        {
+          "id": "xk_ba46f67d",
+          "label": "Kyiv Post: росіяни викрали з Херсонського музею картини Айвазовського",
+          "url": "https://www.kyivpost.com/uk/amp/post/20053",
+          "note": null
         }
       ],
       "chat": {
@@ -961,7 +1293,59 @@
       "sourceAssets": {
         "image": "art/Вид на місто Одесу.jpg",
         "wallpaper": "wallpapers/Вид на місто Одесу.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стали збірка Марії Корніловської, яка заповіла її Херсону, і художня частина фондів краєзнавчого музею.",
+          "sourceId": "xk_c14ce9ff",
+          "sourceLabel": "Суспільне Херсон: «Херсонському художньому музею — 45»"
+        },
+        {
+          "fact": "Музей розміщується в будівлі колишньої міської думи — памʼятці архітектури; її передали музею 1978 року, на 200-річчя Херсона.",
+          "sourceId": "xk_2cf19897",
+          "sourceLabel": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»"
+        },
+        {
+          "fact": "Музей носить імʼя Олексія Шовкуненка (1884–1974) — художника, який народився в Херсоні.",
+          "sourceId": "xk_2ba7d22a",
+          "sourceLabel": "Encyclopedia of Ukraine: Shovkunenko"
+        },
+        {
+          "fact": "Працівники музею й далі шукають викрадені роботи: вони розпізнають їх на фото та в новинних сюжетах. Так, натюрморт Ніни Марченко впізнали на фото, зробленому в березні 2023 року в окупованому Сімферополі.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Після відступу з Херсона російські війська ще й обстріляли будівлю музею.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "У 1840-х роках імператор Микола I доручив Айвазовському написати краєвиди чорноморських портів — Одеси, Севастополя, Керчі.",
+          "sourceId": "xk_b3d012b2",
+          "sourceLabel": "Російський музей: View of Odessa on a Moonlit Night"
+        },
+        {
+          "fact": "Айвазовський писав Одесу не раз: інший «Вид Одеси в місячну ніч» того ж 1846 року (122 × 190 см) зберігається в Санкт-Петербурзі. Херсонська картина — окремий твір.",
+          "sourceId": "xk_b3d012b2",
+          "sourceLabel": "Російський музей: View of Odessa on a Moonlit Night"
+        },
+        {
+          "fact": "Сучасники хвалили одеські краєвиди Айвазовського за природне світло на хвилях і передану чарівність південної місячної ночі.",
+          "sourceId": "xk_b3d012b2",
+          "sourceLabel": "Російський музей: View of Odessa on a Moonlit Night"
+        },
+        {
+          "fact": "У 1846 році Айвазовський влаштував свої перші персональні виставки — у Феодосії та Одесі.",
+          "sourceId": "xk_cbce86c2",
+          "sourceLabel": "Tretyakov Gallery Magazine: Aivazovsky's House and Guests"
+        },
+        {
+          "fact": "З Херсонського музею окупанти вивезли три картини Айвазовського: «Буря вщухає», «Вид міста Одеси» та «Море».",
+          "sourceId": "xk_ba46f67d",
+          "sourceLabel": "Kyiv Post: росіяни викрали з Херсонського музею картини Айвазовського"
+        }
+      ]
     },
     {
       "id": 5,
@@ -1144,6 +1528,48 @@
           "label": "Britannica Kids: Peter Lely",
           "url": "https://kids.britannica.com/students/article/Peter-Lely/314911",
           "note": null
+        },
+        {
+          "id": "xk_c14ce9ff",
+          "label": "Суспільне Херсон: «Херсонському художньому музею — 45»",
+          "url": "https://suspilne.media/488980-hersonskomu-hudoznomu-muzeu-45-imena-j-podii/",
+          "note": null
+        },
+        {
+          "id": "xk_2cf19897",
+          "label": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»",
+          "url": "https://suspilne.media/130939-vizitivka-hersona-budivla-hudoznogo-muzeu-im-o-sovkunenka/",
+          "note": null
+        },
+        {
+          "id": "xk_2ba7d22a",
+          "label": "Encyclopedia of Ukraine: Shovkunenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CS%5CH%5CShovkunenkoOleksii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_83b401c6",
+          "label": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»",
+          "url": "https://life.pravda.com.ua/culture/u-hersoni-identifikuvali-shche-odnu-vikradenu-rosiyanami-kartinu-z-hudozhnogo-muzeyu-315488/index.amp",
+          "note": null
+        },
+        {
+          "id": "xk_b3926928",
+          "label": "Encyclopedia.com: Sir Peter Lely",
+          "url": "https://encyclopedia.com/history/encyclopedias-almanacs-transcripts-and-maps/sir-peter-lely",
+          "note": null
+        },
+        {
+          "id": "xk_0090e4df",
+          "label": "Encyclopedia.com: Sir Peter Lely",
+          "url": "https://www.encyclopedia.com/people/literature-and-arts/european-art-1600-present-biographies/sir-peter-lely",
+          "note": null
+        },
+        {
+          "id": "xk_3112327e",
+          "label": "Royal Collection Trust: Barbara Villiers, Duchess of Cleveland",
+          "url": "https://www.rct.uk/collection/404957/barbara-villiers-duchess-of-cleveland-ca-1641-1709",
+          "note": null
         }
       ],
       "chat": {
@@ -1198,7 +1624,59 @@
       "sourceAssets": {
         "image": "art/Дама з собакою.jpg",
         "wallpaper": "wallpapers/Дама з собакою.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стали збірка Марії Корніловської, яка заповіла її Херсону, і художня частина фондів краєзнавчого музею.",
+          "sourceId": "xk_c14ce9ff",
+          "sourceLabel": "Суспільне Херсон: «Херсонському художньому музею — 45»"
+        },
+        {
+          "fact": "Музей розміщується в будівлі колишньої міської думи — памʼятці архітектури; її передали музею 1978 року, на 200-річчя Херсона.",
+          "sourceId": "xk_2cf19897",
+          "sourceLabel": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»"
+        },
+        {
+          "fact": "Музей носить імʼя Олексія Шовкуненка (1884–1974) — художника, який народився в Херсоні.",
+          "sourceId": "xk_2ba7d22a",
+          "sourceLabel": "Encyclopedia of Ukraine: Shovkunenko"
+        },
+        {
+          "fact": "Працівники музею й далі шукають викрадені роботи: вони розпізнають їх на фото та в новинних сюжетах. Так, натюрморт Ніни Марченко впізнали на фото, зробленому в березні 2023 року в окупованому Сімферополі.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Після відступу з Херсона російські війська ще й обстріляли будівлю музею.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Пітер Лелі (1618–1680) — художник нідерландського походження, який майже все життя працював в Англії; його справжнє прізвище — ван дер Фас.",
+          "sourceId": "xk_b3926928",
+          "sourceLabel": "Encyclopedia.com: Sir Peter Lely"
+        },
+        {
+          "fact": "У 1661 році король Карл II призначив Лелі головним придворним художником із платнею 200 фунтів на рік — такою ж, як колись у Ван Дейка.",
+          "sourceId": "xk_0090e4df",
+          "sourceLabel": "Encyclopedia.com: Sir Peter Lely"
+        },
+        {
+          "fact": "Найвідоміша робота Лелі — серія «Віндзорські красуні»: портрети жінок королівського двору, які замовила Анна Гайд, герцогиня Йоркська, приблизно в 1662–1665 роках.",
+          "sourceId": "xk_3112327e",
+          "sourceLabel": "Royal Collection Trust: Barbara Villiers, Duchess of Cleveland"
+        },
+        {
+          "fact": "«Віндзорські красуні» колись висіли у Віндзорському замку, а тепер їх можна побачити в палаці Гемптон-Корт.",
+          "sourceId": "xk_3112327e",
+          "sourceLabel": "Royal Collection Trust: Barbara Villiers, Duchess of Cleveland"
+        },
+        {
+          "fact": "Лелі вважають засновником англійської традиції світського портрета — пишного, «парадного» зображення знаті.",
+          "sourceId": "xk_b3926928",
+          "sourceLabel": "Encyclopedia.com: Sir Peter Lely"
+        }
+      ]
     },
     {
       "id": 6,
@@ -1379,6 +1857,48 @@
           "label": "Kyiv Post: Пимоненко жив на садибі тестя Орловського",
           "url": "https://www.kyivpost.com/uk/amp/post/51120",
           "note": null
+        },
+        {
+          "id": "xk_c14ce9ff",
+          "label": "Суспільне Херсон: «Херсонському художньому музею — 45»",
+          "url": "https://suspilne.media/488980-hersonskomu-hudoznomu-muzeu-45-imena-j-podii/",
+          "note": null
+        },
+        {
+          "id": "xk_2cf19897",
+          "label": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»",
+          "url": "https://suspilne.media/130939-vizitivka-hersona-budivla-hudoznogo-muzeu-im-o-sovkunenka/",
+          "note": null
+        },
+        {
+          "id": "xk_2ba7d22a",
+          "label": "Encyclopedia of Ukraine: Shovkunenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CS%5CH%5CShovkunenkoOleksii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_83b401c6",
+          "label": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»",
+          "url": "https://life.pravda.com.ua/culture/u-hersoni-identifikuvali-shche-odnu-vikradenu-rosiyanami-kartinu-z-hudozhnogo-muzeyu-315488/index.amp",
+          "note": null
+        },
+        {
+          "id": "xk_59906859",
+          "label": "Encyclopedia of Ukraine: Orlovsky, Volodymyr",
+          "url": "https://encyclopediaofukraine.com/pages/O/R/OrlovskyVolodymyr.htm",
+          "note": null
+        },
+        {
+          "id": "xk_de00ca4b",
+          "label": "Укрінформ: «Володимир Орловський. Натурфілософ із пензлем»",
+          "url": "https://www.ukrinform.ua/rubric-culture/3654756-volodimir-orlovskij-naturfilosof-iz-penzlem.html",
+          "note": null
+        },
+        {
+          "id": "xk_417409f9",
+          "label": "Kyiv Post: «Ранок Христового Воскресіння»",
+          "url": "https://www.kyivpost.com/uk/amp/post/51120",
+          "note": null
         }
       ],
       "chat": {
@@ -1433,7 +1953,64 @@
       "sourceAssets": {
         "image": "art/Околиці Києва.jpg",
         "wallpaper": "wallpapers/Околиці Києва.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стали збірка Марії Корніловської, яка заповіла її Херсону, і художня частина фондів краєзнавчого музею.",
+          "sourceId": "xk_c14ce9ff",
+          "sourceLabel": "Суспільне Херсон: «Херсонському художньому музею — 45»"
+        },
+        {
+          "fact": "Музей розміщується в будівлі колишньої міської думи — памʼятці архітектури; її передали музею 1978 року, на 200-річчя Херсона.",
+          "sourceId": "xk_2cf19897",
+          "sourceLabel": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»"
+        },
+        {
+          "fact": "Музей носить імʼя Олексія Шовкуненка (1884–1974) — художника, який народився в Херсоні.",
+          "sourceId": "xk_2ba7d22a",
+          "sourceLabel": "Encyclopedia of Ukraine: Shovkunenko"
+        },
+        {
+          "fact": "Працівники музею й далі шукають викрадені роботи: вони розпізнають їх на фото та в новинних сюжетах. Так, натюрморт Ніни Марченко впізнали на фото, зробленому в березні 2023 року в окупованому Сімферополі.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Після відступу з Херсона російські війська ще й обстріляли будівлю музею.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Володимир Орловський народився в Києві в 1842 році. Він навчався в Івана Сошенка, а до Петербурзької академії мистецтв вступив за рекомендацією Тараса Шевченка.",
+          "sourceId": "xk_59906859",
+          "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr"
+        },
+        {
+          "fact": "У 1869–1872 роках Орловський жив і працював у Франції, Італії, Швейцарії та Німеччині; у 1878 році став професором академії.",
+          "sourceId": "xk_59906859",
+          "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr"
+        },
+        {
+          "fact": "У 1886 році — тому ж, що й «Околиці Києва», — Орловський повернувся в Україну, викладав у Київській рисувальній школі й допоміг заснувати Київське художнє училище.",
+          "sourceId": "xk_59906859",
+          "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr"
+        },
+        {
+          "fact": "За життя Орловського називали «художником першої величини, рівня Айвазовського». Його вважають одним із перших, хто розвивав жанр українського національного пейзажу.",
+          "sourceId": "xk_de00ca4b",
+          "sourceLabel": "Укрінформ: «Володимир Орловський. Натурфілософ із пензлем»"
+        },
+        {
+          "fact": "Орловський — тесть Миколи Пимоненка: Пимоненко жив у будинку на його садибі в Києві.",
+          "sourceId": "xk_417409f9",
+          "sourceLabel": "Kyiv Post: «Ранок Христового Воскресіння»"
+        },
+        {
+          "fact": "Помер Орловський у 1914 році в Італії, в місті Нерві.",
+          "sourceId": "xk_59906859",
+          "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr"
+        }
+      ]
     },
     {
       "id": 7,
@@ -1602,6 +2179,42 @@
           "label": "Енциклопедичний словник Брокгауза і Ефрона: Бронников (Вікіджерела)",
           "url": "https://ru.wikisource.org/wiki/%D0%AD%D0%A1%D0%91%D0%95/%D0%91%D1%80%D0%BE%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2,_%D0%A4%D0%B5%D0%B4%D0%BE%D1%80_%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B5%D0%B2%D0%B8%D1%87",
           "note": "біографія"
+        },
+        {
+          "id": "xk_c14ce9ff",
+          "label": "Суспільне Херсон: «Херсонському художньому музею — 45»",
+          "url": "https://suspilne.media/488980-hersonskomu-hudoznomu-muzeu-45-imena-j-podii/",
+          "note": null
+        },
+        {
+          "id": "xk_2cf19897",
+          "label": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»",
+          "url": "https://suspilne.media/130939-vizitivka-hersona-budivla-hudoznogo-muzeu-im-o-sovkunenka/",
+          "note": null
+        },
+        {
+          "id": "xk_2ba7d22a",
+          "label": "Encyclopedia of Ukraine: Shovkunenko",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CS%5CH%5CShovkunenkoOleksii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_83b401c6",
+          "label": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»",
+          "url": "https://life.pravda.com.ua/culture/u-hersoni-identifikuvali-shche-odnu-vikradenu-rosiyanami-kartinu-z-hudozhnogo-muzeyu-315488/index.amp",
+          "note": null
+        },
+        {
+          "id": "xk_e0634384",
+          "label": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab",
+          "url": "https://fantlab.ru/art4173",
+          "note": null
+        },
+        {
+          "id": "xk_3ad63be5",
+          "label": "Wikipedia: Fyodor Bronnikov",
+          "url": "https://en.wikipedia.org/wiki/Fyodor_Bronnikov",
+          "note": null
         }
       ],
       "chat": {
@@ -1644,7 +2257,59 @@
       "sourceAssets": {
         "image": "art/Капуцин.jpg",
         "wallpaper": "wallpapers/Капуцин.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стали збірка Марії Корніловської, яка заповіла її Херсону, і художня частина фондів краєзнавчого музею.",
+          "sourceId": "xk_c14ce9ff",
+          "sourceLabel": "Суспільне Херсон: «Херсонському художньому музею — 45»"
+        },
+        {
+          "fact": "Музей розміщується в будівлі колишньої міської думи — памʼятці архітектури; її передали музею 1978 року, на 200-річчя Херсона.",
+          "sourceId": "xk_2cf19897",
+          "sourceLabel": "Суспільне Херсон: «Візитівка Херсона — будівля художнього музею»"
+        },
+        {
+          "fact": "Музей носить імʼя Олексія Шовкуненка (1884–1974) — художника, який народився в Херсоні.",
+          "sourceId": "xk_2ba7d22a",
+          "sourceLabel": "Encyclopedia of Ukraine: Shovkunenko"
+        },
+        {
+          "fact": "Працівники музею й далі шукають викрадені роботи: вони розпізнають їх на фото та в новинних сюжетах. Так, натюрморт Ніни Марченко впізнали на фото, зробленому в березні 2023 року в окупованому Сімферополі.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Після відступу з Херсона російські війська ще й обстріляли будівлю музею.",
+          "sourceId": "xk_83b401c6",
+          "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
+        },
+        {
+          "fact": "Федір Бронников народився в 1827 році в місті Шадринськ; перші уроки малювання йому дав батько — іконописець.",
+          "sourceId": "xk_e0634384",
+          "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+        },
+        {
+          "fact": "За випускну картину в Академії мистецтв Бронников у 1853 році отримав велику золоту медаль і право на поїздку до Італії.",
+          "sourceId": "xk_3ad63be5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov"
+        },
+        {
+          "fact": "У 1854 році він оселився в Римі й мав власну майстерню на Via Vittoria; помер у 1902 році в італійському містечку Антіколі-Коррадо.",
+          "sourceId": "xk_3ad63be5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov"
+        },
+        {
+          "fact": "Бронников майже повністю присвятив себе сценам зі староримського життя та італійському жанру — вуличним і повсякденним сюжетам.",
+          "sourceId": "xk_e0634384",
+          "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+        },
+        {
+          "fact": "З 1881 року — того ж, коли написано «Капуцина», — Бронников виставлявся вже не на академічних виставках, а з Товариством пересувних виставок.",
+          "sourceId": "xk_e0634384",
+          "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+        }
+      ]
     },
     {
       "id": 8,
@@ -1844,6 +2509,24 @@
           "label": "Cincinnati Art Museum: Cossacks in the Forecourt",
           "url": "https://cincinnatiartmuseum.org/art/exhibitions/special-features/cossacks-in-the-forecourt/",
           "note": "перший варіант у Російському музеї"
+        },
+        {
+          "id": "xk_209a7d12",
+          "label": "Харківський художній музей, museum-digital: картка твору",
+          "url": "https://kharkiv.ua.museum-digital.org/object/52667",
+          "note": null
+        },
+        {
+          "id": "xk_19c35206",
+          "label": "Радіо Свобода: «Запорожці» Рєпіна",
+          "url": "https://www.radiosvoboda.org/a/illya-repin-kartyna-zaporozhtsi-viyna-ukrayina-rosiya/33501273.html",
+          "note": null
+        },
+        {
+          "id": "xk_943e3110",
+          "label": "Kyiv Post: Ілля Рєпін",
+          "url": "https://www.kyivpost.com/uk/post/81735",
+          "note": null
         }
       ],
       "chat": {
@@ -1911,7 +2594,34 @@
       "sourceAssets": {
         "image": "art/Запорожці пишуть листа турецькому султанові (другий варіант).jpg",
         "wallpaper": "wallpapers/Запорожці пишуть листа турецькому султанові.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Над темою «Запорожців» Рєпін працював майже 20 років і створив дві картини: першу — у 1880–1891 роках, другу — завершив 1896-го.",
+          "sourceId": "xk_209a7d12",
+          "sourceLabel": "Харківський художній музей, museum-digital: картка твору"
+        },
+        {
+          "fact": "Другий, харківський варіант у 1896 році купив колекціонер Павло Третьяков. До Харкова картину передали в 1932 році.",
+          "sourceId": "xk_209a7d12",
+          "sourceLabel": "Харківський художній музей, museum-digital: картка твору"
+        },
+        {
+          "fact": "Писаря Рєпін писав із свого близького друга — історика козацтва Дмитра Яворницького.",
+          "sourceId": "xk_19c35206",
+          "sourceLabel": "Радіо Свобода: «Запорожці» Рєпіна"
+        },
+        {
+          "fact": "Колекціонер Василь Тарновський дав Рєпіну козацькі речі зі своєї збірки в Качанівці на Чернігівщині — і сам зображений на картині.",
+          "sourceId": "xk_19c35206",
+          "sourceLabel": "Радіо Свобода: «Запорожці» Рєпіна"
+        },
+        {
+          "fact": "Рєпін народився 5 серпня 1844 року в Чугуєві на Харківщині, тож харківський варіант «Запорожців» повернувся на батьківщину художника.",
+          "sourceId": "xk_943e3110",
+          "sourceLabel": "Kyiv Post: Ілля Рєпін"
+        }
+      ]
     },
     {
       "id": 9,
@@ -2094,6 +2804,18 @@
           "label": "Zaxid.net: Богородчанський іконостас відсканували й створили 3D-модель",
           "url": "https://zaxid.net/vidchuvayemo_sebe_pershoprohidtsyami_u_lvovi_n1511518",
           "note": "05.12.2020"
+        },
+        {
+          "id": "xk_236b33cd",
+          "label": "Національний музей у Львові, museum-digital: Богородчанський іконостас",
+          "url": "https://lviv.ua.museum-digital.org/object/52740",
+          "note": null
+        },
+        {
+          "id": "xk_1677bfb7",
+          "label": "Л. Чень, Вісник НУ «Львівська політехніка», 2021",
+          "url": "https://sciencetst.lpnu.ua/sites/default/files/journal-paper/2021/dec/25870/15.pdf",
+          "note": null
         }
       ],
       "chat": {
@@ -2149,7 +2871,34 @@
       "sourceAssets": {
         "image": "art/Богородчанський іконостас.jpg",
         "wallpaper": "wallpapers/Богородчанський іконостас.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "Іконостас створили в 1699–1705 роках для Хрестовоздвиженської церкви монастиря Скит Манявський у Карпатах.",
+          "sourceId": "xk_236b33cd",
+          "sourceLabel": "Національний музей у Львові, museum-digital: Богородчанський іконостас"
+        },
+        {
+          "fact": "Після закриття Скиту в 1785 році іконостас перевезли до Троїцької церкви в сусідніх Богородчанах — звідти його назва.",
+          "sourceId": "xk_236b33cd",
+          "sourceLabel": "Національний музей у Львові, museum-digital: Богородчанський іконостас"
+        },
+        {
+          "fact": "У 1916 році, під час Першої світової війни, австрійська влада розібрала іконостас і вивезла до Відня; у 1920-х він опинився у Варшаві.",
+          "sourceId": "xk_236b33cd",
+          "sourceLabel": "Національний музей у Львові, museum-digital: Богородчанський іконостас"
+        },
+        {
+          "fact": "У 1924 році на прохання митрополита Андрея Шептицького іконостас перевезли до Львова й передали Національному музею. Тобто він уже вдруге переживає війну розібраним.",
+          "sourceId": "xk_236b33cd",
+          "sourceLabel": "Національний музей у Львові, museum-digital: Богородчанський іконостас"
+        },
+        {
+          "fact": "Скит Манявський існував у 1605–1785 роках і був відомий далеко за межами України; заснували його Іов Княгиницький і Феодосій Манявський.",
+          "sourceId": "xk_1677bfb7",
+          "sourceLabel": "Л. Чень, Вісник НУ «Львівська політехніка», 2021"
+        }
+      ]
     },
     {
       "id": 10,
@@ -2331,6 +3080,42 @@
           "label": "Wikimedia Commons: опис картини (за альбомом «Мамай», 2008, і К. Скалацьким, 2009)",
           "url": "https://commons.wikimedia.org/wiki/File:Картина_Козак_Мамай_ХІХ_ст.jpg",
           "note": null
+        },
+        {
+          "id": "xk_b9cc12da",
+          "label": "Wikipedia: Cossack Mamay",
+          "url": "https://en.wikipedia.org/wiki/Cossack_Mamay",
+          "note": null
+        },
+        {
+          "id": "xk_6296590b",
+          "label": "К. Рахно, Наукові записки НІЕЗ «Переяслав», 2022",
+          "url": "https://chtyvo.org.ua/authors/Rakhno_Kostiantyn/Lehendarnyi_narod_mamai_ta_problema_pokhodzhennia_nazvy_ukrainskoi_narodnoi_kartyny_Kozak_Mamai.pdf",
+          "note": null
+        },
+        {
+          "id": "xk_c7c19754",
+          "label": "Zaxid.net: «Хто такий козак Мамай»",
+          "url": "https://zaxid.net/hto_takiy_kozak_mamay_n1588919",
+          "note": null
+        },
+        {
+          "id": "xk_ab4a653d",
+          "label": "emuseum.online: топ-10 музеїв Чернігова",
+          "url": "https://emuseum.online/en/blog/top-10-museums-of-chernigiv",
+          "note": null
+        },
+        {
+          "id": "xk_c1df7a8a",
+          "label": "Wikipedia: Chernihiv Regional Art Museum",
+          "url": "https://en.wikipedia.org/wiki/Chernihiv_Regional_Art_Museum",
+          "note": null
+        },
+        {
+          "id": "xk_6d265e58",
+          "label": "Музей Івана Гончара: ікона «Святий Миколай», Ф. Стовбуненко",
+          "url": "https://honchar.org.ua/en/collections/detail/2329",
+          "note": "⚠ verify"
         }
       ],
       "chat": {
@@ -2385,7 +3170,40 @@
       "sourceAssets": {
         "image": "art/Козак-бандурист.jpg",
         "wallpaper": "wallpapers/Козак-бандурист.png"
-      }
+      },
+      "extendedKnowledge": [
+        {
+          "fact": "«Козак Мамай» — один із найпопулярніших героїв українського фольклору; варіанти цього образу називають і «Козак-бандурист».",
+          "sourceId": "xk_b9cc12da",
+          "sourceLabel": "Wikipedia: Cossack Mamay"
+        },
+        {
+          "fact": "Походження імені «Мамай» досі сперечаються: в одних українських говірках «мамаєм» називали камʼяну статую в степу, інші дослідники вважають, що це слово означало просто «козак» чи «волоцюга».",
+          "sourceId": "xk_6296590b",
+          "sourceLabel": "К. Рахно, Наукові записки НІЕЗ «Переяслав», 2022"
+        },
+        {
+          "fact": "Образ козака Мамая лишається одним із головних символів української культури вже кілька століть.",
+          "sourceId": "xk_c7c19754",
+          "sourceLabel": "Zaxid.net: «Хто такий козак Мамай»"
+        },
+        {
+          "fact": "Чернігівський обласний художній музей імені Григорія Галагана створили в 1983 році на основі художнього відділу історичного музею.",
+          "sourceId": "xk_ab4a653d",
+          "sourceLabel": "emuseum.online: топ-10 музеїв Чернігова"
+        },
+        {
+          "fact": "Музей розташований у памʼятці архітектури XIX століття на території Валу — давнього княжого Чернігова.",
+          "sourceId": "xk_c1df7a8a",
+          "sourceLabel": "Wikipedia: Chernihiv Regional Art Museum"
+        },
+        {
+          "fact": "За даними Музею Івана Гончара, народний художник Федір Стовбуненко жив у 1864–1933 роках і працював на Полтавщині.",
+          "sourceId": "xk_6d265e58",
+          "verify": true,
+          "sourceLabel": "Музей Івана Гончара: ікона «Святий Миколай», Ф. Стовбуненко"
+        }
+      ]
     },
     {
       "id": 11,

@@ -1,28 +1,18 @@
 #!/usr/bin/env node
 /**
- * Imports optional extended guide facts from docs/guide-knowledge-extra.md
+ * Imports extended guide facts from docs/guide-knowledge-extra.md
  * into data/artworks.json + web/src/data/content.json, then validates.
  *
- * Expected markdown shape (JSON fenced block):
- *
- * ```json
- * {
- *   "artworks": [
- *     {
- *       "id": 1,
- *       "sources": [{ "id": "sx1", "label": "...", "url": null, "note": null }],
- *       "extendedKnowledge": [{ "fact": "...", "sourceId": "sx1" }]
- *     }
- *   ]
- * }
- * ```
- *
- * No-op (exit 0) if the file is missing — facts are supplied later by the team.
+ * Markdown shape:
+ *   ## <id> · <title>
+ *   ## Спільне … (id 1, 2, 4, 5, 6, 7)
+ *   - <fact> ⚠ verify [src: <label> | <url>]
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_ROOT = path.resolve(__dirname, "..");
@@ -37,51 +27,147 @@ if (!fs.existsSync(EXTRA)) {
 }
 
 const md = fs.readFileSync(EXTRA, "utf8");
-const match = md.match(/```json\s*([\s\S]*?)```/);
-if (!match) {
-  console.error("No ```json block found in guide-knowledge-extra.md");
-  process.exit(1);
+
+/** Stable short id from label+url so the same source reuses one id. */
+function sourceIdFor(label, url) {
+  const h = crypto
+    .createHash("sha1")
+    .update(`${label}|${url ?? ""}`)
+    .digest("hex")
+    .slice(0, 8);
+  return `xk_${h}`;
 }
 
-const payload = JSON.parse(match[1]);
-const rows = Array.isArray(payload.artworks) ? payload.artworks : [];
+/**
+ * Parse one bullet:
+ * `- fact text ⚠ verify [src: Label | https://…]`
+ */
+function parseBullet(line) {
+  const m = line.match(
+    /^-\s+(.+?)\s*\[src:\s*(.+?)\s*\|\s*(https?:\/\/\S+|null)\s*\]\s*$/u,
+  );
+  if (!m) return null;
+  let fact = m[1].trim();
+  const label = m[2].trim();
+  const urlRaw = m[3].trim();
+  const url = urlRaw === "null" ? null : urlRaw;
+  const verify = /⚠\s*verify/i.test(fact);
+  fact = fact
+    .replace(/\s*⚠\s*verify(?:\s*\([^)]*\))?/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return { fact, label, url, verify };
+}
+
+/** Split markdown into ## sections. */
+function parseSections(text) {
+  const lines = text.split(/\r?\n/);
+  const sections = [];
+  let current = null;
+  for (const line of lines) {
+    const head = line.match(/^##\s+(.+)\s*$/);
+    if (head) {
+      current = { title: head[1].trim(), bullets: [] };
+      sections.push(current);
+      continue;
+    }
+    if (!current) continue;
+    if (/^-\s+/.test(line)) current.bullets.push(line.trim());
+  }
+  return sections;
+}
+
+/** Resolve which artwork ids a section applies to. */
+function sectionArtworkIds(title) {
+  const shared = title.match(/\(id\s*([\d,\s]+)\)/i);
+  if (shared) {
+    return shared[1]
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n));
+  }
+  const single = title.match(/^(\d+)\s*·/);
+  if (single) return [Number(single[1])];
+  return [];
+}
+
+const sections = parseSections(md);
+/** @type {Map<number, { sources: Map<string, object>, facts: object[] }>} */
+const byArt = new Map();
+
+function ensureArt(id) {
+  if (!byArt.has(id)) {
+    byArt.set(id, { sources: new Map(), facts: [] });
+  }
+  return byArt.get(id);
+}
+
+let bulletCount = 0;
+for (const sec of sections) {
+  const ids = sectionArtworkIds(sec.title);
+  if (!ids.length) {
+    console.warn(`skip section (no artwork ids): ${sec.title}`);
+    continue;
+  }
+  for (const line of sec.bullets) {
+    const parsed = parseBullet(line);
+    if (!parsed) {
+      console.warn(`skip bullet: ${line.slice(0, 80)}…`);
+      continue;
+    }
+    bulletCount += 1;
+    const sid = sourceIdFor(parsed.label, parsed.url);
+    for (const id of ids) {
+      const bucket = ensureArt(id);
+      bucket.sources.set(sid, {
+        id: sid,
+        label: parsed.label,
+        url: parsed.url,
+        note: parsed.verify ? "⚠ verify" : null,
+      });
+      bucket.facts.push({
+        fact: parsed.fact,
+        sourceId: sid,
+        verify: parsed.verify,
+        sourceLabel: parsed.label,
+      });
+    }
+  }
+}
 
 function apply(file) {
   const data = JSON.parse(fs.readFileSync(file, "utf8"));
-  for (const row of rows) {
-    const art = data.artworks.find((a) => a.id === row.id || a.slug === row.slug);
+  for (const [id, bucket] of byArt) {
+    const art = data.artworks.find((a) => a.id === id);
     if (!art) {
-      console.warn(`artwork not found: ${row.id ?? row.slug}`);
+      console.warn(`artwork not found: ${id}`);
       continue;
     }
-    if (Array.isArray(row.sources) && row.sources.length) {
-      const byId = new Map(art.sources.map((s) => [s.id, s]));
-      for (const s of row.sources) {
-        byId.set(s.id, {
-          id: s.id,
-          label: s.label,
-          url: s.url ?? null,
-          note: s.note ?? null,
-        });
-      }
-      art.sources = [...byId.values()];
+    const byId = new Map(art.sources.map((s) => [s.id, s]));
+    for (const s of bucket.sources.values()) {
+      byId.set(s.id, s);
     }
-    if (Array.isArray(row.extendedKnowledge)) {
-      art.extendedKnowledge = row.extendedKnowledge.map((e) => ({
-        fact: String(e.fact),
-        sourceId: String(e.sourceId),
-      }));
-    }
+    art.sources = [...byId.values()];
+    // Replace extendedKnowledge from this import (idempotent).
+    art.extendedKnowledge = bucket.facts.map((f) => ({
+      fact: f.fact,
+      sourceId: f.sourceId,
+      verify: f.verify || undefined,
+      sourceLabel: f.sourceLabel,
+    }));
   }
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
 }
 
 apply(ARTWORKS);
 apply(CONTENT);
-console.log(`imported extendedKnowledge for ${rows.length} artwork row(s)`);
+console.log(
+  `imported ${bulletCount} bullets → ${byArt.size} artworks with extendedKnowledge`,
+);
 
-const v = spawnSync(process.execPath, [path.join(__dirname, "validate-content.mjs")], {
-  cwd: WEB_ROOT,
-  stdio: "inherit",
-});
+const v = spawnSync(
+  process.execPath,
+  [path.join(__dirname, "validate-content.mjs")],
+  { cwd: WEB_ROOT, stdio: "inherit" },
+);
 process.exit(v.status ?? 1);

@@ -12,7 +12,7 @@ Date: 2026-11-18 (evening). Build: `npm run build` clean in `web/`. No push. No 
 | 4 — Detail points | **done** | Колядки + Скіфське exact coords + new zones; Звізда→Зірка; other arts re-placed on details; hit radius 0.10; 1.5s gold pulse dots on passport open. |
 | 5 — Tour replay | **done** | Root cause: `stopIdxRef` lagged setState → layout-sync snapped camera to previous stop. Fixed sync refs + wait for natural image size before start. |
 | 6 — Opened Kherson frames | **done** | Opened stolen frames show memory filter + dim lamp (~0.48); unopened stay hidden/blur path; current keeps blur→reveal. |
-| 7 — extendedKnowledge | **done** | Types + prompt section «ДОДАТКОВІ ПЕРЕВІРЕНІ ФАКТИ»; `scripts/import-guide-knowledge.mjs` (no-op until `docs/guide-knowledge-extra.md` exists). |
+| 7 — extendedKnowledge | **done** | MD import from `docs/guide-knowledge-extra.md` (61 bullets → 10 artworks); `⚠ verify` + «за даними…» in prompt; validate-content checks `xk_` sourceIds. |
 | 8 — QA walk | **partial** | Automated lint/tsc/build OK. Full click-through /reset→10 needs manual check (Playwright sandbox limits earlier). |
 
 ## Commits (this batch)
@@ -74,4 +74,55 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] Gold dots pulse ~1.5s on passport; taps hit radius 0.10
 - [ ] 390×844 and 390×667: bar flush, no cut paragraph, no credit overlap
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
-- [ ] Drop `docs/guide-knowledge-extra.md` when facts ready → `node web/scripts/import-guide-knowledge.mjs`
+- [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
+
+## Extended knowledge — live guide answers (2026-11-18)
+
+Import: 61 markdown bullets → artworks 1–10 (`extendedKnowledge` + new `xk_*` sources). Shared Херсон section applied to ids 1, 2, 4, 5, 6, 7. `⚠ verify` kept on soft facts; prompt requires «за даними \<джерело\>».
+
+Tested via `POST /api/guide` (non-passport questions; not in curated bank).
+
+### Artwork 1 — Великодня заутреня
+
+**Q1.** Коли відкрили Херсонський художній музей і чия збірка стала основою колекції?  
+**A.** Херсонський обласний художній музей відкрили 27 травня 1978 року. Основою його колекції стала збірка Марії Корніловської, яка заповіла її Херсону.  
+`sourceIds: [xk_c14ce9ff]` · fallback: false
+
+**Q2.** Який розмір найвідомішої версії «Великодньої заутрені» 1891 року і в якому музеї Рибінська вона?  
+**A.** Найвідоміша версія «Великодньої заутрені» 1891 року має розмір приблизно 133 × 193 см. Вона зберігається в музеї Рибінська в Росії.  
+`sourceIds: [xk_781cb8a7]` · fallback: false
+
+**Q3.** Де Пимоненко навчався підлітком — чи була це іконописна школа Києво-Печерської лаври?  
+**A.** Микола Пимоненко навчався в Київській рисувальній школі Миколи Мурашка, а потім у Петербурзькій академії мистецтв, яку не закінчив через хворобу. Іконописна школа Києво-Печерської лаври в його біографії не згадується.  
+`sourceIds: [s6]` · fallback: false  
+*Note:* passport author bio won over `⚠ verify` soft fact (uahistory.com). Prompt tightened so verify facts must be attributed as «за даними…», not denied.
+
+### Artwork 3 — Скіфське золото
+
+**Q1.** Хто керував експедицією, що дослідила Мелітопольський курган у 1954 році?  
+**A.** Експедицією, що дослідила Мелітопольський курган у 1954 році, керував археолог Олексій Тереножкін.  
+`sourceIds: [xk_f77d1882]` · fallback: false
+
+**Q2.** Скільки приблизно золотих прикрас знайшли в похованні і з чим його повʼязують?  
+**A.** У похованні біля Мелітополя археологи знайшли майже два кілограми скіфського золота, що складається з золотих прикрас та нашивних пластин. Цю колекцію пов'язують зі скіфським похованням IV століття до нашої ери.  
+`sourceIds: [s6]` · fallback: false  
+*Note:* answered from passport weight (~2 kg), not extended «≈4000 прикрас».
+
+**Q3.** Якими роками (до н. е.) музейні описи датують поховання в Мелітопольському кургані?  
+**A.** За даними Національного музею історії України, музейні описи датують поховання приблизно 330–310 роками до н. е.  
+`sourceIds: [xk_70bead70]` · fallback: false  
+*«за даними…» phrasing present.*
+
+### Artwork 8 — Запорожці
+
+**Q1.** Скільки років Рєпін працював над темою «Запорожців» і скільки картин створив?  
+**A.** Ілля Рєпін працював над темою «Запорожців» майже 20 років і створив дві картини.  
+`sourceIds: [s1]` · fallback: false · *(content from extended; model cited passport id)*
+
+**Q2.** Хто купив харківський варіант «Запорожців» у 1896 році і коли картину передали до Харкова?  
+**A.** Харківський варіант «Запорожців» у 1896 році купив колекціонер Павло Третьяков. Картину передали до Харкова в 1932 році.  
+`sourceIds: [s1]` · fallback: false · *(content from extended)*
+
+**Q3.** З кого Рєпін писав писаря на картині «Запорожці»?  
+**A.** Писаря Рєпін писав із свого близького друга — історика козацтва Дмитра Яворницького.  
+`sourceIds: [xk_19c35206]` · fallback: false

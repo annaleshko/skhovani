@@ -51,6 +51,9 @@ export type ArtworkChat = {
 export type ExtendedKnowledgeFact = {
   fact: string;
   sourceId: string;
+  /** Soft source — phrase as «за даними <sourceLabel>». */
+  verify?: boolean;
+  sourceLabel?: string;
 };
 
 export type ArtworkTabs = {
