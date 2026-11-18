@@ -11,7 +11,10 @@ export function displayHeadline(artwork: Artwork): string {
 function isUnknownYear(year: string): boolean {
   const y = year.trim();
   if (!y) return true;
-  return /^не\s+встановлено\b/i.test(y);
+  // Whole value unknown, or only «не встановлено…» with no real date.
+  if (/^не\s+встановлено\b/i.test(y)) return true;
+  if (/^датування\b.*не\s+встановлен/i.test(y)) return true;
+  return false;
 }
 
 /**

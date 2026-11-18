@@ -659,7 +659,8 @@ export function HallExperience({
     let hintLeft = cx - hintW / 2;
     let hintTop = cy - half - gap - hintH;
     if (museumId === "melitopol") {
-      // Vitrine: ring on glass corner; label above glass, not over badge.
+      // Vitrine: ring on glass corner; label above glass, never over badge
+      // (tight on 667/640 — prefer left of ring if vertical space is gone).
       const glassCx = glassRight - 8;
       const glassCy = glassTop + 14;
       const badgeBottom = (layout.captions.badgeY ?? 254) + 28;
@@ -669,7 +670,12 @@ export function HallExperience({
         glassTop - gap - hintH,
       );
       if (hintTop < badgeBottom + gap) {
-        hintTop = badgeBottom + gap;
+        hintLeft = glassCx - half - gap - hintW;
+        hintTop = Math.max(badgeBottom + gap, glassTop);
+        if (hintLeft < visL + margin) {
+          hintLeft = visL + margin;
+          hintTop = Math.max(badgeBottom + gap, glassCy - half - gap - hintH);
+        }
       }
       return {
         cx: glassCx,

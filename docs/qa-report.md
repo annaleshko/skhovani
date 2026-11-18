@@ -89,6 +89,16 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 | 02в rays 50%; active 85%; labels no overlap | [ ] |
 | Unopened target = ring+dot; star only after opened | [ ] |
 
+### Stage 2 — Halls
+
+| Check | Result |
+|---|---|
+| Колядки meta = author only (no «· не встановлено») | [ ] |
+| Hint outside frame; scrolls with hall | keep |
+| Empty text fit / below for Дама+Капуцин | keep |
+| Opened Kherson lit + captions | keep |
+| Melitopol blur + hint clear of badge @667/640 | [ ] |
+
 ## Release candidate stages (2026-11-18 evening)
 
 ### Stage 1 — Revisit stuck (root cause)
