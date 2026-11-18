@@ -14,6 +14,8 @@ function JourneyInner() {
   const raw = params.get("path");
   const pathN = raw ? Number(raw) : undefined;
   const autostart = params.get("autostart") === "1";
+  const revisit = params.get("revisit") === "1";
+  const reopen = params.get("reopen") === "1";
 
   if (!ready) return <div className="min-h-dvh bg-screen" aria-busy />;
 
@@ -29,6 +31,8 @@ function JourneyInner() {
     <JourneyFlow
       pathN={Number.isFinite(pathN) ? pathN : undefined}
       autostart={autostart}
+      revisit={revisit}
+      reopenHall={reopen}
     />
   );
 }

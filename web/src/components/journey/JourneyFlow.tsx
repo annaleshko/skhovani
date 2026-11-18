@@ -43,7 +43,7 @@ import {
   projectToMap,
   type MapPoint,
 } from "@/lib/geo";
-import { mapLabelSide } from "@/lib/map-label";
+import { layoutMapLabels, mapLabelSide } from "@/lib/map-label";
 import {
   easings,
   motionTokens,
@@ -77,10 +77,17 @@ type Props = {
   pathN?: number;
   /** From 02в «Вирушити» — skip screen-02 sheet and start flight. */
   autostart?: boolean;
+  /** Star museum revisit — fast flight + auto facade → hall. */
+  revisit?: boolean;
+  /** Hall shows last opened artwork already revealed. */
+  reopenHall?: boolean;
 };
 
 const PICK_DELAY_MS = 0;
 const FACADE_AUTO_MS = 600;
+/** Revisit: facade shown ~0.8s with no buttons, then auto-enter. */
+const REVISIT_FACADE_MS = 800;
+const REVISIT_FLIGHT_SEC = 1.2;
 const OCCUPATION_HOLD_MS = 2500;
 const TRAIL_LEN = 18;
 /** Spec 07 entry timeline (ms from enterMap start) */
@@ -146,11 +153,15 @@ function fitFacadeLayout(
   return { width, height, x, y, scale };
 }
 
-export function JourneyFlow({ pathN, autostart = false }: Props) {
+export function JourneyFlow({
+  pathN,
+  autostart = false,
+  revisit = false,
+  reopenHall = false,
+}: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
   const { startCityId, completedPaths, setCurrentPath } = useAppState();
-
   const [phase, setPhase] = useState<Phase>("boot");
   const [path, setPath] = useState<ResolvedPath | null>(null);
   /** Path 1 only — «Твій шлях» sheet. Paths ≥2 confirm on 02в. */
@@ -250,6 +261,16 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
       .map((id) => getMuseum(id))
       .filter((m): m is NonNullable<typeof m> => Boolean(m));
   }, [path, startCity.id, visitedOrder]);
+
+  const map02Labels = useMemo(() => {
+    const markers = JOURNEY_MUSEUM_ORDER.map((id) => {
+      const m = getMuseum(id);
+      if (!m) return null;
+      const p = projectToMap(m.lat, m.lng);
+      return { id, x: p.x, y: p.y, label: m.city };
+    }).filter((m): m is NonNullable<typeof m> => Boolean(m));
+    return layoutMapLabels(markers);
+  }, []);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
 
@@ -613,15 +634,49 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  const enterDoor = useCallback(() => {
+    if (!path || !museumUi) return;
+    if (facadeTimer.current) clearTimeout(facadeTimer.current);
+    setPhase("entering");
+    const reopenQs = reopenHall ? "&reopen=1" : "";
+    const hallUrl = `/hall/${path.museumId}?path=${path.n}&artwork=${path.artworkId}${reopenQs}`;
+    if (reduced) {
+      setBlackout(1);
+      router.push(hallUrl);
+      return;
+    }
+    animate(doorCamScale, 1.3, {
+      duration: motionTokens.doorEnter,
+      ease: easings.easeIn,
+    });
+    const t0 = performance.now();
+    const fade = () => {
+      const p = Math.min(1, (performance.now() - t0) / (motionTokens.doorEnter * 1000));
+      setBlackout(p);
+      if (p < 1) requestAnimationFrame(fade);
+      else router.push(hallUrl);
+    };
+    requestAnimationFrame(fade);
+  }, [doorCamScale, museumUi, path, reduced, reopenHall, router]);
+
   const goFacade = useCallback(() => {
     if (facadeTimer.current) clearTimeout(facadeTimer.current);
     setOccupationNote(false);
     setPhase("facade");
     setFacadeOpacity(0);
     facadeScale.set(1.05);
+    const autoEnter = () => {
+      if (revisit) {
+        facadeTimer.current = setTimeout(
+          () => enterDoor(),
+          reduced ? motionTokens.reducedCrossfade * 1000 : REVISIT_FACADE_MS,
+        );
+      }
+    };
     if (reduced) {
       setFacadeOpacity(1);
       facadeScale.set(1);
+      autoEnter();
       return;
     }
     animate(facadeScale, 1, { duration: motionTokens.facadeScale, ease: easings.easeOut });
@@ -630,11 +685,20 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
       const p = Math.min(1, (performance.now() - t0) / (motionTokens.facadeCrossfade * 1000));
       setFacadeOpacity(p);
       if (p < 1) requestAnimationFrame(fade);
+      else autoEnter();
     };
     requestAnimationFrame(fade);
-  }, [facadeScale, reduced]);
+  }, [enterDoor, facadeScale, reduced, revisit]);
 
   const afterZoom = useCallback(() => {
+    // Revisit: skip occupation note — straight to short facade hold
+    if (revisit) {
+      facadeTimer.current = setTimeout(
+        () => goFacade(),
+        reduced ? 0 : FACADE_AUTO_MS,
+      );
+      return;
+    }
     const occupied = Boolean(path?.museum.occupied);
     if (occupied && !reduced) {
       setPhase("occupation");
@@ -643,7 +707,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
     } else {
       facadeTimer.current = setTimeout(() => goFacade(), FACADE_AUTO_MS);
     }
-  }, [goFacade, path, reduced]);
+  }, [goFacade, path, reduced, revisit]);
 
   const runZoom = useCallback(() => {
     setPhase("zoom");
@@ -688,6 +752,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
     const cam09 = lockedCam09Ref.current;
 
     const startFlight = () => {
+      const flightSec = revisit ? REVISIT_FLIGHT_SEC : motionTokens.flight;
       if (reduced) {
         setCam(cam09);
         flightT.set(1);
@@ -696,7 +761,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
         return;
       }
       animate(flightT, 1, {
-        duration: motionTokens.flight,
+        duration: flightSec,
         ease: easings.easeInOut,
         onUpdate: (t) => {
           const cam = camForFlightT(t, w, h, cam09);
@@ -721,6 +786,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
     flightT,
     mapOpacity,
     reduced,
+    revisit,
     runZoom,
     setCam,
     sheetVisible,
@@ -733,28 +799,6 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
   useEffect(() => {
     runFlightRef.current = runFlight;
   }, [runFlight]);
-
-  const enterDoor = useCallback(() => {
-    if (!path || !museumUi) return;
-    setPhase("entering");
-    if (reduced) {
-      setBlackout(1);
-      router.push(`/hall/${path.museumId}?path=${path.n}&artwork=${path.artworkId}`);
-      return;
-    }
-    animate(doorCamScale, 1.3, {
-      duration: motionTokens.doorEnter,
-      ease: easings.easeIn,
-    });
-    const t0 = performance.now();
-    const fade = () => {
-      const p = Math.min(1, (performance.now() - t0) / (motionTokens.doorEnter * 1000));
-      setBlackout(p);
-      if (p < 1) requestAnimationFrame(fade);
-      else router.push(`/hall/${path.museumId}?path=${path.n}&artwork=${path.artworkId}`);
-    };
-    requestAnimationFrame(fade);
-  }, [doorCamScale, museumUi, path, reduced, router]);
 
   const skipToFacade = () => {
     if (phase === "zoom" || phase === "occupation") goFacade();
@@ -813,7 +857,25 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
               aria-label="Карта України"
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
-              {/* Dotted start → target (map phase); flight keeps trail overlay */}
+              {/* Faint rays start → visited; bright start → target */}
+              {phase === "map" && !hideFarLabels
+                ? visitedOrder.map((id) => {
+                    const m = getMuseum(id);
+                    if (!m) return null;
+                    const end = projectToMap(m.lat, m.lng);
+                    return (
+                      <DottedRoute
+                        key={`ray-${id}`}
+                        start={startPt}
+                        ctrl={arcControl(startPt, end)}
+                        end={end}
+                        opacity={0.22}
+                        animateDraw={false}
+                        routeKey={`ray-${id}`}
+                      />
+                    );
+                  })
+                : null}
               {phase === "map" && arcDrawn ? (
                 <DottedRoute
                   start={startPt}
@@ -823,34 +885,13 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
                   opacity={0.6}
                 />
               ) : null}
-              {/* Constellation: visited museums in journey order */}
-              {phase === "map" && !hideFarLabels && visitedOrder.length >= 2
-                ? visitedOrder.slice(0, -1).map((id, i) => {
-                    const nextId = visitedOrder[i + 1]!;
-                    const aM = getMuseum(id);
-                    const bM = getMuseum(nextId);
-                    if (!aM || !bM) return null;
-                    const a = projectToMap(aM.lat, aM.lng);
-                    const b = projectToMap(bM.lat, bM.lng);
-                    return (
-                      <DottedRoute
-                        key={`const-${id}-${nextId}`}
-                        start={a}
-                        ctrl={arcControl(a, b)}
-                        end={b}
-                        opacity={0.25}
-                        animateDraw={false}
-                        routeKey={`const-${id}-${nextId}`}
-                      />
-                    );
-                  })
-                : null}
               {phase === "map" && !hideFarLabels
                 ? visitedOrder.map((id) => {
                     if (id === path?.museumId) return null;
                     const m = getMuseum(id);
                     if (!m) return null;
                     const p = projectToMap(m.lat, m.lng);
+                    const place = map02Labels.get(id);
                     return (
                       <MapStar
                         key={`vis-${id}`}
@@ -858,7 +899,8 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
                         y={p.y}
                         size={14}
                         label={m.city}
-                        labelSide={mapLabelSide(p.x)}
+                        labelSide={place?.side ?? mapLabelSide(p.x)}
+                        labelDy={place?.dy ?? 0}
                         glow="soft"
                         labelTone="secondary"
                       />
@@ -869,13 +911,15 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
               {phase === "map" && !hideFarLabels
                 ? dimMuseums.map((m) => {
                     const p = projectToMap(m.lat, m.lng);
+                    const place = map02Labels.get(m.id);
                     return (
                       <MuseumDot
                         key={m.id}
                         x={p.x}
                         y={p.y}
                         label={m.city}
-                        labelSide={mapLabelSide(p.x)}
+                        labelSide={place?.side ?? mapLabelSide(p.x)}
+                        labelDy={place?.dy ?? 0}
                         tone="dim"
                       />
                     );
@@ -1070,7 +1114,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
               backgroundColor: museumUi.facadeFill,
             }}
           >
-            {phase === "facade" ? (
+            {phase === "facade" && !revisit ? (
               <button
                 type="button"
                 aria-label="Зайти в музей"
@@ -1108,7 +1152,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
             )}
           </motion.div>
 
-          {phase === "facade" && trailItems ? (
+          {phase === "facade" && trailItems && !revisit ? (
             <RouteTrail
               items={trailItems}
               style={{ left: 24, top: 76 }}
@@ -1116,7 +1160,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
             />
           ) : null}
 
-          {phase === "facade" && (
+          {phase === "facade" && !revisit ? (
             <motion.div
               ref={facadeCardRef}
               className="absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
@@ -1133,7 +1177,9 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
               }}
             >
               <p className="text-overline uppercase text-text-accent">Ласкаво просимо</p>
-              <h2 className="mt-md text-h2">{getMuseumDisplayName(path.museumId)}</h2>
+              <h2 className="mt-md text-h2 break-words">
+                {getMuseumDisplayName(path.museumId)}
+              </h2>
               <p className="mt-sm text-body-md text-text-secondary">
                 Двері відчинені. Усередині на тебе чекає твір.
               </p>
@@ -1141,7 +1187,20 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
                 <Button onClick={enterDoor}>Зайти всередину</Button>
               </div>
             </motion.div>
-          )}
+          ) : null}
+
+          {/* Revisit: no sheet / buttons — short hold then auto-enter */}
+          {phase === "facade" && revisit ? (
+            <div
+              ref={facadeCardRef}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
+              aria-hidden
+            >
+              <h2 className="text-h2 break-words text-text-primary/90">
+                {getMuseumDisplayName(path.museumId)}
+              </h2>
+            </div>
+          ) : null}
         </motion.div>
       )}
 

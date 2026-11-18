@@ -118,6 +118,7 @@ export function DesktopPhonePreview() {
               height={phoneH}
               className="block border-0 bg-screen"
               style={{ width: PHONE_W, height: phoneH }}
+              allow="web-share"
             />
           </div>
         </div>

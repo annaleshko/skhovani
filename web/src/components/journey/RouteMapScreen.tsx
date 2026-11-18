@@ -9,9 +9,11 @@ import { getMuseum } from "@/data";
 import {
   ALL_DONE_COPY,
   getPath,
+  getLastOpenedPathInMuseum,
   getNextPathInMuseum,
   getPathOrigin,
   getVisitedMuseumOrder,
+  isMuseumPassed,
   type ResolvedPath,
 } from "@/data/journey";
 import {
@@ -25,7 +27,7 @@ import {
   haversineKm,
   projectToMap,
 } from "@/lib/geo";
-import { mapLabelSide } from "@/lib/map-label";
+import { layoutMapLabels, type MapLabelMarker } from "@/lib/map-label";
 import {
   defaultSpring,
   motionTokens,
@@ -41,13 +43,18 @@ type Props = {
   /** Journey-order next path when the screen opens. */
   next: ResolvedPath | null;
   onDepart: (path: ResolvedPath) => void;
+  /**
+   * Star museum tap (already opened) — flight without sheet.
+   * `reopen` when all museum paths are done (hall shows last opened, revealed).
+   */
+  onRevisit?: (path: ResolvedPath, opts: { reopen: boolean }) => void;
 };
 
 /**
  * MVP v2 screen 02в — Figma `238:1557`, ref `docs/figma-refs-v2/02v-route-map.png`.
- * Origin = start city; visited museums = constellation stars; target = sparkle.
+ * Origin = start city; rays to visited; target = bright dotted route.
  */
-export function RouteMapScreen({ open, next, onDepart }: Props) {
+export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
   const { completedPaths, startCityId } = useAppState();
@@ -103,6 +110,37 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
     return haversineKm(origin.city, targetMuseum);
   }, [origin.city, targetMuseum]);
 
+  const labelLayout = useMemo(() => {
+    const markers: MapLabelMarker[] = [];
+    for (const id of JOURNEY_MUSEUM_ORDER) {
+      const m = getMuseum(id);
+      if (!m) continue;
+      const p = projectToMap(m.lat, m.lng);
+      markers.push({ id, x: p.x, y: p.y, label: m.city });
+    }
+    return layoutMapLabels(markers);
+  }, []);
+
+  const onMuseumTap = (id: string) => {
+    // Star = at least one artwork opened → straight in (no sheet)
+    if (visitedSet.has(id) && onRevisit) {
+      const nextIn = getNextPathInMuseum(id, completedPaths);
+      if (nextIn) {
+        onRevisit(nextIn, { reopen: false });
+        return;
+      }
+      const last = getLastOpenedPathInMuseum(id, completedPaths);
+      if (last) {
+        onRevisit(last, { reopen: true });
+        return;
+      }
+    }
+    setPickedMuseumId(id);
+  };
+
+  /** Selected museum is a star → sheet still shows for non-revisit path picks from journey sheet. */
+  const selectedIsStar = visitedSet.has(selectedMuseumId);
+
   return (
     <AnimatePresence>
       {open ? (
@@ -137,30 +175,25 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
 
-              {/* Constellation under active route: visited museums in visit order */}
-              {visitedOrder.length >= 2
-                ? visitedOrder.slice(0, -1).map((id, i) => {
-                    const nextId = visitedOrder[i + 1]!;
-                    const aM = getMuseum(id);
-                    const bM = getMuseum(nextId);
-                    if (!aM || !bM) return null;
-                    const a = projectToMap(aM.lat, aM.lng);
-                    const b = projectToMap(bM.lat, bM.lng);
-                    return (
-                      <DottedRoute
-                        key={`const-${id}-${nextId}`}
-                        start={a}
-                        ctrl={arcControl(a, b)}
-                        end={b}
-                        opacity={0.25}
-                        animateDraw={false}
-                        routeKey={`const-${id}-${nextId}`}
-                      />
-                    );
-                  })
-                : null}
+              {/* Faint rays: start → each visited museum */}
+              {visitedOrder.map((id) => {
+                const m = getMuseum(id);
+                if (!m) return null;
+                const end = projectToMap(m.lat, m.lng);
+                return (
+                  <DottedRoute
+                    key={`ray-${id}`}
+                    start={startPt}
+                    ctrl={arcControl(startPt, end)}
+                    end={end}
+                    opacity={0.22}
+                    animateDraw={false}
+                    routeKey={`ray-${id}`}
+                  />
+                );
+              })}
 
-              {/* Start city → selected target (drawn above constellation) */}
+              {/* Bright start → selected target */}
               {targetMuseum ? (
                 <DottedRoute
                   start={startPt}
@@ -183,6 +216,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                 const m = getMuseum(id);
                 if (!m) return null;
                 const p = projectToMap(m.lat, m.lng);
+                const place = labelLayout.get(id);
                 return (
                   <MapStar
                     key={`vis-${id}`}
@@ -190,10 +224,11 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                     y={p.y}
                     size={14}
                     label={m.city}
-                    labelSide={mapLabelSide(p.x)}
+                    labelSide={place?.side === "top" || place?.side === "bottom" ? place.side : place?.side ?? "right"}
+                    labelDy={place?.dy ?? 0}
                     glow="soft"
                     labelTone="secondary"
-                    onClick={() => setPickedMuseumId(id)}
+                    onClick={() => onMuseumTap(id)}
                   />
                 );
               })}
@@ -203,15 +238,17 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                 const m = getMuseum(id);
                 if (!m) return null;
                 const p = projectToMap(m.lat, m.lng);
+                const place = labelLayout.get(id);
                 return (
                   <MuseumDot
                     key={id}
                     x={p.x}
                     y={p.y}
                     label={m.city}
-                    labelSide={mapLabelSide(p.x)}
+                    labelSide={place?.side ?? "right"}
+                    labelDy={place?.dy ?? 0}
                     tone="dim"
-                    onClick={() => setPickedMuseumId(id)}
+                    onClick={() => onMuseumTap(id)}
                   />
                 );
               })}
@@ -224,12 +261,15 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                     y={targetPt.y}
                     size={22}
                     label={targetMuseum.city}
-                    labelSide={mapLabelSide(targetPt.x)}
+                    labelSide={
+                      labelLayout.get(selectedMuseumId)?.side ?? "right"
+                    }
+                    labelDy={labelLayout.get(selectedMuseumId)?.dy ?? 0}
                     glow="strong"
                     labelTone="primary"
                     pulsing={!reduced}
                     appear
-                    onClick={() => setPickedMuseumId(selectedMuseumId)}
+                    onClick={() => onMuseumTap(selectedMuseumId)}
                   />
                 ) : (
                   <MapPin
@@ -237,13 +277,11 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                     x={targetPt.x}
                     y={targetPt.y}
                     label={targetMuseum.city}
-                    labelSide={
-                      mapLabelSide(targetPt.x) === "left" ? "top" : "right"
-                    }
+                    labelSide="right"
                     variant="target"
                     pulsing={!reduced}
                     appear
-                    onClick={() => setPickedMuseumId(selectedMuseumId)}
+                    onClick={() => onMuseumTap(selectedMuseumId)}
                   />
                 )
               ) : null}
@@ -286,7 +324,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                   )}
                 </div>
               </>
-            ) : sheetPath ? (
+            ) : sheetPath && !selectedIsStar ? (
               <>
                 <h2 className="text-h2">
                   Далі — {getMuseumShortLabel(sheetPath.museumId)}
@@ -298,13 +336,37 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                   <Button onClick={() => onDepart(sheetPath)}>Вирушити</Button>
                 </div>
               </>
+            ) : sheetPath && selectedIsStar ? (
+              // Star selected via default journey next — still show depart for first-time sheet path
+              // (star tap uses onRevisit; sheet CTA for journey-order next when it happens to be a star city)
+              <>
+                <h2 className="text-h2">
+                  Далі — {getMuseumShortLabel(sheetPath.museumId)}
+                </h2>
+                <p className="mt-sm text-body-md text-text-secondary">
+                  ≈ {distanceKm} км від тебе. {routeSheetBlurb(sheetPath.museumId)}
+                </p>
+                <div className="mt-lg">
+                  <Button
+                    onClick={() =>
+                      onRevisit
+                        ? onRevisit(sheetPath, { reopen: false })
+                        : onDepart(sheetPath)
+                    }
+                  >
+                    Вирушити
+                  </Button>
+                </div>
+              </>
             ) : (
               <>
                 <h2 className="text-h2">
                   Далі — {getMuseumShortLabel(selectedMuseumId)}
                 </h2>
                 <p className="mt-sm text-body-md text-text-secondary">
-                  Усі твори в цьому музеї вже відкриті. Обери інший музей на карті.
+                  {isMuseumPassed(selectedMuseumId, completedPaths)
+                    ? "Усі твори в цьому музеї вже відкриті. Обери інший музей на карті."
+                    : "Обери музей на карті."}
                 </p>
               </>
             )}

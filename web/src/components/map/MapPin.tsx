@@ -10,8 +10,9 @@ type Props = {
   x: number;
   y: number;
   label?: string;
-  /** Label to the right of the marker (Figma destination / door hint) */
-  labelSide?: "top" | "right";
+  /** Label placement relative to the marker */
+  labelSide?: "top" | "right" | "left" | "bottom";
+  labelDy?: number;
   variant?: MapPinVariant;
   pulsing?: boolean;
   /** Spring scale-in on the inner group only (never CSS-transform the outer translate). */
@@ -30,6 +31,7 @@ export function MapPin({
   y,
   label,
   labelSide = "top",
+  labelDy = 0,
   variant = "start",
   pulsing = false,
   appear = false,
@@ -63,13 +65,21 @@ export function MapPin({
       </>
     );
 
+  const labelPos =
+    labelSide === "right"
+      ? { x: 18, y: 5 + labelDy, anchor: "start" as const, size: 14 }
+      : labelSide === "left"
+        ? { x: -18, y: 5 + labelDy, anchor: "end" as const, size: 14 }
+        : labelSide === "bottom"
+          ? { x: 0, y: 20 + labelDy, anchor: "middle" as const, size: 12 }
+          : { x: 0, y: -16 + labelDy, anchor: "middle" as const, size: 12 };
   const labelEl = label ? (
     <text
-      x={labelSide === "right" ? 18 : 0}
-      y={labelSide === "right" ? 5 : -16}
-      textAnchor={labelSide === "right" ? "start" : "middle"}
+      x={labelPos.x}
+      y={labelPos.y}
+      textAnchor={labelPos.anchor}
       fill="var(--color-text-primary)"
-      fontSize={labelSide === "right" ? 14 : 12}
+      fontSize={labelPos.size}
       fontWeight={600}
       fontFamily="var(--font-manrope), sans-serif"
     >

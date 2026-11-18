@@ -14,8 +14,10 @@ import {
   lensCamera,
   resolveStopTarget,
   stopDurationSec,
+  stopScreenPoint,
   tourImageSrc,
 } from "@/lib/tour-camera";
+import { photographerCreditLine } from "@/lib/photo-credit";
 import {
   easings,
   motionTokens,
@@ -464,8 +466,25 @@ export function TourStage({
     : null;
 
   const coneOpacity = zoomedIn ? 0.6 : 1;
-  const tourRingCx = focusX;
-  const tourRingCy = focusY;
+  /** Ring at the stop point after edge clamp — not always stage center. */
+  const tourRingPos = (() => {
+    if (mode !== "tour" || !stop) return { x: focusX, y: focusY };
+    const target = resolveStopTarget(stop, artwork.touchZones);
+    const cam = lensCamera(
+      target.x,
+      target.y,
+      target.zoom,
+      imgLayout,
+      focusX,
+      focusY,
+      stage.w,
+      viewH,
+    );
+    return stopScreenPoint(target.x, target.y, cam, imgLayout);
+  })();
+  const tourRingCx = tourRingPos.x;
+  const tourRingCy = tourRingPos.y;
+  const photoLine = photographerCreditLine(artwork.photoCredit);
 
   const lampTop = mode === "explore" ? P.lamp.y * sy : 8 * sy;
   const coneTop = mode === "explore" ? 58 * sy : 100 * sy;
@@ -629,7 +648,7 @@ export function TourStage({
       <AnimatePresence>
         {ringVisible && mode === "tour" ? (
           <TourMagnifier
-            key={`tour-ring-${stopIdx}`}
+            key="tour-ring"
             cx={tourRingCx}
             cy={tourRingCy}
             progress={ringProgress}
@@ -691,9 +710,9 @@ export function TourStage({
               top: (P.frame.y + P.frame.h + 10) * sy,
             }}
           >
-            <p className="text-caption text-text-secondary">
-              {artwork.photoCredit}
-            </p>
+            {photoLine ? (
+              <p className="text-caption text-text-secondary">{photoLine}</p>
+            ) : null}
             <motion.p
               className="flex items-start gap-sm text-caption text-text-secondary"
               animate={

@@ -14,6 +14,7 @@ function HallInner() {
   const pathNRaw = search.get("path");
   const pathN = pathNRaw != null ? Number(pathNRaw) : null;
   const artworkId = Number(search.get("artwork") ?? museum?.artworkIds[0] ?? 0);
+  const reopenHall = search.get("reopen") === "1";
 
   if (!ready) return <div className="min-h-dvh bg-screen" aria-busy />;
   if (!museum || !artworkId) {
@@ -29,6 +30,7 @@ function HallInner() {
       museumId={params.museumId}
       pathN={Number.isFinite(pathN) ? pathN : null}
       artworkId={artworkId}
+      reopenHall={reopenHall}
     />
   );
 }

@@ -19,7 +19,7 @@ const DIAMETER = POINTER_RING_PX;
 
 /**
  * Small pointer ring — marks the detail the stop text describes.
- * Screen-space; no magnification inside.
+ * Screen-space; follows post-clamp stop position.
  */
 export function TourMagnifier({
   cx,
@@ -34,19 +34,21 @@ export function TourMagnifier({
   const dashOffset = circ * (1 - Math.min(1, Math.max(0, progress)));
 
   const mask = `radial-gradient(circle ${r}px at ${cx}px ${cy}px, transparent ${Math.max(0, r - FEATHER)}px, #000 ${r}px)`;
+  const posTransition = reduced
+    ? { duration: motionTokens.reducedCrossfade, ease: easings.easeOut }
+    : { duration: motionTokens.lens, ease: easings.easeInOut };
 
   return (
     <motion.div
       className="pointer-events-none absolute inset-0 z-[3]"
-      initial={{ opacity: 0, scale: reduced ? 1 : 0.85 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: reduced ? 1 : 0.9 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={
         reduced
           ? { duration: motionTokens.reducedCrossfade, ease: easings.easeOut }
           : { duration: motionTokens.lensAppear, ease: easings.easeOut }
       }
-      style={{ transformOrigin: `${cx}px ${cy}px` }}
       aria-hidden
     >
       {/* Soft dim outside the ring */}
@@ -59,14 +61,13 @@ export function TourMagnifier({
         }}
       />
 
-      <svg
+      <motion.svg
         width={svgSize}
         height={svgSize}
         className="absolute -rotate-90"
-        style={{
-          left: cx - svgSize / 2,
-          top: cy - svgSize / 2,
-        }}
+        initial={false}
+        animate={{ left: cx - svgSize / 2, top: cy - svgSize / 2 }}
+        transition={posTransition}
       >
         <circle
           cx={svgSize / 2}
@@ -98,7 +99,7 @@ export function TourMagnifier({
           stroke="var(--color-bg-accent)"
           strokeWidth={2}
         />
-      </svg>
+      </motion.svg>
     </motion.div>
   );
 }

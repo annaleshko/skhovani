@@ -15,6 +15,7 @@ import {
   getHallLayout,
   openingClipPath,
   openingInsetStyle,
+  openingShape,
   paintingOpeningInset,
   type HallSlot,
 } from "@/data/hall-layouts";
@@ -58,14 +59,16 @@ type StolenPhase = "empty" | "revealing" | "remembered";
 
 /** Focus stolen before tap — heavy blur clipped to the painting opening. */
 const STOLEN_BLUR_FILTER = "blur(18px) brightness(0.45) saturate(0.55)";
-/** After reveal — muted memory look (painting only). */
-const STOLEN_MEMORY_FILTER =
-  "blur(0px) saturate(0.55) sepia(0.15) brightness(0.92)";
 
 type Props = {
   museumId: string;
   pathN: number | null;
   artworkId: number;
+  /**
+   * Revisit of an already-opened artwork: hall shows full color above darkness,
+   * tap → passport (no empty/blur/tour).
+   */
+  reopenHall?: boolean;
 };
 
 function scrollLeftTo(
@@ -97,7 +100,12 @@ function scrollLeftTo(
  * Hall — wall → frames → 70% darkness → opened + lamp + cone → captions.
  * MVP v2: 05 empty / 06 reveal / 12 neighbor caption (no 12б sheet).
  */
-export function HallExperience({ museumId, pathN, artworkId }: Props) {
+export function HallExperience({
+  museumId,
+  pathN,
+  artworkId,
+  reopenHall = false,
+}: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
   const {
@@ -152,7 +160,9 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const [detailZone, setDetailZone] = useState<TouchZone | null>(null);
   const [guidePrefill, setGuidePrefill] = useState<string | null>(null);
   const [guideDetail, setGuideDetail] = useState<string | null>(null);
-  const [stolenPhase, setStolenPhase] = useState<StolenPhase>("empty");
+  const [stolenPhase, setStolenPhase] = useState<StolenPhase>(() =>
+    reopenHall ? "remembered" : "empty",
+  );
   const [focusKey, setFocusKey] = useState(artworkId);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -164,7 +174,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   if (artworkId !== focusKey) {
     setFocusKey(artworkId);
     setViewArtworkId(artworkId);
-    setStolenPhase("empty");
+    setStolenPhase(reopenHall ? "remembered" : "empty");
     setNeighborId(null);
     setPhase("hall");
     setIntroStep(reduced ? "done" : "black");
@@ -201,10 +211,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const isStolen = focus?.status === "stolen";
   const isShelter = focus?.status === "shelter";
   const isSaved = focus?.status === "saved";
-  const showMemoryPainting =
-    isStolen &&
-    (stolenPhase === "revealing" || stolenPhase === "remembered");
-  const showNormalPainting = isShelter || isSaved;
+  const showNormalPainting = isShelter || isSaved || reopenHall;
 
   // Center on path artwork — 600ms ease for same-museum moves
   useEffect(() => {
@@ -292,6 +299,13 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
 
     // Path focus frame
     setViewArtworkId(artworkId);
+    // Revisit of already-opened artwork → passport directly
+    if (reopenHall || openedIds.has(artworkId)) {
+      if (reopenHall || stolenPhase !== "empty") {
+        setPhase("about");
+        return;
+      }
+    }
     if (isStolen) {
       if (stolenPhase === "empty") {
         clearRevealTimers();
@@ -413,8 +427,6 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const focusSlot = slots[focusSlotIndex]!;
   const pathSlot = slots[pathSlotIndex]!;
   const hallFocusSlot = showHall ? pathSlot : focusSlot;
-  const lampX = hallFocusSlot.lampX;
-  const coneX = lampX + layout.lamp.w / 2 - layout.cone.w / 2;
   const coneTop = layout.cone.y;
   const markerCx = hallFocusSlot.frameRect.x + hallFocusSlot.frameRect.w - 26.5;
   const markerCy = hallFocusSlot.frameRect.y + 11.5;
@@ -429,23 +441,22 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const darknessAlpha = intro === "black" ? 1 : 0.7;
   const coneOpacity = isShelter ? 0.7 : 0.9;
 
-  const hintStolen = isStolen && stolenPhase === "empty";
-  const hintTour = (isShelter || isSaved) && showUi;
+  const hintStolen = isStolen && stolenPhase === "empty" && !reopenHall;
+  const hintTour = (isShelter || isSaved) && showUi && !reopenHall;
+  const hintPassport = reopenHall && showUi;
   const showMemoryLine =
     isStolen &&
+    !reopenHall &&
     (stolenPhase === "revealing" || stolenPhase === "remembered") &&
     showUi;
 
   const shelterFilter = isShelter
     ? "brightness(0.85) sepia(0.1)"
     : undefined;
-  const stolenPaintFilter =
-    stolenPhase === "empty" ? STOLEN_BLUR_FILTER : STOLEN_MEMORY_FILTER;
   const revealDuration = reduced
     ? motionTokens.reducedCrossfade
     : motionTokens.memoryReveal;
   const emptyInsetCss = openingInsetStyle(emptyInset);
-  const emptyClip = openingClipPath(emptyInset);
 
   return (
     <div
@@ -468,29 +479,25 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                 draggable={false}
               />
 
-              {/* 2. ALL frames under darkness */}
+              {/* 2. ALL frames under darkness (unopened stay here) */}
               {slots.map((slot) => {
                 const art = getArtwork(slot.artworkId);
                 const isPathFocus = slot.artworkId === artworkId;
                 const isOpenedFrame = openedIds.has(slot.artworkId);
                 const r = slot.frameRect;
-                const focusEmpty =
-                  isPathFocus && isStolen && stolenPhase === "empty";
-                // Not-yet-opened: dim/hidden plate. Opened (or current): real frame.
-                const src =
-                  !isPathFocus && !isOpenedFrame && slot.hiddenSrc
+                const inset = paintingOpeningInset(slot.artworkId);
+                const shape = openingShape(slot.artworkId);
+                const clip = openingClipPath(inset, shape);
+                // Under darkness: hidden plate / blur for not-yet-opened; frame chrome for opened (lit copy above).
+                const underSrc =
+                  !isOpenedFrame && !isPathFocus && slot.hiddenSrc
                     ? slot.hiddenSrc
                     : slot.frameSrc;
-                const inset = paintingOpeningInset(slot.artworkId);
-                // Opened neighbors: revealed memory look under their lamp (never dark).
-                const showOpenedMemory =
-                  isOpenedFrame &&
+                const needsBlurCover =
+                  !isOpenedFrame &&
                   !isPathFocus &&
+                  !slot.hiddenSrc &&
                   art?.status === "stolen";
-                const openedShelter =
-                  isOpenedFrame &&
-                  !isPathFocus &&
-                  (art?.status === "shelter" || art?.status === "saved");
                 return (
                   <motion.div
                     key={`base-${slot.artworkId}`}
@@ -511,36 +518,15 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={src}
+                      src={underSrc}
                       alt=""
                       className="pointer-events-none absolute inset-0 size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
                       draggable={false}
-                      style={{
-                        filter: openedShelter
-                          ? "brightness(0.85) sepia(0.1)"
-                          : undefined,
-                      }}
                     />
-                    {showOpenedMemory ? (
+                    {needsBlurCover ? (
                       <div
                         className="pointer-events-none absolute inset-0 overflow-hidden"
-                        style={{ clipPath: openingClipPath(inset) }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={slot.frameSrc}
-                          alt=""
-                          className="absolute inset-0 size-full object-contain"
-                          draggable={false}
-                          style={{ filter: STOLEN_MEMORY_FILTER }}
-                        />
-                      </div>
-                    ) : null}
-                    {/* Stolen focus before tap: blur cover so painting never flashes clear */}
-                    {focusEmpty ? (
-                      <div
-                        className="pointer-events-none absolute inset-0 overflow-hidden"
-                        style={{ clipPath: openingClipPath(inset) }}
+                        style={{ clipPath: clip }}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -578,147 +564,190 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                 }}
               />
 
-              {/* 4. Cone + opened art + lamp */}
-              {showCone ? (
-                <motion.div
-                  data-hall-cone
-                  className="pointer-events-none absolute z-[6]"
-                  style={{
-                    left: coneX * px,
-                    top: coneTop * px,
-                    width: layout.cone.w * px,
-                    height: layout.cone.h * px,
-                  }}
-                  initial={reduced ? false : { opacity: 0 }}
-                  animate={
-                    reduced
-                      ? { opacity: coneOpacity }
-                      : intro === "done" || intro === "ui"
-                        ? {
-                            opacity: [
-                              coneOpacity * 0.9,
-                              coneOpacity,
-                              coneOpacity * 0.9,
-                            ],
-                          }
-                        : { opacity: coneOpacity }
-                  }
-                  transition={
-                    reduced
-                      ? { duration: 0 }
-                      : intro === "cone"
-                        ? { duration: 0.5, ease: easings.easeOut }
-                        : intro === "done" || intro === "ui"
-                          ? { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                          : { duration: 0.5, ease: easings.easeOut }
-                  }
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={hallUi.cone}
-                    alt=""
-                    className="size-full origin-center rotate-180 object-fill mix-blend-screen"
-                    draggable={false}
-                  />
-                </motion.div>
-              ) : null}
+              {/* 4. Opened frames ABOVE darkness — full color + lamp + cone */}
+              {paintingBright
+                ? slots
+                    .filter(
+                      (s) =>
+                        litSlotIds.has(s.artworkId) &&
+                        (openedIds.has(s.artworkId) ||
+                          s.artworkId === artworkId),
+                    )
+                    .map((slot) => {
+                      const isActive = slot.artworkId === artworkId;
+                      const isOpenedNeighbor =
+                        openedIds.has(slot.artworkId) && !isActive;
+                      const showOpenedFull =
+                        isOpenedNeighbor || (isActive && reopenHall);
+                      const focusStolenEmpty =
+                        isActive &&
+                        isStolen &&
+                        !reopenHall &&
+                        stolenPhase === "empty";
+                      const focusStolenReveal =
+                        isActive &&
+                        isStolen &&
+                        !reopenHall &&
+                        stolenPhase !== "empty";
+                      const inset = paintingOpeningInset(slot.artworkId);
+                      const shape = openingShape(slot.artworkId);
+                      const clip = openingClipPath(inset, shape);
+                      const slotConeX =
+                        slot.lampX + layout.lamp.w / 2 - layout.cone.w / 2;
+                      return (
+                        <div key={`lit-${slot.artworkId}`}>
+                          {showCone ? (
+                            <motion.div
+                              data-hall-cone={isActive ? true : undefined}
+                              className="pointer-events-none absolute z-[6]"
+                              style={{
+                                left: slotConeX * px,
+                                top: coneTop * px,
+                                width: layout.cone.w * px,
+                                height: layout.cone.h * px,
+                              }}
+                              initial={reduced ? false : { opacity: 0 }}
+                              animate={{
+                                opacity: isActive
+                                  ? coneOpacity
+                                  : coneOpacity * 0.55,
+                              }}
+                              transition={{
+                                duration: reduced ? 0 : 0.5,
+                                ease: easings.easeOut,
+                              }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={hallUi.cone}
+                                alt=""
+                                className="size-full origin-center rotate-180 object-fill mix-blend-screen"
+                                draggable={false}
+                              />
+                            </motion.div>
+                          ) : null}
 
-              {paintingBright ? (
-                <motion.div
-                  className="pointer-events-none absolute z-[7]"
-                  style={{
-                    left: hallFocusSlot.frameRect.x * px,
-                    top: hallFocusSlot.frameRect.y * px,
-                    width: hallFocusSlot.frameRect.w * px,
-                    height: hallFocusSlot.frameRect.h * px,
-                  }}
-                  initial={reduced ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{
-                    duration: reduced ? 0 : 0.35,
-                    ease: easings.easeOut,
-                  }}
-                >
-                  {/* Sharp frame chrome; painting treatment is clipped to the opening */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={hallFocusSlot.frameSrc}
-                    alt=""
-                    className="absolute inset-0 size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
-                    draggable={false}
-                    style={{
-                      filter: showNormalPainting ? shelterFilter : undefined,
-                    }}
-                  />
+                          <motion.div
+                            className="pointer-events-none absolute z-[7]"
+                            style={{
+                              left: slot.frameRect.x * px,
+                              top: slot.frameRect.y * px,
+                              width: slot.frameRect.w * px,
+                              height: slot.frameRect.h * px,
+                            }}
+                            initial={reduced ? false : { opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                              duration: reduced ? 0 : 0.35,
+                              ease: easings.easeOut,
+                            }}
+                          >
+                            {/* Frame chrome */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={slot.frameSrc}
+                              alt=""
+                              className="absolute inset-0 size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
+                              draggable={false}
+                              style={{
+                                filter:
+                                  isActive && showNormalPainting && isShelter
+                                    ? shelterFilter
+                                    : undefined,
+                                opacity:
+                                  focusStolenEmpty || focusStolenReveal
+                                    ? 1
+                                    : 1,
+                              }}
+                            />
 
-                  {/* Stolen: blurred painting → memory unblur (frame stays sharp) */}
-                  {isStolen ? (
-                    <div
-                      className="pointer-events-none absolute inset-0 overflow-hidden"
-                      style={{ clipPath: emptyClip }}
-                    >
-                      <motion.img
-                        src={hallFocusSlot.frameSrc}
-                        alt=""
-                        className="absolute inset-0 size-full object-contain"
-                        draggable={false}
-                        initial={false}
-                        animate={{ filter: stolenPaintFilter }}
-                        transition={{
-                          duration: revealDuration,
-                          ease: easings.easeInOut,
-                        }}
-                      />
-                    </div>
-                  ) : null}
+                            {/* Opened / reopen: full color, no memory filter */}
+                            {showOpenedFull ? null : null}
 
-                  <AnimatePresence>
-                    {isStolen && stolenPhase === "empty" ? (
-                      <motion.div
-                        key="empty-label"
-                        className="absolute flex items-center justify-center px-md text-center"
-                        style={emptyInsetCss}
-                        initial={false}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          duration: revealDuration,
-                          ease: easings.easeInOut,
-                        }}
-                      >
-                        <p
-                          className="text-text-secondary"
-                          style={{
-                            fontSize: 14,
-                            lineHeight: "20px",
-                            textShadow: "0 1px 6px rgba(0,0,0,0.85)",
-                          }}
-                        >
-                          Цього твору зараз немає в Україні
-                        </p>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
+                            {/* Current stolen: crossfade hidden/blur → revealed */}
+                            {isActive && isStolen && !reopenHall ? (
+                              <div
+                                className="pointer-events-none absolute inset-0 overflow-hidden"
+                                style={{ clipPath: clip }}
+                              >
+                                {hallFocusSlot.hiddenSrc ? (
+                                  <motion.img
+                                    src={hallFocusSlot.hiddenSrc}
+                                    alt=""
+                                    className="absolute inset-0 size-full object-contain"
+                                    draggable={false}
+                                    initial={false}
+                                    animate={{
+                                      opacity:
+                                        stolenPhase === "empty" ? 1 : 0,
+                                    }}
+                                    transition={{
+                                      duration: revealDuration,
+                                      ease: easings.easeInOut,
+                                    }}
+                                  />
+                                ) : null}
+                                <motion.img
+                                  src={slot.frameSrc}
+                                  alt=""
+                                  className="absolute inset-0 size-full object-contain"
+                                  draggable={false}
+                                  initial={false}
+                                  animate={{
+                                    opacity:
+                                      stolenPhase === "empty" &&
+                                      hallFocusSlot.hiddenSrc
+                                        ? 0
+                                        : 1,
+                                    filter:
+                                      stolenPhase === "empty"
+                                        ? STOLEN_BLUR_FILTER
+                                        : "none",
+                                  }}
+                                  transition={{
+                                    duration: revealDuration,
+                                    ease: easings.easeInOut,
+                                  }}
+                                />
+                              </div>
+                            ) : null}
 
-                  {/* Soft inner vignette on memory / muted shelter */}
-                  {showMemoryPainting || isShelter ? (
-                    <motion.div
-                      className="pointer-events-none absolute overflow-hidden"
-                      style={{
-                        ...emptyInsetCss,
-                        background:
-                          "radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.4) 100%)",
-                      }}
-                      initial={isStolen && !reduced ? { opacity: 0 } : false}
-                      animate={{ opacity: isStolen ? 1 : 0.55 }}
-                      transition={{
-                        duration: revealDuration,
-                        ease: easings.easeInOut,
-                      }}
-                    />
-                  ) : null}
-                </motion.div>
-              ) : null}
+                            <AnimatePresence>
+                              {isActive &&
+                              isStolen &&
+                              !reopenHall &&
+                              stolenPhase === "empty" ? (
+                                <motion.div
+                                  key="empty-label"
+                                  className="absolute flex items-center justify-center px-md text-center"
+                                  style={emptyInsetCss}
+                                  initial={false}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{
+                                    duration: revealDuration,
+                                    ease: easings.easeInOut,
+                                  }}
+                                >
+                                  <p
+                                    className="text-text-secondary"
+                                    style={{
+                                      fontSize: 14,
+                                      lineHeight: "20px",
+                                      textShadow:
+                                        "0 1px 6px rgba(0,0,0,0.85)",
+                                    }}
+                                  >
+                                    Цього твору зараз немає в Україні
+                                  </p>
+                                </motion.div>
+                              ) : null}
+                            </AnimatePresence>
+                          </motion.div>
+                        </div>
+                      );
+                    })
+                : null}
 
               <AnimatePresence>
                 {showLamp
@@ -726,8 +755,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                       .filter((s) => litSlotIds.has(s.artworkId))
                       .map((slot) => {
                         const isActive = slot.artworkId === artworkId;
-                        // Opened neighbors: dim but clearly lit (never dark).
-                        const targetOpacity = isActive ? 1 : 0.48;
+                        const targetOpacity = isActive ? 1 : 0.85;
                         return (
                           <motion.div
                             key={`lamp-${slot.artworkId}`}
@@ -891,7 +919,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
               <AnimatePresence>
                 {showUi &&
                 neighborId == null &&
-                (hintStolen || hintTour) ? (
+                (hintStolen || hintTour || hintPassport) ? (
                   <>
                     <motion.p
                       className="pointer-events-none absolute z-[10] text-right text-label-md leading-4 text-text-primary"
@@ -906,6 +934,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                     >
                       {hintStolen ? (
                         <>Торкнись, щоб згадати</>
+                      ) : hintPassport ? (
+                        <>Торкнись картини</>
                       ) : (
                         <>
                           Торкнись картини,
@@ -1080,6 +1110,12 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         open={phase === "route"}
         next={nextPath ?? null}
         onDepart={departNext}
+        onRevisit={(path, opts) => {
+          const reopen = opts.reopen ? "&reopen=1" : "";
+          router.replace(
+            `/journey?path=${path.n}&autostart=1&revisit=1${reopen}`,
+          );
+        }}
       />
     </div>
   );

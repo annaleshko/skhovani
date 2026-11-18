@@ -7,7 +7,8 @@ type Props = {
   y: number;
   label: string;
   /** Label side relative to the 14px ring. */
-  labelSide?: "left" | "right";
+  labelSide?: "left" | "right" | "top" | "bottom";
+  labelDy?: number;
   /** Dim / passed (gold) / next (gold + optional pulse). */
   tone?: "dim" | "passed" | "next";
   pulsing?: boolean;
@@ -24,6 +25,7 @@ export function MuseumDot({
   y,
   label,
   labelSide = "right",
+  labelDy = 0,
   tone = "dim",
   pulsing = false,
   className,
@@ -36,6 +38,14 @@ export function MuseumDot({
   const labelFill =
     tone === "dim" ? "var(--color-text-secondary)" : "var(--color-text-primary)";
   const opacity = tone === "dim" ? 0.85 : 1;
+  const labelPos =
+    labelSide === "left"
+      ? { x: -13, y: 4 + labelDy, anchor: "end" as const }
+      : labelSide === "right"
+        ? { x: 13, y: 4 + labelDy, anchor: "start" as const }
+        : labelSide === "top"
+          ? { x: 0, y: -16 + labelDy, anchor: "middle" as const }
+          : { x: 0, y: 18 + labelDy, anchor: "middle" as const };
 
   return (
     <g
@@ -83,9 +93,9 @@ export function MuseumDot({
       <circle r={3} fill={fill} />
       {/* 6px gap from ring edge (r=7 → ±13) */}
       <text
-        x={labelSide === "left" ? -13 : 13}
-        y={4}
-        textAnchor={labelSide === "left" ? "end" : "start"}
+        x={labelPos.x}
+        y={labelPos.y}
+        textAnchor={labelPos.anchor}
         fill={labelFill}
         fontSize={12}
         fontWeight={500}

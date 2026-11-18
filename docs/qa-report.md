@@ -76,6 +76,20 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
 
+## 8 fixes after test (2026-11-18)
+
+| # | Fix | Check |
+|---|---|---|
+| 1 | Passport primary label «Далі»; `aria-label` «Далі — \<місто\>» | [ ] |
+| 2 | Wallpaper: share only on coarse pointer; download append/`revoke` after 1s; iframe `allow="web-share"`; toast on failure; screen 17 only after success | [ ] PNG 1170×2532 from desktop preview |
+| 3 | Tour ring at post-clamp stop screen position (Козак / Капуцин / Дама / Великодня ×4 stops, replay) | [ ] |
+| 4 | Under-artwork credit = photographer only; none if no «Фото:»; full credit in Джерела; wallpaper 11 + PNG same | [ ] |
+| 5 | Kherson: opened frames above 70% darkness, full color + lamp + cone; current keeps blur→reveal | [ ] |
+| 6 | Melitopol 04 short title; sheet grows with content; all 5 museums @ 390×844 and 390×667 | [ ] |
+| 7 | Hidden art → `*-hidden.webp`; oval clip for Дама; no-file blur clipped to opening; reveal crossfade | [ ] |
+| 8 | Map rays start→visited (faint) + start→target (bright); no museum–museum constellation; labels non-overlapping 6px | [ ] |
+| 9 | 02в star tap: flight ~1.2s → facade 0.8s no buttons → hall; Melitopol reopen / Kherson next unopened | [ ] |
+
 ## Extended knowledge — live guide answers (2026-11-18)
 
 Import: 61 markdown bullets → artworks 1–10 (`extendedKnowledge` + new `xk_*` sources). Shared Херсон section applied to ids 1, 2, 4, 5, 6, 7. `⚠ verify` kept on soft facts; prompt requires «за даними \<джерело\>».

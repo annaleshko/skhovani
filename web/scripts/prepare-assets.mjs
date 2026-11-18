@@ -139,8 +139,11 @@ for (const artwork of content.artworks) {
 
   const hiddenSrc = findByBasename(HIDDEN_DIR, base);
   if (hiddenSrc) {
-    const hiddenRel = `hall/frames/${artwork.id}-hidden.png`;
-    await toPng(hiddenSrc, path.join(PUBLIC, hiddenRel), HALL_FRAME_MAX);
+    // WebP with alpha — neighbor «hidden» frames in the hall
+    const hiddenRel = `hall/frames/${artwork.id}-hidden.webp`;
+    await toWebp(hiddenSrc, path.join(PUBLIC, hiddenRel), HALL_FRAME_MAX, {
+      keepAlpha: true,
+    });
     track(path.relative(REPO_ROOT, hiddenSrc), `/` + hiddenRel);
   }
 }

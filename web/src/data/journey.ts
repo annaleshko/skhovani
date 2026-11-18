@@ -77,6 +77,19 @@ export function isMuseumPassed(
   return getPaths().some((p) => p.museumId === museumId && done.has(p.n));
 }
 
+/** Last completed path in a museum (journey order), if any. */
+export function getLastOpenedPathInMuseum(
+  museumId: string,
+  completedPaths: number[],
+): ResolvedPath | undefined {
+  const done = new Set(completedPaths);
+  let last: JourneyPath | undefined;
+  for (const p of getPaths()) {
+    if (p.museumId === museumId && done.has(p.n)) last = p;
+  }
+  return last ? getPath(last.n) : undefined;
+}
+
 /**
  * Map / flight origin: ALWAYS the user's start city (or abroad west edge).
  * Visited museums form a constellation separately — they are not the arc origin.

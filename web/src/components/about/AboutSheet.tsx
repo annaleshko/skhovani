@@ -268,8 +268,9 @@ export function AboutSheet({
               fullWidth={false}
               className="h-14 min-h-[56px] flex-1 border border-border-button"
               onClick={onContinue}
+              aria-label={continueLabel}
             >
-              {continueLabel}
+              Далі
             </Button>
           </motion.div>
         </>

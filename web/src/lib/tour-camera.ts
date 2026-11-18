@@ -80,6 +80,22 @@ export function lensCamera(
   return { tx, ty, scale };
 }
 
+/**
+ * Screen-space position of a normalized image point after the post-clamp
+ * camera transform (ring must follow this, not the ideal focus center).
+ */
+export function stopScreenPoint(
+  nx: number,
+  ny: number,
+  cam: { tx: number; ty: number; scale: number },
+  img: { x: number; y: number; w: number; h: number },
+): { x: number; y: number } {
+  return {
+    x: img.x + nx * img.w * cam.scale + cam.tx,
+    y: img.y + ny * img.h * cam.scale + cam.ty,
+  };
+}
+
 /** Fit image into a slot at its own aspect (full framed artwork view). */
 export function fitSlotOrigin(
   slot: { x: number; y: number; w: number; h: number },

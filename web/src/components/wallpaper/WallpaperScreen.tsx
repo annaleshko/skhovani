@@ -3,6 +3,7 @@
 import { Button, IconButton } from "@/components/ui";
 import type { Artwork } from "@/data/types";
 import { displayHeadline, displayYear } from "@/lib/artwork-display";
+import { photographerCreditLine } from "@/lib/photo-credit";
 import { motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -21,10 +22,40 @@ const PREVIEW = { w: 220, h: 476 } as const;
 const EXPORT = { w: 1170, h: 2532 } as const;
 const SCALE = EXPORT.w / PREVIEW.w;
 
+function prefersTouchShare(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+function isAbortError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err != null &&
+    "name" in err &&
+    (err as { name?: string }).name === "AbortError"
+  );
+}
+
+/** Download via real DOM anchor (blob URL kept ~1s). */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /** Figma 11 — wallpaper preview + save (no hall / lamp / badge). */
 export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
+  const [errorToast, setErrorToast] = useState(false);
   const artSrc = artwork.image;
+  const photoLine = photographerCreditLine(artwork.photoCredit);
 
   const composeExport = useCallback(async (): Promise<Blob | null> => {
     if (!artSrc) return null;
@@ -35,11 +66,9 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    // Background
     ctx.fillStyle = "#0F0E0D";
     ctx.fillRect(0, 0, EXPORT.w, EXPORT.h);
 
-    // Soft warm radial glow (Figma ellipse ~180px @ y80)
     const gx = 109 * SCALE;
     const gy = (80.36 + 90) * SCALE;
     const gr = 180 * SCALE * 1.4;
@@ -50,7 +79,6 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, EXPORT.w, EXPORT.h);
 
-    // Lock-screen date + time
     ctx.fillStyle = "rgba(245, 245, 242, 0.5)";
     ctx.textAlign = "center";
     ctx.font = `400 ${12 * SCALE}px Manrope, sans-serif`;
@@ -58,7 +86,6 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     ctx.font = `700 ${32 * SCALE}px Manrope, sans-serif`;
     ctx.fillText("20:00", EXPORT.w / 2, 62 * SCALE);
 
-    // Framed artwork centered in frame slot (11, 170.36, 196×152)
     const slot = {
       x: 11 * SCALE,
       y: 170.36 * SCALE,
@@ -79,7 +106,6 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     );
     ctx.shadowColor = "transparent";
 
-    // Captions (Figma y379)
     const cy = 390 * SCALE;
     ctx.textAlign = "center";
     ctx.fillStyle = "#f5f5f2";
@@ -94,45 +120,56 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
       EXPORT.w / 2,
       cy + 18 * SCALE,
     );
-    ctx.font = `400 ${8 * SCALE}px Manrope, sans-serif`;
-    ctx.fillText(artwork.photoCredit, EXPORT.w / 2, cy + 34 * SCALE);
+    if (photoLine) {
+      ctx.font = `400 ${8 * SCALE}px Manrope, sans-serif`;
+      ctx.fillText(photoLine, EXPORT.w / 2, cy + 34 * SCALE);
+    }
 
     return await new Promise((resolve) => {
       canvas.toBlob((b) => resolve(b), "image/png");
     });
-  }, [artSrc, artwork]);
+  }, [artSrc, artwork, photoLine]);
+
+  const showError = useCallback(() => {
+    setErrorToast(true);
+    window.setTimeout(() => setErrorToast(false), 2800);
+  }, []);
 
   const save = useCallback(async () => {
     if (busy) return;
     setBusy(true);
+    setErrorToast(false);
     try {
       const blob = await composeExport();
       if (!blob) {
-        onSaved?.();
+        showError();
         return;
       }
-      const file = new File([blob], `${artwork.slug}-wallpaper.png`, {
-        type: "image/png",
-      });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: displayHeadline(artwork),
-        });
-      } else {
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `${artwork.slug}-wallpaper.png`;
-        a.click();
-        URL.revokeObjectURL(a.href);
+      const filename = `${artwork.slug}-wallpaper.png`;
+      const file = new File([blob], filename, { type: "image/png" });
+      let shared = false;
+      if (prefersTouchShare() && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: displayHeadline(artwork),
+          });
+          shared = true;
+        } catch (err) {
+          if (isAbortError(err)) return;
+          // Any other share failure → download fallback
+        }
+      }
+      if (!shared) {
+        downloadBlob(blob, filename);
       }
       onSaved?.();
     } catch {
-      onSaved?.();
+      showError();
     } finally {
       setBusy(false);
     }
-  }, [artwork, busy, composeExport, onSaved]);
+  }, [artwork, busy, composeExport, onSaved, showError]);
 
   return (
     <AnimatePresence>
@@ -158,12 +195,10 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-xl pt-md">
-            {/* Phone preview 220×476 — Figma 236:1727 */}
             <div
               className="relative h-[476px] w-[220px] shrink-0 overflow-hidden rounded-[28px] border border-border-subtle"
               style={{ backgroundColor: "#0F0E0D" }}
             >
-              {/* Soft warm radial glow behind the artwork */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute left-[19px] top-[80px] size-[180px] rounded-full opacity-70"
@@ -206,14 +241,16 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
                 <p className="text-caption text-text-secondary">
                   {artwork.author} · {displayYear(artwork.year)} · Сховані
                 </p>
-                <p className="text-[8px] leading-4 text-text-secondary">
-                  {artwork.photoCredit}
-                </p>
+                {photoLine ? (
+                  <p className="text-[8px] leading-4 text-text-secondary">
+                    {photoLine}
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
 
-          <div className="shrink-0 px-xl pb-[calc(24px+var(--safe-bottom))] pt-md">
+          <div className="relative shrink-0 px-xl pb-[calc(24px+var(--safe-bottom))] pt-md">
             <Button onClick={save} disabled={!artSrc || busy}>
               Зберегти на телефон
             </Button>
@@ -221,6 +258,19 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
               Верх лишили порожнім під годинник. Підпис автора фото — обовʼязковий
               за ліцензією.
             </p>
+            <AnimatePresence>
+              {errorToast ? (
+                <motion.p
+                  role="status"
+                  className="absolute inset-x-xl bottom-[calc(100%+8px)] rounded-md border border-border-subtle bg-surface-raised px-md py-sm text-center text-caption text-text-primary shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                >
+                  Не вдалося зберегти. Спробуй ще раз.
+                </motion.p>
+              ) : null}
+            </AnimatePresence>
           </div>
         </motion.div>
       ) : null}

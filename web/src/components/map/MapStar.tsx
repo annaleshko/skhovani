@@ -10,7 +10,9 @@ type Props = {
   /** Outer size in SVG px (target ~22, visited ~14). */
   size?: number;
   label?: string;
-  labelSide?: "left" | "right";
+  labelSide?: "left" | "right" | "top" | "bottom";
+  /** Extra label offset in SVG px (collision avoidance). */
+  labelDy?: number;
   /** Stronger glow for the current target. */
   glow?: "strong" | "soft" | "none";
   /** Label uses primary (target) or secondary (visited). */
@@ -47,6 +49,7 @@ export function MapStar({
   size = 22,
   label,
   labelSide = "right",
+  labelDy = 0,
   glow = "strong",
   labelTone = "primary",
   pulsing = false,
@@ -63,6 +66,15 @@ export function MapStar({
       : "var(--color-text-primary)";
   const glowR = glow === "strong" ? half * 1.55 : half * 1.2;
   const glowOp = glow === "strong" ? 0.45 : glow === "soft" ? 0.22 : 0;
+  const gap = half + 6;
+  const labelPos =
+    labelSide === "left"
+      ? { x: -gap, y: 4 + labelDy, anchor: "end" as const }
+      : labelSide === "right"
+        ? { x: gap, y: 4 + labelDy, anchor: "start" as const }
+        : labelSide === "top"
+          ? { x: 0, y: -gap - 2 + labelDy, anchor: "middle" as const }
+          : { x: 0, y: gap + 10 + labelDy, anchor: "middle" as const };
 
   const marker = (
     <>
@@ -93,9 +105,9 @@ export function MapStar({
       <path d={starPath(half)} fill={fill} />
       {label ? (
         <text
-          x={labelSide === "left" ? -(half + 6) : half + 6}
-          y={4}
-          textAnchor={labelSide === "left" ? "end" : "start"}
+          x={labelPos.x}
+          y={labelPos.y}
+          textAnchor={labelPos.anchor}
           fill={labelFill}
           fontSize={labelTone === "primary" ? 16 : 12}
           fontWeight={labelTone === "primary" ? 600 : 500}

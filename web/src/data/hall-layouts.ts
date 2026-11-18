@@ -33,7 +33,7 @@ const HIDDEN_FRAME_IDS = new Set([2, 4, 5, 6, 7]);
 function framePaths(id: number): Pick<HallSlot, "frameSrc" | "hiddenSrc"> {
   const frameSrc = `/hall/frames/${id}.webp`;
   if (HIDDEN_FRAME_IDS.has(id)) {
-    return { frameSrc, hiddenSrc: `/hall/frames/${id}-hidden.png` };
+    return { frameSrc, hiddenSrc: `/hall/frames/${id}-hidden.webp` };
   }
   return { frameSrc };
 }
@@ -208,6 +208,21 @@ export function openingInsetStyle(inset: OpeningInset) {
 }
 
 /** CSS clip-path so a full-frame image is only visible in the opening. */
-export function openingClipPath(inset: OpeningInset) {
+export function openingClipPath(
+  inset: OpeningInset,
+  shape: "rect" | "ellipse" = "rect",
+) {
+  if (shape === "ellipse") {
+    const cx = 50;
+    const cy = 50;
+    const rx = (100 - (inset.left + inset.right) * 100) / 2;
+    const ry = (100 - (inset.top + inset.bottom) * 100) / 2;
+    return `ellipse(${rx}% ${ry}% at ${cx}% ${cy}%)`;
+  }
   return `inset(${inset.top * 100}% ${inset.right * 100}% ${inset.bottom * 100}% ${inset.left * 100}%)`;
+}
+
+/** Oval frames (Дама з собакою). */
+export function openingShape(artworkId: number): "rect" | "ellipse" {
+  return artworkId === 5 ? "ellipse" : "rect";
 }

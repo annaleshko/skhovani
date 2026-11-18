@@ -49,7 +49,7 @@ export const museumUi: Record<string, MuseumUi> = {
     id: "melitopol",
     facadeSrc: assetMap.museums.melitopol.facade,
     hallSrc: assetMap.museums.melitopol.hall,
-    displayName: "Мелітопольський міський краєзнавчий музей",
+    displayName: "Мелітопольський краєзнавчий музей",
     doorX: 50,
     doorY: 45,
     buildingTopY: 0.29,
