@@ -7,6 +7,7 @@ import { MapStar } from "@/components/map/MapStar";
 import { MuseumDot } from "@/components/map/MuseumDot";
 import { getMuseum } from "@/data";
 import {
+  ALL_DONE_COPY,
   getPath,
   getNextPathInMuseum,
   getPathOrigin,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/motion";
 import { useAppState } from "@/state/AppState";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 type Props = {
@@ -46,9 +48,11 @@ type Props = {
  * Origin = start city; visited museums = constellation stars; target = sparkle.
  */
 export function RouteMapScreen({ open, next, onDepart }: Props) {
+  const router = useRouter();
   const reduced = useReducedMotionSafe();
   const { completedPaths, startCityId } = useAppState();
   const vb = getMapViewBox();
+  const [confirmRestart, setConfirmRestart] = useState(false);
 
   const defaultMuseumId = next?.museumId ?? JOURNEY_MUSEUM_ORDER[0];
   /** null = follow journey-order next; set when the user taps a museum. */
@@ -238,11 +242,33 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
           >
             {journeyDone ? (
               <>
-                <h2 className="text-h2">Шлях пройдено</h2>
-                {/* TODO(copy): end-of-journey sheet body */}
+                <h2 className="text-h2">{ALL_DONE_COPY.title}</h2>
+                {/* TODO(copy confirm) */}
                 <p className="mt-sm text-body-md text-text-secondary">
-                  Ти пройшов 10 творів у 5 музеях.
+                  {ALL_DONE_COPY.body}
                 </p>
+                <div className="mt-lg flex flex-col gap-sm">
+                  {confirmRestart ? (
+                    <>
+                      <p className="text-body-md text-text-secondary">
+                        Скинути прогрес і почати з початку?
+                      </p>
+                      <Button onClick={() => router.push("/reset")}>
+                        Так, почати знову
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setConfirmRestart(false)}
+                      >
+                        Скасувати
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={() => setConfirmRestart(true)}>
+                      {ALL_DONE_COPY.cta}
+                    </Button>
+                  )}
+                </div>
               </>
             ) : sheetPath ? (
               <>

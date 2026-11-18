@@ -130,9 +130,10 @@ export function isJourneyComplete(completedPaths: number[]): boolean {
   return getPaths().every((p) => completedPaths.includes(p.n));
 }
 
-/** Copy shown when every path is done. */
-// TODO(copy): confirm final «all done» copy with Anna
+/** Copy shown when every path is done (02в end sheet). */
+// TODO(copy confirm): final «Шлях пройдено» body with Anna
 export const ALL_DONE_COPY = {
-  title: "Усі шляхи пройдено",
-  body: "Твоє сузір’я зібране. Повертайся до творів у колекції.",
+  title: "Шлях пройдено",
+  body: "Ти побачив 10 творів, яких зараз немає на своїх місцях. Ми пам'ятаємо, які вони.",
+  cta: "Почати знову",
 } as const;

@@ -21,6 +21,7 @@ import {
 import { getHallAssets } from "@/data/halls";
 import {
   getNextPath,
+  getPaths,
   shouldSkipMapToHall,
   type ResolvedPath,
 } from "@/data/journey";
@@ -104,7 +105,12 @@ function scrollLeftTo(
 export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
-  const { markPathComplete, markTourSeen, completedPaths } = useAppState();
+  const {
+    markPathComplete,
+    markTourSeen,
+    completedPaths,
+    openedArtworkIds,
+  } = useAppState();
   const museum = getMuseum(museumId);
   const hallUi = getHallAssets(museumId);
   const layout = getHallLayout(museumId);
@@ -121,13 +127,27 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const nextSameMuseum = Boolean(
     nextPath && shouldSkipMapToHall(completedWithCurrent, nextPath),
   );
+  /** Frames already opened (completed path or tour-seen). */
+  const openedIds = useMemo(() => {
+    const ids = new Set(openedArtworkIds);
+    for (const p of getPaths()) {
+      if (completedPaths.includes(p.n)) ids.add(p.artworkId);
+    }
+    return ids;
+  }, [completedPaths, openedArtworkIds]);
 
   const slots = useMemo(() => layout?.slots ?? [], [layout]);
+  const [viewArtworkId, setViewArtworkId] = useState(artworkId);
   const focusSlotIndex = Math.max(
+    0,
+    slots.findIndex((s) => s.artworkId === viewArtworkId),
+  );
+  const pathSlotIndex = Math.max(
     0,
     slots.findIndex((s) => s.artworkId === artworkId),
   );
-  const focus = getArtwork(artworkId) ?? getArtwork(slots[0]?.artworkId ?? -1);
+  const focus = getArtwork(viewArtworkId) ?? getArtwork(slots[0]?.artworkId ?? -1);
+  const isReplayPassport = viewArtworkId !== artworkId;
 
   const [phase, setPhase] = useState<Phase>("hall");
   type Intro = "black" | "lamp" | "cone" | "bright" | "ui" | "done";
@@ -151,6 +171,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   // Same-museum next path: reset hall state during render (keeps scroll position)
   if (artworkId !== focusKey) {
     setFocusKey(artworkId);
+    setViewArtworkId(artworkId);
     setStolenPhase("empty");
     setNeighborId(null);
     setPhase("hall");
@@ -195,17 +216,17 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
 
   // Center on path artwork — 600ms ease for same-museum moves
   useEffect(() => {
-    if (phase !== "hall" || !slots[focusSlotIndex]) return;
+    if (phase !== "hall" || !slots[pathSlotIndex]) return;
     const el = scrollerRef.current;
     if (!el) return;
-    const slot = slots[focusSlotIndex]!;
+    const slot = slots[pathSlotIndex]!;
     const centerX = (slot.frameRect.x + slot.frameRect.w / 2) * px;
     const left = Math.max(0, centerX - el.clientWidth / 2);
     const t = window.setTimeout(() => {
       scrollLeftTo(el, left, motionTokens.hallScroll, reduced);
     }, 40);
     return () => window.clearTimeout(t);
-  }, [focusSlotIndex, phase, reduced, slots, px, artworkId]);
+  }, [pathSlotIndex, phase, reduced, slots, px, artworkId]);
 
   // Entry: darkness 100%→70% → lamp → cone → bright → UI
   useEffect(() => {
@@ -255,8 +276,17 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
     const art = getArtwork(slot.artworkId);
     if (!art) return;
 
-    // Neighbor — quiet caption only (no 12б sheet)
-    if (art.id !== focus?.id) {
+    // Neighbor frame
+    if (art.id !== artworkId) {
+      // Already opened → straight to passport 16
+      if (openedIds.has(art.id)) {
+        setNeighborId(null);
+        setDetailZone(null);
+        setViewArtworkId(art.id);
+        setPhase("about");
+        return;
+      }
+      // Not yet opened — quiet caption only (no 12б sheet)
       setShakeId(art.id);
       window.setTimeout(() => setShakeId(null), motionTokens.frameShake * 1000);
       setNeighborId(art.id);
@@ -268,7 +298,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
       return;
     }
 
-    // Focus frame
+    // Path focus frame
+    setViewArtworkId(artworkId);
     if (isStolen) {
       if (stolenPhase === "empty") {
         clearRevealTimers();
@@ -298,10 +329,17 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   }, [completeCurrentPath, focus, markTourSeen]);
 
   const goToRouteMap = useCallback(() => {
+    if (isReplayPassport) {
+      // Reopened passport «×» → back to current path hall (decision).
+      setViewArtworkId(artworkId);
+      setDetailZone(null);
+      setPhase("hall");
+      return;
+    }
     completeCurrentPath();
     // Passport «×» → always 02в (even when next path is same museum).
     setPhase("route");
-  }, [completeCurrentPath]);
+  }, [artworkId, completeCurrentPath, isReplayPassport]);
 
   const departNext = useCallback(
     (path: ResolvedPath) => {
@@ -317,6 +355,11 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   );
 
   const continueAfterWallpaper = useCallback(() => {
+    if (isReplayPassport) {
+      setViewArtworkId(artworkId);
+      setPhase("hall");
+      return;
+    }
     // Same museum: scroll/replace to next frame. Else → 02в.
     if (nextSameMuseum && nextPath) {
       router.replace(
@@ -325,7 +368,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
       return;
     }
     setPhase("route");
-  }, [nextPath, nextSameMuseum, router]);
+  }, [artworkId, isReplayPassport, nextPath, nextSameMuseum, router]);
 
   useEffect(() => {
     return () => {
@@ -333,6 +376,12 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
       if (neighborTimer.current) clearTimeout(neighborTimer.current);
     };
   }, [clearRevealTimers]);
+
+  const litSlotIds = useMemo(() => {
+    const ids = new Set<number>(openedIds);
+    ids.add(artworkId);
+    return ids;
+  }, [openedIds, artworkId]);
 
   if (!focus || !museum || !layout) {
     return (
@@ -344,12 +393,16 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
 
   const showHall = phase === "hall";
   const focusSlot = slots[focusSlotIndex]!;
-  const lampX = focusSlot.lampX;
+  const pathSlot = slots[pathSlotIndex]!;
+  const hallFocusSlot = showHall ? pathSlot : focusSlot;
+  const lampX = hallFocusSlot.lampX;
   const coneX = lampX + layout.lamp.w / 2 - layout.cone.w / 2;
   const coneTop = layout.cone.y;
-  const markerCx = focusSlot.frameRect.x + focusSlot.frameRect.w - 26.5;
-  const markerCy = focusSlot.frameRect.y + 11.5;
-  const emptyInset = paintingOpeningInset(focus.id);
+  const markerCx = hallFocusSlot.frameRect.x + hallFocusSlot.frameRect.w - 26.5;
+  const markerCy = hallFocusSlot.frameRect.y + 11.5;
+  const emptyInset = paintingOpeningInset(
+    showHall ? artworkId : focus.id,
+  );
 
   const showUi = intro === "ui" || intro === "done";
   const showCone = intro === "cone" || intro === "bright" || showUi;
@@ -523,10 +576,10 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                 <motion.div
                   className="pointer-events-none absolute z-[7]"
                   style={{
-                    left: focusSlot.frameRect.x * px,
-                    top: focusSlot.frameRect.y * px,
-                    width: focusSlot.frameRect.w * px,
-                    height: focusSlot.frameRect.h * px,
+                    left: hallFocusSlot.frameRect.x * px,
+                    top: hallFocusSlot.frameRect.y * px,
+                    width: hallFocusSlot.frameRect.w * px,
+                    height: hallFocusSlot.frameRect.h * px,
                   }}
                   initial={reduced ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -538,7 +591,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                   {/* Sharp frame chrome; painting treatment is clipped to the opening */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={focusSlot.frameSrc}
+                    src={hallFocusSlot.frameSrc}
                     alt=""
                     className="absolute inset-0 size-full object-contain drop-shadow-[1px_8px_12px_rgba(0,0,0,0.25)]"
                     draggable={false}
@@ -554,7 +607,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                       style={{ clipPath: emptyClip }}
                     >
                       <motion.img
-                        src={focusSlot.frameSrc}
+                        src={hallFocusSlot.frameSrc}
                         alt=""
                         className="absolute inset-0 size-full object-contain"
                         draggable={false}
@@ -617,53 +670,68 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
               ) : null}
 
               <AnimatePresence>
-                {showLamp ? (
-                  <motion.div
-                    key="lamp"
-                    className="pointer-events-none absolute z-[8]"
-                    style={{
-                      left: lampX * px,
-                      top: layout.lamp.y * px,
-                      width: layout.lamp.w * px,
-                      height: layout.lamp.h * px,
-                    }}
-                    initial={reduced ? false : { opacity: 0 }}
-                    animate={
-                      reduced
-                        ? { opacity: 1 }
-                        : intro === "lamp"
-                          ? { opacity: [0, 0.6, 0.3, 1] }
-                          : { opacity: 1 }
-                    }
-                    transition={
-                      reduced
-                        ? { duration: 0 }
-                        : intro === "lamp"
-                          ? { duration: 0.3, times: [0, 0.33, 0.66, 1] }
-                          : { duration: 0.2 }
-                    }
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={hallUi.lamp}
-                      alt=""
-                      className="size-full object-contain"
-                      draggable={false}
-                    />
-                  </motion.div>
-                ) : null}
+                {showLamp
+                  ? slots
+                      .filter((s) => litSlotIds.has(s.artworkId))
+                      .map((slot) => {
+                        const isActive = slot.artworkId === artworkId;
+                        const targetOpacity = isActive ? 1 : 0.32;
+                        return (
+                          <motion.div
+                            key={`lamp-${slot.artworkId}`}
+                            className="pointer-events-none absolute z-[8]"
+                            style={{
+                              left: slot.lampX * px,
+                              top: layout.lamp.y * px,
+                              width: layout.lamp.w * px,
+                              height: layout.lamp.h * px,
+                            }}
+                            initial={reduced ? false : { opacity: 0 }}
+                            animate={
+                              reduced
+                                ? { opacity: targetOpacity }
+                                : isActive && intro === "lamp"
+                                  ? { opacity: [0, 0.6, 0.3, 1] }
+                                  : { opacity: targetOpacity }
+                            }
+                            transition={
+                              reduced
+                                ? { duration: 0 }
+                                : isActive && intro === "lamp"
+                                  ? {
+                                      duration: 0.3,
+                                      times: [0, 0.33, 0.66, 1],
+                                    }
+                                  : {
+                                      duration: motionTokens.hallScroll,
+                                      ease: easings.easeInOut,
+                                    }
+                            }
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={hallUi.lamp}
+                              alt=""
+                              className="size-full object-contain"
+                              draggable={false}
+                            />
+                          </motion.div>
+                        );
+                      })
+                  : null}
               </AnimatePresence>
 
-              {/* 5. Captions — focus only; hidden during neighbor caption (12) */}
+              {/* 5. Captions — path focus only; hidden during neighbor caption (12) */}
               <AnimatePresence>
-                {showUi && neighborId == null ? (
+                {showUi && neighborId == null && focus ? (
                   <motion.div
-                    key={`cap-${focus.id}`}
-                    data-hall-caption={focus.id}
+                    key={`cap-${artworkId}`}
+                    data-hall-caption={artworkId}
                     className="pointer-events-none absolute z-[9] flex max-w-[226px] flex-col items-center text-center"
                     style={{
                       left:
-                        (focusSlot.frameRect.x + focusSlot.frameRect.w / 2) *
+                        (hallFocusSlot.frameRect.x +
+                          hallFocusSlot.frameRect.w / 2) *
                         px,
                       top: layout.captions.titleY * px,
                       width: 226 * px,
@@ -673,7 +741,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                     exit={{ opacity: 0, x: "-50%" }}
                   >
                     <p className="w-full text-h3 text-text-primary">
-                      {focus.title}
+                      {(getArtwork(artworkId) ?? focus).title}
                     </p>
                     <p
                       className="w-full text-body-md text-text-caption"
@@ -685,7 +753,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                           px,
                       }}
                     >
-                      {focus.author} · {shortYear(focus.year)}
+                      {(getArtwork(artworkId) ?? focus).author} ·{" "}
+                      {shortYear((getArtwork(artworkId) ?? focus).year)}
                     </p>
                     <div
                       className="flex w-full justify-center"
@@ -697,7 +766,9 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                           px,
                       }}
                     >
-                      <StatusBadge status={focus.status} />
+                      <StatusBadge
+                        status={(getArtwork(artworkId) ?? focus).status}
+                      />
                     </div>
                   </motion.div>
                 ) : null}
@@ -711,10 +782,11 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                     className="pointer-events-none absolute z-[10] text-center text-body-md text-text-primary"
                     style={{
                       left:
-                        (focusSlot.frameRect.x + focusSlot.frameRect.w / 2) *
+                        (hallFocusSlot.frameRect.x +
+                          hallFocusSlot.frameRect.w / 2) *
                         px,
-                      top: (focusSlot.frameRect.y - 36) * px,
-                      width: Math.max(280, focusSlot.frameRect.w) * px,
+                      top: (hallFocusSlot.frameRect.y - 36) * px,
+                      width: Math.max(280, hallFocusSlot.frameRect.w) * px,
                       x: "-50%",
                     }}
                     initial={{ opacity: 0, y: 4 }}
@@ -936,18 +1008,18 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         open={phase === "wallpaper"}
         onClose={() => setPhase("about")}
         onSaved={() => {
-          completeCurrentPath();
+          if (!isReplayPassport) completeCurrentPath();
           setPhase("wallpaper-saved");
         }}
       />
 
       <WallpaperSavedScreen
         open={phase === "wallpaper-saved"}
-        next={nextPath ?? null}
+        next={isReplayPassport ? null : nextPath ?? null}
         previewSrc={focus.wallpaper ?? focus.image}
         artworkTitle={focus.title}
         onContinue={() => {
-          completeCurrentPath();
+          if (!isReplayPassport) completeCurrentPath();
           continueAfterWallpaper();
         }}
       />
