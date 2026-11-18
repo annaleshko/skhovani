@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import type { CSSProperties } from "react";
+import { forwardRef, type CSSProperties, type ReactNode } from "react";
 
 export type TrailDotState = "passed" | "current" | "upcoming";
 
@@ -15,60 +15,99 @@ type Props = {
   style?: CSSProperties;
 };
 
-/**
- * Figma «Нагадування шляху» (114:1824 / 125:6432):
- * «Вінниця — Херсон — Музей» with Passed / Current / Upcoming dots.
- * Shown on screens 9 and 11 only.
- */
-export function RouteTrail({ items, className, style }: Props) {
+/** Figma 114:1824 connector — #98928C (= --color-text-secondary / border-control). */
+const CONNECTOR = "var(--color-text-secondary)";
+const DOT_PASSED = "var(--color-bg-accent)";
+const RING_UPCOMING = "var(--color-border-control)";
+
+function StepDot({ state }: { state: TrailDotState }) {
+  if (state === "current") {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/ui/trail-current.svg"
+        alt=""
+        width={12}
+        height={12}
+        className="size-3 shrink-0"
+        aria-hidden
+      />
+    );
+  }
+  if (state === "passed") {
+    return (
+      <span
+        aria-hidden
+        className="size-3 shrink-0 rounded-[6px]"
+        style={{ backgroundColor: DOT_PASSED, opacity: 0.6 }}
+      />
+    );
+  }
   return (
-    <nav
-      aria-label="Нагадування шляху"
-      className={cn(
-        "pointer-events-none absolute z-30 flex items-center gap-2xs",
-        className,
-      )}
+    <span
+      aria-hidden
+      className="size-3 shrink-0 rounded-[6px] bg-transparent"
       style={{
-        left: 24,
-        top: "calc(32px + var(--safe-top))",
-        ...style,
+        borderWidth: 1.5,
+        borderStyle: "solid",
+        borderColor: RING_UPCOMING,
       }}
-    >
-      {items.map((item, i) => (
-        <span key={`${item.label}-${i}`} className="flex items-center gap-2xs">
-          {i > 0 ? (
-            <span
-              aria-hidden
-              className={cn(
-                "h-px w-4",
-                item.state === "upcoming" ? "bg-[var(--color-border-control)]" : "bg-accent/60",
-              )}
-            />
-          ) : null}
-          <span className="flex items-center gap-sm">
-            <span
-              aria-hidden
-              className={cn(
-                "size-3 shrink-0 rounded-[6px]",
-                item.state === "passed" && "bg-accent opacity-60",
-                item.state === "current" &&
-                  "border-[1.5px] border-accent bg-accent shadow-[0_0_0_3px_rgba(233,184,114,0.25)]",
-                item.state === "upcoming" &&
-                  "border-[1.5px] border-[var(--color-border-control)] bg-transparent",
-              )}
-            />
-            <span
-              className={cn(
-                item.state === "current"
-                  ? "text-label-md text-text-primary"
-                  : "text-caption text-text-secondary",
-              )}
-            >
-              {item.label}
-            </span>
-          </span>
-        </span>
-      ))}
-    </nav>
+    />
   );
 }
+
+/**
+ * Figma «Нагадування шляху» (114:1824 / instance 125:6432):
+ * row gap 4px; connector 16×1 solid #98928C for all states.
+ * Ref: docs/figma-refs/11-museum.png, 09-zoom.png.
+ */
+export const RouteTrail = forwardRef<HTMLElement, Props>(
+  function RouteTrail({ items, className, style }, ref) {
+    const row: ReactNode[] = [];
+    items.forEach((item, i) => {
+      if (i > 0) {
+        row.push(
+          <span
+            key={`line-${i}`}
+            aria-hidden
+            data-trail-connector
+            className="h-px w-4 shrink-0"
+            style={{ backgroundColor: CONNECTOR }}
+          />,
+        );
+      }
+      row.push(
+        <span key={`${item.label}-${i}`} className="flex items-center gap-sm">
+          <StepDot state={item.state} />
+          <span
+            className={cn(
+              item.state === "current"
+                ? "text-label-md text-text-primary"
+                : "text-caption text-text-secondary",
+            )}
+          >
+            {item.label}
+          </span>
+        </span>,
+      );
+    });
+
+    return (
+      <nav
+        ref={ref}
+        aria-label="Нагадування шляху"
+        className={cn(
+          "pointer-events-none absolute z-30 flex items-center gap-2xs",
+          className,
+        )}
+        style={{
+          left: 24,
+          top: "calc(32px + var(--safe-top))",
+          ...style,
+        }}
+      >
+        {row}
+      </nav>
+    );
+  },
+);

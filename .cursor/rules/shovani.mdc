@@ -14,12 +14,15 @@ alwaysApply: true
 
 ## Stack
 - Next.js (App Router) + TypeScript (strict) + Tailwind CSS + Framer Motion. App lives in `web/`.
-- Supabase for auth (Google + email OTP) and persistence. OpenAI API for the guide chat. Web Push (VAPID) for reminders.
+- MVP: NO registration, NO auth, NO backend database, NO push. A fake signed-in demo user lives in `web/src/data/demo-user.ts`; progress is stored in localStorage. OpenAI API (server route) for the guide chat.
+- The AI guide (tour, touch zones, chat) is the core feature: it gets the highest fidelity and polish.
 - Do not add other dependencies without explaining why in your summary.
 
 ## Product rules
 - Mobile-only PWA. Design frame 390×844, side padding 24px, 4/8 grid, Manrope (via `next/font`). One warm dark theme.
 - On desktop, render the app centered at max-width 430px; do not design a desktop layout.
+- Figma frames are 390×844, but real viewports are often 667–760px tall (Safari toolbars). Never place screen content with absolute y values from Figma. Anchor top content to the top (with safe area) and bottom sheets/cards to the bottom; images and illustrations fill the remaining space and must not be covered by bottom UI. Check every screen at 390×844, 390×740 and 375×667.
+- Use prepared, composed images from Figma (exported renders of frames/groups) instead of re-assembling them from separate raster layers; Figma layers often rely on in-layer crops, masks and blend modes that are lost when exported one by one.
 - All UI copy is Ukrainian and comes from the spec/Figma. Never invent copy; if a string is missing, add a `// TODO(copy)` and use the closest existing string.
 - The journey only moves forward. No back button inside a path (map → museum → hall → tour).
 - Safety: never state or guess where evacuated artworks are stored. Only «твір в укритті».
@@ -36,7 +39,7 @@ alwaysApply: true
 ## Code conventions
 - Small focused components in `web/src/components/<area>/`. Screens in `web/src/app/`.
 - Typed data in `web/src/data/`. No content strings hardcoded inside logic.
-- Client state: React context + `localStorage` for the anonymous user; synced to Supabase after login.
+- Client state: React context + `localStorage`, seeded from the demo user. No Supabase.
 - Accessibility: semantic buttons/links, visible focus, accessible names on icon buttons, touch targets ≥ 44px, no info by color alone.
 - Secrets only in env vars (`.env.local`, never committed). Provide `.env.example`.
 

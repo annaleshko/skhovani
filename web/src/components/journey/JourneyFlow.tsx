@@ -5,6 +5,8 @@ import { MapPin } from "@/components/map/MapPin";
 import { getMuseums } from "@/data";
 import { getDemoStartCity } from "@/data/demo-user";
 import {
+  FACADE_NATIVE_H,
+  FACADE_NATIVE_W,
   getMuseumDisplayName,
   getMuseumShortLabel,
   getMuseumUi,
@@ -12,12 +14,12 @@ import {
 import { getPath, type ResolvedPath } from "@/data/journey";
 import {
   camera07,
-  camera09,
   cameraPlaceAt,
   cameraProjectPoint,
   FRAME,
   MAP_07,
   ZOOM_FOCUS,
+  ZOOM_SCALE,
   type CameraTransform,
 } from "@/lib/camera";
 import {
@@ -27,6 +29,7 @@ import {
   pointOnQuad,
   projectToMap,
   quadPath,
+  type MapPoint,
 } from "@/lib/geo";
 import {
   easings,
@@ -42,7 +45,6 @@ import {
   useMotionValueEvent,
   useTransform,
 } from "framer-motion";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RouteTrail, type TrailItem } from "./RouteTrail";
@@ -67,7 +69,6 @@ const E1_THRESHOLD_MS = 400;
 const PICK_DELAY_MS = 0;
 const FACADE_AUTO_MS = 600;
 const OCCUPATION_HOLD_MS = 2500;
-const DOOR_HINT = { x: 122, y: 456 } as const;
 const TRAIL_LEN = 18;
 /** Spec 07 entry timeline (ms from enterMap start) */
 const ENTRY_FADE_MS = motionTokens.mapFadeIn * 1000; // 600
@@ -82,8 +83,12 @@ const GLOW_R_07 = 100; // Ø 200
 const GLOW_R_09 = 160; // Ø 320
 const vb = getMapViewBox();
 
-/** Design-space camera → stage pixels (width drives scale). */
-function toStageCam(
+/**
+ * Design-space 07 camera → stage pixels.
+ * Width drives scale (1 viewBox unit tracks CSS px × sx). Keep for 07 only —
+ * do NOT use this to adapt a cameraPlaceAt() result (breaks when sx ≠ sy).
+ */
+function toStageCam07(
   cam: CameraTransform,
   stageW: number,
   stageH: number,
@@ -93,8 +98,40 @@ function toStageCam(
   return { tx: cam.tx * sx, ty: cam.ty * sy, scale: cam.scale * sx };
 }
 
-function toStagePt(pt: { x: number; y: number }, stageW: number, stageH: number) {
-  return { x: pt.x * (stageW / FRAME.w), y: pt.y * (stageH / FRAME.h) };
+/**
+ * Screen 9 camera — Figma design space (scale 6.22, city at 208×356).
+ * Not scaled by stage width (that produced 6.86 on 430-wide shells).
+ */
+function stageCam09(pt: MapPoint): CameraTransform {
+  return cameraPlaceAt(pt, ZOOM_SCALE, ZOOM_FOCUS.x, ZOOM_FOCUS.y);
+}
+
+/** Fit facade image into [availTop, availBottom]; scale down if needed (min 0.75). */
+function fitFacadeLayout(
+  screenW: number,
+  availTop: number,
+  availBottom: number,
+  buildingTopY: number,
+  groundY: number,
+): { width: number; height: number; x: number; y: number; scale: number } {
+  const fullH = screenW * (FACADE_NATIVE_H / FACADE_NATIVE_W);
+  const buildingFrac = Math.max(0.01, groundY - buildingTopY);
+  const buildingAtFull = buildingFrac * fullH;
+  const availH = Math.max(1, availBottom - availTop);
+  let scale = 1;
+  if (buildingAtFull > availH) {
+    scale = Math.max(0.75, availH / buildingAtFull);
+  }
+  const width = screenW * scale;
+  const height = fullH * scale;
+  // Prefer ground at availBottom; nudge down if the tower would hit the trail.
+  let y = availBottom - groundY * height;
+  const topPx = y + buildingTopY * height;
+  if (topPx < availTop) {
+    y = availTop - buildingTopY * height;
+  }
+  const x = (screenW - width) / 2;
+  return { width, height, x, y, scale };
 }
 
 export function JourneyFlow({ pathN }: Props) {
@@ -121,10 +158,18 @@ export function JourneyFlow({ pathN }: Props) {
     w: FRAME.w,
     h: FRAME.h,
   });
+  /** After «Летимо», stage size + 09 camera are frozen for the whole flight→zoom. */
+  const journeyLockedRef = useRef(false);
+  const lockedStageRef = useRef<{ w: number; h: number }>({
+    w: FRAME.w,
+    h: FRAME.h,
+  });
+  const lockedCam09Ref = useRef<CameraTransform | null>(null);
+  const prevCamFrameRef = useRef<CameraTransform | null>(null);
 
   const cam07Design = useMemo(() => camera07(), []);
   const initialStageCam = useMemo(
-    () => toStageCam(cam07Design, FRAME.w, FRAME.h),
+    () => toStageCam07(cam07Design, FRAME.w, FRAME.h),
     [cam07Design],
   );
 
@@ -142,6 +187,12 @@ export function JourneyFlow({ pathN }: Props) {
   const facadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mapStageRef = useRef<HTMLDivElement>(null);
+  const facadeRootRef = useRef<HTMLDivElement>(null);
+  const facadeCardRef = useRef<HTMLDivElement>(null);
+  const facadeTrailRef = useRef<HTMLElement>(null);
+  const [facadeCardTop, setFacadeCardTop] = useState<number>(FRAME.h);
+  const [facadeTrailBottom, setFacadeTrailBottom] = useState(96);
+  const [facadeWidth, setFacadeWidth] = useState<number>(FRAME.w);
   const phaseRef = useRef<Phase>(phase);
   const glowRef = useRef<SVGGElement>(null);
   const startPinRef = useRef<SVGGElement>(null);
@@ -165,7 +216,50 @@ export function JourneyFlow({ pathN }: Props) {
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
   const artworkCount = path?.museum.artworkIds.length ?? 0;
 
-  const cam09Design = useMemo(() => camera09(targetPt), [targetPt]);
+  const facadeLayout = useMemo(() => {
+    if (!museumUi) {
+      return { width: facadeWidth, height: facadeWidth * (FACADE_NATIVE_H / FACADE_NATIVE_W), x: 0, y: 0, scale: 1 };
+    }
+    const availTop = facadeTrailBottom + 16;
+    const availBottom = facadeCardTop - 24;
+    return fitFacadeLayout(
+      facadeWidth,
+      availTop,
+      availBottom,
+      museumUi.buildingTopY,
+      museumUi.groundY,
+    );
+  }, [facadeCardTop, facadeTrailBottom, facadeWidth, museumUi]);
+
+  useEffect(() => {
+    if (phase !== "facade" && phase !== "entering") return;
+    const root = facadeRootRef.current;
+    if (!root) return;
+    const measure = () => {
+      const card = facadeCardRef.current;
+      const trail = facadeTrailRef.current;
+      const rootRect = root.getBoundingClientRect();
+      setFacadeWidth(rootRect.width || FRAME.w);
+      if (trail) {
+        setFacadeTrailBottom(trail.getBoundingClientRect().bottom - rootRect.top);
+      }
+      if (!card) return;
+      const cardRect = card.getBoundingClientRect();
+      setFacadeCardTop(cardRect.top - rootRect.top);
+    };
+    measure();
+    const raf = requestAnimationFrame(measure);
+    const ro = new ResizeObserver(measure);
+    ro.observe(root);
+    const card = facadeCardRef.current;
+    if (card) ro.observe(card);
+    const trail = facadeTrailRef.current;
+    if (trail) ro.observe(trail);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [phase, path?.museumId]);
 
   const trailItems: TrailItem[] | null = useMemo(() => {
     if (!path) return null;
@@ -254,32 +348,32 @@ export function JourneyFlow({ pathN }: Props) {
     [camScale, camX, camY],
   );
 
-  /** Flight camera: follow the dot while easing 07 → 09. */
+  /** Flight camera: follow the dot while easing 07 → locked 09 (scale 6.22, focus 208×356). */
   const camForFlightT = useCallback(
-    (t: number, stageW: number, stageH: number): CameraTransform => {
-      const c0 = toStageCam(cam07Design, stageW, stageH);
-      const c1 = toStageCam(cam09Design, stageW, stageH);
+    (t: number, stageW: number, stageH: number, cam09: CameraTransform): CameraTransform => {
+      const c0 = toStageCam07(cam07Design, stageW, stageH);
       const startFocus = cameraProjectPoint(startPt, c0);
-      const focus9 = toStagePt(ZOOM_FOCUS, stageW, stageH);
-      const focusX = startFocus.x + (focus9.x - startFocus.x) * t;
-      const focusY = startFocus.y + (focus9.y - startFocus.y) * t;
-      const scale = c0.scale + (c1.scale - c0.scale) * t;
+      const focusX = startFocus.x + (ZOOM_FOCUS.x - startFocus.x) * t;
+      const focusY = startFocus.y + (ZOOM_FOCUS.y - startFocus.y) * t;
+      const scale = c0.scale + (cam09.scale - c0.scale) * t;
       const dot = pointOnQuad(startPt, ctrl, targetPt, t);
       return cameraPlaceAt(dot, scale, focusX, focusY);
     },
-    [cam07Design, cam09Design, ctrl, startPt, targetPt],
+    [cam07Design, ctrl, startPt, targetPt],
   );
 
   useEffect(() => {
     const el = mapStageRef.current;
     if (!el) return;
     const measure = () => {
+      // Journey lock: ignore resizes after «Летимо» so the 09 camera never recomputes.
+      if (journeyLockedRef.current) return;
       const w = el.clientWidth || FRAME.w;
       const h = el.clientHeight || FRAME.h;
       setStageSize({ w, h });
       const p = phaseRef.current;
       if (p === "map" || p === "boot" || p === "e1") {
-        const cam = toStageCam(camera07(), w, h);
+        const cam = toStageCam07(camera07(), w, h);
         setCam(cam);
         writeOverlay(cam, 0, false);
       }
@@ -289,6 +383,39 @@ export function JourneyFlow({ pathN }: Props) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [setCam, writeOverlay]);
+
+  // Dev: warn on post-animation snaps (>40px translate with nearly unchanged scale).
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    let raf = 0;
+    const tick = () => {
+      const cam = {
+        tx: camX.get(),
+        ty: camY.get(),
+        scale: camScale.get(),
+      };
+      const prev = prevCamFrameRef.current;
+      const p = phaseRef.current;
+      const inJourney =
+        p === "flight" || p === "zoom" || p === "occupation";
+      if (prev && inJourney) {
+        const dtx = Math.abs(cam.tx - prev.tx);
+        const dty = Math.abs(cam.ty - prev.ty);
+        const dScale = Math.abs(cam.scale - prev.scale);
+        // Smooth flight changes scale; a recompute snap keeps scale and teleports x/y.
+        if ((dtx > 40 || dty > 40) && dScale < 0.05) {
+          console.warn(
+            `[journey camera] jump Δtx=${dtx.toFixed(1)} Δty=${dty.toFixed(1)} ` +
+              `scale ${prev.scale.toFixed(2)}→${cam.scale.toFixed(2)} phase=${p}`,
+          );
+        }
+      }
+      prevCamFrameRef.current = cam;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [camScale, camX, camY]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -328,8 +455,10 @@ export function JourneyFlow({ pathN }: Props) {
 
   const enterMap = useCallback(() => {
     clearEntryTimers();
+    journeyLockedRef.current = false;
+    lockedCam09Ref.current = null;
     setPhase("map");
-    const cam = toStageCam(camera07(), stageSize.w, stageSize.h);
+    const cam = toStageCam07(camera07(), stageSize.w, stageSize.h);
     setCam(cam);
     flightT.set(0);
     glowOpacity.set(0);
@@ -456,7 +585,8 @@ export function JourneyFlow({ pathN }: Props) {
   const runZoom = useCallback(() => {
     setPhase("zoom");
     flightT.set(1);
-    const end = toStageCam(cam09Design, stageSize.w, stageSize.h);
+    const end = lockedCam09Ref.current;
+    if (!end) return;
     if (reduced) {
       setCam(end);
       glowOpacity.set(1);
@@ -464,69 +594,54 @@ export function JourneyFlow({ pathN }: Props) {
       afterZoom();
       return;
     }
-    // Stronger glow fades in over the zoom
+    // Already at end from flight — hold camera; only glow animates.
+    // Do not recompute or setCam to a different transform.
+    setCam(end);
+    writeOverlay(end, 1, false);
     glowOpacity.set(0.35);
     animate(glowOpacity, 1, {
       duration: motionTokens.zoomCity,
       ease: easings.easeOut,
+      onComplete: () => afterZoom(),
     });
-    const opts = {
-      duration: motionTokens.zoomCity,
-      ease: easings.easeInOut,
-    } as const;
-    animate(camX, end.tx, opts);
-    animate(camY, end.ty, opts);
-    animate(camScale, end.scale, {
-      ...opts,
-      onComplete: () => {
-        writeOverlay(end, 1, false);
-        afterZoom();
-      },
-    });
-  }, [
-    afterZoom,
-    cam09Design,
-    camScale,
-    camX,
-    camY,
-    flightT,
-    glowOpacity,
-    reduced,
-    setCam,
-    stageSize.h,
-    stageSize.w,
-    writeOverlay,
-  ]);
+  }, [afterZoom, flightT, glowOpacity, reduced, setCam, writeOverlay]);
 
   const runFlight = useCallback(() => {
+    // Lock full-screen stage + 09 camera once (header/sheet are overlays — no reflow).
+    const el = mapStageRef.current;
+    const w = el?.clientWidth || stageSize.w || FRAME.w;
+    const h = el?.clientHeight || stageSize.h || FRAME.h;
+    lockedStageRef.current = { w, h };
+    lockedCam09Ref.current = stageCam09(targetPt);
+    journeyLockedRef.current = true;
+    setStageSize({ w, h });
+
     setSheetVisible(false);
     setPhase("flight");
     flightT.set(0);
-    // Map stays visible — opacity already 1; no layout change
     mapOpacity.set(1);
+
+    const cam09 = lockedCam09Ref.current;
 
     const startFlight = () => {
       if (reduced) {
-        const end = toStageCam(cam09Design, stageSize.w, stageSize.h);
-        setCam(end);
+        setCam(cam09);
         flightT.set(1);
-        writeOverlay(end, 1, false);
+        writeOverlay(cam09, 1, false);
         setTimeout(() => runZoom(), motionTokens.reducedCrossfade * 1000);
         return;
       }
-      const w = stageSize.w;
-      const h = stageSize.h;
       animate(flightT, 1, {
         duration: motionTokens.flight,
         ease: easings.easeInOut,
         onUpdate: (t) => {
-          const cam = camForFlightT(t, w, h);
+          const cam = camForFlightT(t, w, h, cam09);
           setCam(cam);
         },
         onComplete: () => {
-          const end = toStageCam(cam09Design, w, h);
-          setCam(end);
-          writeOverlay(end, 1, false);
+          // Same transform as the last flight frame — no snap.
+          setCam(cam09);
+          writeOverlay(cam09, 1, false);
           runZoom();
         },
       });
@@ -535,7 +650,6 @@ export function JourneyFlow({ pathN }: Props) {
     // Wait for sheet hide, then fly — map never unmounts / reflows
     setTimeout(startFlight, reduced ? 0 : motionTokens.sheetHide * 1000);
   }, [
-    cam09Design,
     camForFlightT,
     flightT,
     mapOpacity,
@@ -544,6 +658,7 @@ export function JourneyFlow({ pathN }: Props) {
     setCam,
     stageSize.h,
     stageSize.w,
+    targetPt,
     writeOverlay,
   ]);
 
@@ -817,106 +932,100 @@ export function JourneyFlow({ pathN }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Facade 11 — unchanged look */}
+      {/* Facade 11 — native aspect, shifted so groundY sits just above the card */}
       {(phase === "facade" || phase === "entering") && museumUi && (
         <motion.div
-          className="absolute inset-0 z-40 overflow-hidden bg-screen"
-          style={{ opacity: Math.max(facadeOpacity, phase === "entering" ? 1 : facadeOpacity) }}
+          ref={facadeRootRef}
+          className="absolute inset-0 z-40 overflow-hidden"
+          style={{
+            opacity: Math.max(facadeOpacity, phase === "entering" ? 1 : facadeOpacity),
+            backgroundColor: "var(--color-bg-hall-dark)",
+          }}
         >
           <motion.div
-            className="absolute left-0 w-full overflow-hidden"
+            className="absolute inset-0"
             style={{
-              top: 119,
-              height: 629,
               scale: phase === "entering" ? doorCamScale : facadeScale,
               transformOrigin: `${museumUi.doorX}% ${museumUi.doorY}%`,
             }}
           >
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              {museumUi.facadeImageHeight && museumUi.facadeImageTop ? (
-                <Image
-                  src={museumUi.facadeSrc}
-                  alt=""
-                  width={778}
-                  height={1258}
-                  priority
-                  className="absolute left-0 w-full max-w-none"
-                  style={{
-                    height: museumUi.facadeImageHeight,
-                    width: "100%",
-                    top: museumUi.facadeImageTop,
-                    objectFit: "cover",
-                    objectPosition: museumUi.facadeObjectPosition,
-                  }}
-                  sizes="(max-width: 430px) 100vw, 430px"
-                />
-              ) : (
-                <Image
-                  src={museumUi.facadeSrc}
-                  alt=""
-                  fill
-                  priority
-                  className="object-cover"
-                  style={{ objectPosition: museumUi.facadeObjectPosition }}
-                  sizes="(max-width: 430px) 100vw, 430px"
-                />
-              )}
-            </div>
-            {phase === "facade" && (
+            {/* Seam fill under the shifted image */}
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ backgroundColor: "var(--color-bg-hall-dark)" }}
+              aria-hidden
+            />
+            {phase === "facade" ? (
               <button
                 type="button"
-                aria-label="Торкнись дверей"
+                aria-label="Зайти в музей"
                 onClick={enterDoor}
-                className="absolute z-[1] -translate-x-1/2 -translate-y-1/2"
+                className="absolute z-[1] cursor-pointer border-0 bg-transparent p-0"
                 style={{
-                  left: `${museumUi.doorX}%`,
-                  top: `${museumUi.doorY}%`,
-                  width: 72,
-                  height: 96,
+                  left: facadeLayout.x,
+                  top: facadeLayout.y,
+                  width: facadeLayout.width,
+                  height: facadeLayout.height,
                 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={museumUi.facadeSrc}
+                  alt=""
+                  className="block size-full max-w-none"
+                  draggable={false}
+                />
+              </button>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={museumUi.facadeSrc}
+                alt=""
+                className="absolute block max-w-none"
+                style={{
+                  left: facadeLayout.x,
+                  top: facadeLayout.y,
+                  width: facadeLayout.width,
+                  height: facadeLayout.height,
+                }}
+                draggable={false}
               />
             )}
           </motion.div>
 
           {phase === "facade" && trailItems ? (
-            <RouteTrail items={trailItems} style={{ left: 24, top: 76 }} />
+            <RouteTrail
+              items={trailItems}
+              style={{ left: 24, top: 76 }}
+              ref={facadeTrailRef}
+            />
           ) : null}
 
           {phase === "facade" && (
-            <>
-              <button
-                type="button"
-                aria-label="Торкнись дверей"
-                onClick={enterDoor}
-                className="absolute z-30 flex items-center gap-2xs"
-                style={{ left: DOOR_HINT.x, top: DOOR_HINT.y }}
-              >
-                <span className="relative flex size-8 items-center justify-center">
-                  {!reduced && (
-                    <span className="absolute inset-0 animate-ping rounded-full border-2 border-accent opacity-40" />
-                  )}
-                  <span className="absolute inset-0 rounded-full border-2 border-accent" />
-                  <span className="size-2.5 rounded-full bg-accent" />
-                </span>
-                <span className="text-label-md text-text-primary">Торкнись дверей</span>
-              </button>
-
-              <motion.div
-                className="absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
-                initial={reduced ? false : { y: "100%" }}
-                animate={{ y: 0 }}
-                transition={{ duration: motionTokens.sheetSlide, ease: easings.easeOut }}
-              >
-                <p className="text-overline uppercase text-text-accent">Ласкаво просимо</p>
-                <h2 className="mt-md text-h2">{getMuseumDisplayName(path.museumId)}</h2>
-                <p className="mt-sm text-body-md text-text-secondary">
-                  Двері відчинені. Усередині на тебе чекає твір.
-                </p>
-                <div className="mt-lg">
-                  <Button onClick={enterDoor}>Зайти всередину</Button>
-                </div>
-              </motion.div>
-            </>
+            <motion.div
+              ref={facadeCardRef}
+              className="absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
+              initial={reduced ? false : { y: "100%" }}
+              animate={{ y: 0 }}
+              transition={{ duration: motionTokens.sheetSlide, ease: easings.easeOut }}
+              onAnimationComplete={() => {
+                const root = facadeRootRef.current;
+                const card = facadeCardRef.current;
+                if (!root || !card) return;
+                const rootRect = root.getBoundingClientRect();
+                const cardRect = card.getBoundingClientRect();
+                setFacadeCardTop(cardRect.top - rootRect.top);
+              }}
+            >
+              <p className="text-overline uppercase text-text-accent">Ласкаво просимо</p>
+              <h2 className="mt-md text-h2">{getMuseumDisplayName(path.museumId)}</h2>
+              <p className="mt-sm text-body-md text-text-secondary">
+                Двері відчинені. Усередині на тебе чекає твір.
+              </p>
+              <div className="mt-lg">
+                <Button onClick={enterDoor}>Зайти всередину</Button>
+              </div>
+            </motion.div>
           )}
         </motion.div>
       )}

@@ -5,6 +5,7 @@
 :root {
   /* Colors — Figma variables (bg/*, text/*, status/*) */
   --color-bg-screen: #110f0e;
+  --color-bg-hall-dark: #0a0908;
   --color-bg-surface: #1e1d1c;
   --color-bg-surface-raised: #2a2725;
   --color-bg-accent: #e9b872;

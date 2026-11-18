@@ -1,3 +1,4 @@
+import { DesktopPreviewGate } from "@/components/preview/DesktopPreviewGate";
 import { Providers } from "@/components/providers/Providers";
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
@@ -38,7 +39,7 @@ export default function RootLayout({
     <html lang="uk" className="bg-screen">
       <body className={`${manrope.variable} bg-screen font-sans antialiased`}>
         <Providers>
-          <div id="app-shell">{children}</div>
+          <DesktopPreviewGate>{children}</DesktopPreviewGate>
         </Providers>
       </body>
     </html>

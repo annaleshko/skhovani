@@ -1,6 +1,7 @@
 "use client";
 
 import { ProgressStepper } from "@/components/ui";
+import { getHallAssets } from "@/data/halls";
 import type { Artwork } from "@/data/types";
 import { getZoneRect } from "@/data/zone-layouts";
 import { createSilentAudio } from "@/lib/audio";
@@ -27,6 +28,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { TOUR_LAYOUT } from "./FramedArtwork";
 import { TourRing } from "./TourRing";
 
 type Mode = "tour" | "explore";
@@ -52,6 +54,8 @@ export function TourStage({
   startExplore = false,
 }: Props) {
   const reduced = useReducedMotionSafe();
+  const hallUi = getHallAssets(artwork.museumId);
+  const framedSrc = hallUi.tourFrame(artwork.id);
   const stageRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState({ w: FRAME.w, h: FRAME.h });
   const [imgNatural, setImgNatural] = useState({ w: 1200, h: 900 });
@@ -70,12 +74,44 @@ export function TourStage({
 
   const stops = artwork.tourStops;
   const stop = stops[stopIdx] ?? stops[0];
-  const src = artwork.image;
+  /** Prefer composed frame+painting export (no white margins); fall back to raw art. */
+  const src = framedSrc || artwork.image;
 
+  const ui = stage.w / FRAME.w;
+  const frameBox = useMemo(
+    () => ({
+      x: TOUR_LAYOUT.frame.x * ui,
+      y: TOUR_LAYOUT.frame.y * ui,
+      w: TOUR_LAYOUT.frame.w * ui,
+      h: TOUR_LAYOUT.frame.h * ui,
+    }),
+    [ui],
+  );
+  /** Painting opening as 0–1 fractions inside the composed frame export. */
+  const paintInFrame = useMemo(() => {
+    const f = TOUR_LAYOUT.frame;
+    const p = TOUR_LAYOUT.painting;
+    return {
+      x: (p.x - f.x) / f.w,
+      y: (p.y - f.y) / f.h,
+      w: p.w / f.w,
+      h: p.h / f.h,
+    };
+  }, []);
+
+  const toFrameNorm = useCallback(
+    (nx: number, ny: number) => ({
+      x: paintInFrame.x + nx * paintInFrame.w,
+      y: paintInFrame.y + ny * paintInFrame.h,
+    }),
+    [paintInFrame],
+  );
+
+  // Composed frame group fills the Figma frame slot (x 24–366)
   const imgDisplay = useMemo(() => {
-    const scale = stage.w / imgNatural.w;
-    return { w: stage.w, h: imgNatural.h * scale };
-  }, [imgNatural.h, imgNatural.w, stage.w]);
+    const scale = frameBox.w / imgNatural.w;
+    return { w: frameBox.w, h: imgNatural.h * scale };
+  }, [frameBox.w, imgNatural.h, imgNatural.w]);
 
   const audioRef = useRef(createSilentAudio(6));
   const ringRaf = useRef<number | null>(null);
@@ -98,12 +134,11 @@ export function TourStage({
   }, []);
 
   const applyFit = useCallback(() => {
-    const ty = (stage.h - imgDisplay.h) / 2;
-    camX.set(0);
-    camY.set(ty);
+    camX.set(frameBox.x);
+    camY.set(frameBox.y);
     camScale.set(1);
     dimOpacity.set(0);
-  }, [camScale, camX, camY, dimOpacity, imgDisplay.h, stage.h]);
+  }, [camScale, camX, camY, dimOpacity, frameBox.x, frameBox.y]);
 
   const flyTo = useCallback(
     (nx: number, ny: number, zoom: number, duration: number, onDone?: () => void) => {
@@ -133,27 +168,36 @@ export function TourStage({
         onComplete: () => onDone?.(),
       });
     },
-    [camScale, camX, camY, dimOpacity, imgDisplay.h, imgDisplay.w, reduced, stage.h, stage.w],
+    [
+      camScale,
+      camX,
+      camY,
+      dimOpacity,
+      imgDisplay.h,
+      imgDisplay.w,
+      reduced,
+      stage.h,
+      stage.w,
+    ],
   );
 
   const goFull = useCallback(
     (duration: number, onDone?: () => void) => {
-      const ty = (stage.h - imgDisplay.h) / 2;
       if (reduced || duration <= 0) {
-        camX.set(0);
-        camY.set(ty);
+        camX.set(frameBox.x);
+        camY.set(frameBox.y);
         camScale.set(1);
         dimOpacity.set(0);
         onDone?.();
         return;
       }
       const opts = { duration, ease: easings.easeInOut } as const;
-      animate(camX, 0, opts);
-      animate(camY, ty, opts);
+      animate(camX, frameBox.x, opts);
+      animate(camY, frameBox.y, opts);
       animate(dimOpacity, 0, { duration: duration * 0.6, ease: easings.easeOut });
       animate(camScale, 1, { ...opts, onComplete: () => onDone?.() });
     },
-    [camScale, camX, camY, dimOpacity, imgDisplay.h, reduced, stage.h],
+    [camScale, camX, camY, dimOpacity, frameBox.x, frameBox.y, reduced],
   );
 
   const finishTour = useCallback(() => {
@@ -181,12 +225,13 @@ export function TourStage({
       setPaused(false);
       setRingProgress(0);
       const target = resolveStopTarget(s, artwork.touchZones);
+      const inFrame = toFrameNorm(target.x, target.y);
       const dur = stopDurationSec(s.text);
       ringDur.current = dur;
       audioRef.current = createSilentAudio(dur);
       flyTo(
-        target.x,
-        target.y,
+        inFrame.x,
+        inFrame.y,
         target.zoom,
         reduced ? motionTokens.reducedCrossfade : motionTokens.lens,
         () => {
@@ -213,7 +258,7 @@ export function TourStage({
         },
       );
     },
-    [artwork.touchZones, finishTour, flyTo, reduced, stops],
+    [artwork.touchZones, finishTour, flyTo, reduced, stops, toFrameNorm],
   );
 
   useEffect(() => {
@@ -255,8 +300,11 @@ export function TourStage({
   const onImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
     if (mode !== "explore") return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
+    const fx = (e.clientX - rect.left) / rect.width;
+    const fy = (e.clientY - rect.top) / rect.height;
+    // Map tap from composed frame → painting opening 0–1
+    const nx = (fx - paintInFrame.x) / paintInFrame.w;
+    const ny = (fy - paintInFrame.y) / paintInFrame.h;
     const zones = artwork.touchZones.zones;
     let hit = -1;
     for (let i = 0; i < zones.length; i++) {
@@ -277,9 +325,10 @@ export function TourStage({
     }
     setZoneIdx(hit);
     const r = getZoneRect(artwork.touchZones.grid, zones[hit].position);
+    const inFrame = toFrameNorm(r.x + r.w / 2, r.y + r.h / 2);
     flyTo(
-      r.x + r.w / 2,
-      r.y + r.h / 2,
+      inFrame.x,
+      inFrame.y,
       2.2,
       reduced ? motionTokens.reducedCrossfade : motionTokens.lens,
     );
@@ -287,15 +336,61 @@ export function TourStage({
 
   const zone = zoneIdx != null ? artwork.touchZones.zones[zoneIdx] : null;
 
+  const sheetOpen = mode === "tour" || (mode === "explore" && zone != null);
+
   return (
-    <div ref={stageRef} className="absolute inset-0 z-20 overflow-hidden bg-screen">
-      {/* Skeleton */}
+    <div ref={stageRef} className="absolute inset-0 z-20 overflow-hidden bg-[var(--color-bg-hall-dark)]">
       {!loaded ? (
         <div className="absolute inset-0 animate-pulse bg-surface" aria-busy />
       ) : null}
 
+      {/* Lamp — 100:1661 */}
+      <div
+        className="pointer-events-none absolute left-1/2 z-[5] h-[109px] w-[98px] -translate-x-1/2 overflow-hidden"
+        style={{ top: 8 * ui }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={hallUi.lamp}
+          alt=""
+          className="absolute max-w-none"
+          style={{
+            height: "66.06%",
+            width: "100.41%",
+            left: "-0.2%",
+            top: "33.94%",
+          }}
+          draggable={false}
+        />
+      </div>
+
+      {/* Cone under lamp — breathing (transparent SVG, no opaque frame) */}
       <motion.div
-        className="absolute left-0 top-0"
+        className="pointer-events-none absolute left-1/2 z-[4] -translate-x-1/2"
+        style={{
+          top: 100 * ui,
+          height: 340 * ui,
+          width: 346 * ui,
+        }}
+        animate={reduced ? { opacity: 0.75 } : { opacity: [0.55, 0.9, 0.55] }}
+        transition={
+          reduced
+            ? { duration: 0 }
+            : { duration: 3, repeat: Infinity, ease: "easeInOut" }
+        }
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={hallUi.tourCone}
+          alt=""
+          className="size-full object-contain mix-blend-screen"
+          draggable={false}
+        />
+      </motion.div>
+
+      {/* Zoomable composed frame+painting (group export — alpha punched) */}
+      <motion.div
+        className="absolute z-[2]"
         style={{
           x: camX,
           y: camY,
@@ -313,8 +408,9 @@ export function TourStage({
             alt={artwork.title}
             width={imgNatural.w}
             height={imgNatural.h}
-            className="block h-full w-full object-cover"
+            className="block h-full w-full object-contain"
             priority
+            unoptimized
             onLoadingComplete={(img) => {
               if (img.naturalWidth) {
                 setImgNatural({ w: img.naturalWidth, h: img.naturalHeight });
@@ -325,7 +421,6 @@ export function TourStage({
           />
         ) : (
           <div className="flex size-full items-center justify-center bg-surface text-body-md text-text-secondary">
-            {/* TODO(asset): missing artwork image */}
             Немає зображення
           </div>
         )}
@@ -335,55 +430,67 @@ export function TourStage({
         />
       </motion.div>
 
-      {/* Constant-size lens ring overlay (visual cue on tour) */}
+      {/* Dual gold rings lens — Figma 100:1662 / 100:1663 */}
       {mode === "tour" ? (
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 z-10 size-40 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.25)]"
+          className="pointer-events-none absolute left-1/2 top-[30%] z-10 -translate-x-1/2 -translate-y-1/2"
           aria-hidden
-        />
+        >
+          <div className="relative size-[128px] rounded-full border-[1.5px] border-accent bg-[var(--color-bg-glow)]">
+            <div className="absolute left-1/2 top-1/2 size-[108px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-2 border-accent shadow-[4px_9px_10px_0_rgba(42,24,1,0.2)]" />
+          </div>
+        </div>
       ) : null}
 
-      {/* Progress + copy */}
+      {/* Bottom sheet — progress, copy, round controls */}
       {mode === "tour" && stop ? (
-        <div className="pointer-events-none absolute inset-x-0 top-[calc(12px+var(--safe-top))] z-20 px-xl">
-          <ProgressStepper total={stops.length} current={stopIdx + 1} />
-          <motion.div
-            key={textKey}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: motionTokens.stopCrossfade }}
-            className="mt-lg"
-          >
-            <p className="text-overline uppercase text-text-accent">
-              {stopIdx + 1}/{stops.length} · {stop.title}
-            </p>
-            <p className="mt-sm text-body-md text-text-primary">{stop.text}</p>
-          </motion.div>
+        <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col gap-[45px] rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(40px+var(--safe-bottom))] pt-xl">
+          <div className="flex flex-col gap-lg">
+            <ProgressStepper total={stops.length} current={stopIdx + 1} />
+            <motion.div
+              key={textKey}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: motionTokens.stopCrossfade }}
+              className="flex flex-col gap-sm"
+            >
+              <p className="text-h3 text-text-primary">{stop.title}</p>
+              <p className="text-body-lg text-text-primary">{stop.text}</p>
+            </motion.div>
+          </div>
+          <div className="flex items-start justify-center gap-2xl">
+            <button
+              type="button"
+              onClick={finishTour}
+              className="flex w-20 flex-col items-center gap-md pt-sm"
+            >
+              <span className="flex size-12 items-center justify-center rounded-full border border-border-subtle bg-surface">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/ui/icon-close.svg" alt="" width={20} height={20} />
+              </span>
+              <span className="text-label-md text-text-secondary">Без гіда</span>
+            </button>
+            <div className="flex w-20 flex-col items-center gap-sm">
+              <TourRing progress={ringProgress} paused={paused} onToggle={togglePause} />
+              <span className="text-label-md text-text-secondary">
+                {paused ? "Відтворити" : "Пауза"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={nextStop}
+              className="flex w-20 flex-col items-center gap-md pt-sm"
+            >
+              <span className="flex size-12 items-center justify-center rounded-full border border-border-subtle bg-surface">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/ui/icon-next.svg" alt="" width={20} height={20} />
+              </span>
+              <span className="text-label-md text-text-secondary">Далі</span>
+            </button>
+          </div>
         </div>
       ) : null}
 
-      {/* Controls */}
-      {mode === "tour" ? (
-        <div className="absolute inset-x-0 bottom-[calc(24px+var(--safe-bottom))] z-20 flex items-center justify-between px-xl">
-          <button
-            type="button"
-            className="min-h-[44px] text-label-md text-text-secondary"
-            onClick={finishTour}
-          >
-            Без гіда
-          </button>
-          <TourRing progress={ringProgress} paused={paused} onToggle={togglePause} />
-          <button
-            type="button"
-            className="min-h-[44px] text-label-md text-text-accent"
-            onClick={nextStop}
-          >
-            Далі
-          </button>
-        </div>
-      ) : null}
-
-      {/* Touch-zone sheet */}
       {mode === "explore" && zone ? (
         <div className="absolute inset-x-0 bottom-0 z-30 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-lg">
           <div className="flex items-start justify-between gap-md">
@@ -408,7 +515,7 @@ export function TourStage({
             type="button"
             className="mt-md text-label-md text-text-accent"
             onClick={() => {
-              // TODO(chat): Stage 7 — open guide with detail attached
+              // TODO(chat): Stage 7
             }}
           >
             Спитати гіда про це
@@ -416,7 +523,7 @@ export function TourStage({
         </div>
       ) : null}
 
-      {mode === "explore" && zoneIdx == null ? (
+      {mode === "explore" && zoneIdx == null && !sheetOpen ? (
         <p className="pointer-events-none absolute inset-x-0 bottom-32 z-10 px-xl text-center text-caption text-text-secondary">
           Підказка · тапни
         </p>

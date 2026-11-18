@@ -10,6 +10,7 @@ export default {
     extend: {
       colors: {
         screen: "var(--color-bg-screen)",
+        "hall-dark": "var(--color-bg-hall-dark)",
         surface: "var(--color-bg-surface)",
         "surface-raised": "var(--color-bg-surface-raised)",
         accent: "var(--color-bg-accent)",

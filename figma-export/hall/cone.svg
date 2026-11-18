@@ -1,0 +1,18 @@
+<svg width="390" height="520" viewBox="0 0 390 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g filter="url(#coneBlur)">
+    <path
+      d="M18 520C18 520 113.385 220 139.672 110C165.96 0 236.934 -20 267.011 110C297.087 240 371 520 371 520H18Z"
+      fill="url(#coneGrad)"
+      fill-opacity="0.55"
+    />
+  </g>
+  <defs>
+    <filter id="coneBlur" x="-10" y="-40" width="410" height="580" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="12" />
+    </filter>
+    <linearGradient id="coneGrad" x1="195" y1="480" x2="195" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-opacity="0" />
+      <stop offset="1" stop-color="#E9B872" />
+    </linearGradient>
+  </defs>
+</svg>

@@ -11,7 +11,9 @@ type Props = {
 
 /** Circular timer around Pause / Play. */
 export function TourRing({ progress, paused, className, onToggle }: Props) {
-  const r = 22;
+  // Figma 100:1681 — 64×64 pause timer
+  const size = 64;
+  const r = 26;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(1, Math.max(0, progress)));
 
@@ -21,22 +23,22 @@ export function TourRing({ progress, paused, className, onToggle }: Props) {
       aria-label={paused ? "Відтворити" : "Пауза"}
       onClick={onToggle}
       className={cn(
-        "relative flex size-14 min-h-[56px] min-w-[56px] items-center justify-center rounded-full",
+        "relative flex size-16 min-h-[64px] min-w-[64px] items-center justify-center rounded-full",
         className,
       )}
     >
-      <svg width="56" height="56" className="absolute inset-0 -rotate-90" aria-hidden>
+      <svg width={size} height={size} className="absolute inset-0 -rotate-90" aria-hidden>
         <circle
-          cx="28"
-          cy="28"
+          cx={size / 2}
+          cy={size / 2}
           r={r}
-          fill="none"
+          fill="var(--color-bg-surface)"
           stroke="var(--color-progress-inactive)"
           strokeWidth="3"
         />
         <circle
-          cx="28"
-          cy="28"
+          cx={size / 2}
+          cy={size / 2}
           r={r}
           fill="none"
           stroke="var(--color-bg-accent)"

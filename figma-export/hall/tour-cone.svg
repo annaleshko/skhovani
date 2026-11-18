@@ -1,0 +1,18 @@
+<svg width="346" height="324" viewBox="0 0 346 324" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g filter="url(#tourConeBlur)">
+    <path
+      d="M0 324C0 324 86 128 112 68C138 8 208 -4 236 68C264 140 346 324 346 324H0Z"
+      fill="url(#tourConeGrad)"
+      fill-opacity="0.55"
+    />
+  </g>
+  <defs>
+    <filter id="tourConeBlur" x="-20" y="-30" width="386" height="374" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10" />
+    </filter>
+    <linearGradient id="tourConeGrad" x1="173" y1="280" x2="173" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-opacity="0" />
+      <stop offset="1" stop-color="#E9B872" />
+    </linearGradient>
+  </defs>
+</svg>

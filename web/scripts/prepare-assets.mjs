@@ -107,7 +107,7 @@ for (const artwork of content.artworks) {
   track(srcRel, `/` + destRel);
 }
 
-// --- Museums ---
+// --- Museums (full-screen facades 390×844 @2× → 780×1688 WebP) ---
 const MUSEUM_SLUGS = {
   kherson: "kherson",
   melitopol: "melitopol",
@@ -116,6 +116,18 @@ const MUSEUM_SLUGS = {
   chernihiv: "chernihiv",
 };
 
+/** Designer re-exports: building on black, 390×844 @2×. */
+const FACADE_W = 780;
+const FACADE_H = 1688;
+
+async function toFacadeWebp(src, dest) {
+  ensureDir(path.dirname(dest));
+  await sharp(src)
+    .resize(FACADE_W, FACADE_H, { fit: "cover", position: "top" })
+    .webp({ quality: 86 })
+    .toFile(dest);
+}
+
 for (const museum of content.museums) {
   const slug = MUSEUM_SLUGS[museum.id] ?? museum.id;
   const facadeRel = museum.sourceAssets?.facade;
@@ -123,23 +135,17 @@ for (const museum of content.museums) {
     const src = path.join(REPO_ROOT, facadeRel);
     if (fs.existsSync(src)) {
       const destRel = `museums/${slug}.webp`;
-      await toWebp(src, path.join(PUBLIC, destRel), 1600);
+      await toFacadeWebp(src, path.join(PUBLIC, destRel));
       track(facadeRel, `/` + destRel);
     } else {
       console.warn(`MISSING facade: ${facadeRel}`);
     }
   }
-  const hallRel = museum.sourceAssets?.hall;
-  if (hallRel) {
-    const src = path.join(REPO_ROOT, hallRel);
-    if (fs.existsSync(src)) {
-      // TODO(confirm): melitopol hall uses backgrounds/image 63.png
-      const destRel = `halls/${slug}.webp`;
-      await toWebp(src, path.join(PUBLIC, destRel), 2000);
-      track(hallRel, `/` + destRel);
-    } else {
-      console.warn(`MISSING hall: ${hallRel}`);
-    }
+  // Hall panoramas are Figma whole-node exports at public/halls/<id>/hall.webp
+  // (see download_assets → hall@3x.jpg → webp). Do not overwrite from sourceAssets.
+  const hallWebp = path.join(PUBLIC, `halls/${slug}/hall.webp`);
+  if (!fs.existsSync(hallWebp)) {
+    console.warn(`MISSING hall export: halls/${slug}/hall.webp`);
   }
 }
 
@@ -172,15 +178,20 @@ const assetMap = {
       m.id,
       {
         facade: `/museums/${m.id}.webp`,
-        hall: `/halls/${m.id}.webp`,
+        hall:
+          m.id === "kherson"
+            ? `/halls/kherson/wall.webp`
+            : `/halls/${m.id}/hall.webp`,
       },
     ]),
   ),
   hallUi: {
     frame: "/hall/frame.webp",
-    spotlight: "/hall/spotlight.webp",
-    lightCone: "/hall/light-cone.svg",
-    projector: "/hall/projector.svg",
+    marker: "/hall/marker.svg",
+    lamp: "/hall/lamp.png",
+    cone: "/hall/cone.svg",
+    tourCone: "/hall/tour-cone.svg",
+    trailCurrent: "/ui/trail-current.svg",
   },
 };
 

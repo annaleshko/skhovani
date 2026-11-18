@@ -50,30 +50,32 @@ export const assetMap = {
   "museums": {
     "kherson": {
       "facade": "/museums/kherson.webp",
-      "hall": "/halls/kherson.webp"
+      "hall": "/halls/kherson/wall.webp"
     },
     "melitopol": {
       "facade": "/museums/melitopol.webp",
-      "hall": "/halls/melitopol.webp"
+      "hall": "/halls/melitopol/hall.webp"
     },
     "kharkiv": {
       "facade": "/museums/kharkiv.webp",
-      "hall": "/halls/kharkiv.webp"
+      "hall": "/halls/kharkiv/hall.webp"
     },
     "lviv": {
       "facade": "/museums/lviv.webp",
-      "hall": "/halls/lviv.webp"
+      "hall": "/halls/lviv/hall.webp"
     },
     "chernihiv": {
       "facade": "/museums/chernihiv.webp",
-      "hall": "/halls/chernihiv.webp"
+      "hall": "/halls/chernihiv/hall.webp"
     }
   },
   "hallUi": {
     "frame": "/hall/frame.webp",
-    "spotlight": "/hall/spotlight.webp",
-    "lightCone": "/hall/light-cone.svg",
-    "projector": "/hall/projector.svg"
+    "marker": "/hall/marker.svg",
+    "lamp": "/hall/lamp.png",
+    "cone": "/hall/cone.svg",
+    "tourCone": "/hall/tour-cone.svg",
+    "trailCurrent": "/ui/trail-current.svg"
   }
 } as const;
 
