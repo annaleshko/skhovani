@@ -97,6 +97,25 @@ export function fitSlotOrigin(
   };
 }
 
+/**
+ * Passport 16: force frame width to the slot (x24 w342).
+ * Height follows image aspect; vertically centered in the slot.
+ */
+export function fitSlotWidth(
+  slot: { x: number; y: number; w: number; h: number },
+  imgW: number,
+  imgH: number,
+): { x: number; y: number; w: number; h: number } {
+  if (!imgW || !imgH) return { x: slot.x, y: slot.y, w: slot.w, h: slot.h };
+  const h = (slot.w * imgH) / imgW;
+  return {
+    x: slot.x,
+    y: slot.y + (slot.h - h) / 2,
+    w: slot.w,
+    h,
+  };
+}
+
 /** Pointer ring diameter (screen px). */
 export const POINTER_RING_PX = 120;
 

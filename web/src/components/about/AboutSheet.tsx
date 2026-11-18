@@ -156,45 +156,52 @@ export function AboutSheet({
                   transition={{ duration: motionTokens.tabContent }}
                 >
                   {tab === "sources" ? (
-                    <div>
-                      {(expanded
-                        ? artwork.sources
-                        : artwork.sources.slice(0, 1)
-                      ).map((s) =>
-                        s.url ? (
+                    <div className="space-y-2xl">
+                      <div>
+                        <p className="text-overline uppercase text-text-secondary">
+                          Тексти
+                        </p>
+                        {(expanded
+                          ? artwork.sources
+                          : artwork.sources.slice(0, 1)
+                        ).map((s, i, arr) => (
                           <SourceRow
                             key={s.id}
                             label={s.label}
                             date={s.note}
                             href={s.url}
+                            showDivider={
+                              expanded
+                                ? i < arr.length - 1
+                                : Boolean(artwork.photoCredit)
+                            }
                           />
-                        ) : (
-                          <div
-                            key={s.id}
-                            className="border-b border-divider py-md text-label-md text-text-secondary"
-                          >
-                            {s.label}
-                            {s.note ? (
-                              <span className="mt-2xs block text-caption">
-                                {s.note}
-                              </span>
-                            ) : null}
-                          </div>
-                        ),
-                      )}
-                      {expanded ? (
-                        <>
-                          <p className="mt-lg text-caption text-text-secondary">
-                            {artwork.photoCredit}
+                        ))}
+                      </div>
+                      {expanded || artwork.photoCredit ? (
+                        <div>
+                          <p className="text-overline uppercase text-text-secondary">
+                            Фото
                           </p>
-                          <a
-                            href="mailto:todo@example.com?subject=Помилка%20у%20Сховані"
-                            className="mt-md inline-block min-h-[44px] text-label-md text-text-accent"
-                          >
-                            {/* TODO(copy): real report email */}
-                            Повідомити про помилку
-                          </a>
-                        </>
+                          <SourceRow
+                            label={
+                              artwork.photoCredit.replace(/^Фото:\s*/i, "") ||
+                              artwork.photoCredit
+                            }
+                            date={
+                              /CC BY/i.test(artwork.photoCredit)
+                                ? "Ліцензія CC BY 4.0"
+                                : null
+                            }
+                            href={null}
+                            showDivider={false}
+                          />
+                        </div>
+                      ) : null}
+                      {expanded ? (
+                        <p className="text-caption text-text-secondary">
+                          Знайшли неточність? Напиши нам — перевіримо джерела.
+                        </p>
                       ) : null}
                     </div>
                   ) : (

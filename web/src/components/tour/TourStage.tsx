@@ -10,6 +10,7 @@ import {
 import { createSilentAudio } from "@/lib/audio";
 import {
   fitSlotOrigin,
+  fitSlotWidth,
   lensCamera,
   resolveStopTarget,
   stopDurationSec,
@@ -127,8 +128,11 @@ export function TourStage({
   }, [P.frame.h, P.frame.w, P.frame.x, P.frame.y, mode, sx, sy]);
 
   const imgLayout = useMemo(
-    () => fitSlotOrigin(frameSlot, imgNatural.w, imgNatural.h),
-    [frameSlot, imgNatural.h, imgNatural.w],
+    () =>
+      mode === "explore"
+        ? fitSlotWidth(frameSlot, imgNatural.w, imgNatural.h)
+        : fitSlotOrigin(frameSlot, imgNatural.w, imgNatural.h),
+    [frameSlot, imgNatural.h, imgNatural.w, mode],
   );
 
   const audioRef = useRef(createSilentAudio(6));
