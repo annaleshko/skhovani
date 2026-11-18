@@ -61,7 +61,9 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
 
   const [phase, setPhase] = useState<Phase>("hall");
   type Intro = "black" | "lamp" | "cone" | "bright" | "ui" | "done";
-  const [intro, setIntro] = useState<Intro>(reduced ? "done" : "black");
+  const [introStep, setIntroStep] = useState<Intro>("black");
+  /** Reduced motion always shows the settled hall; ignore in-progress steps. */
+  const intro: Intro = reduced ? "done" : introStep;
   const [covered, setCovered] = useState<Artwork | null>(null);
   const [shakeId, setShakeId] = useState<number | null>(null);
   const [tourKey, setTourKey] = useState(0);
@@ -111,11 +113,11 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
     if (phase !== "hall") return;
     if (reduced) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setIntro("lamp"), 400));
-    timers.push(setTimeout(() => setIntro("cone"), 400 + 300));
-    timers.push(setTimeout(() => setIntro("bright"), 400 + 300 + 500));
-    timers.push(setTimeout(() => setIntro("ui"), 400 + 300 + 500 + 200));
-    timers.push(setTimeout(() => setIntro("done"), 400 + 300 + 500 + 400));
+    timers.push(setTimeout(() => setIntroStep("lamp"), 400));
+    timers.push(setTimeout(() => setIntroStep("cone"), 400 + 300));
+    timers.push(setTimeout(() => setIntroStep("bright"), 400 + 300 + 500));
+    timers.push(setTimeout(() => setIntroStep("ui"), 400 + 300 + 500 + 200));
+    timers.push(setTimeout(() => setIntroStep("done"), 400 + 300 + 500 + 400));
     return () => timers.forEach(clearTimeout);
   }, [phase, reduced, artworkId]);
 
@@ -123,8 +125,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const showCone = intro === "cone" || intro === "bright" || showUi;
   const showLamp = intro !== "black";
   const paintingBright = intro === "bright" || showUi;
-  /** Darkness stays semi-transparent (never opaque after intro). */
-  const darknessOpacity = reduced || intro !== "black" ? 0.7 : 1;
+  /** Settled darkness is always 70% — alpha in the color, element opacity stays 1. */
+  const darknessAlpha = intro === "black" ? 1 : 0.7;
 
   const onFrameTap = (slot: HallSlot) => {
     const art = getArtwork(slot.artworkId);
@@ -238,14 +240,16 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
                 );
               })}
 
-              {/* 3. Darkness over the whole wall — 70% alpha (never opaque after intro) */}
-              <motion.div
+              {/* 3. Darkness over the whole wall — ends at rgba(0,0,0,0.7), never opaque */}
+              <div
                 data-hall-darkness
                 className="pointer-events-none absolute inset-0 z-[5]"
-                style={{ backgroundColor: "rgba(0, 0, 0, 1)" }}
-                initial={false}
-                animate={{ opacity: darknessOpacity }}
-                transition={{ duration: reduced ? 0 : 0.4, ease: easings.easeOut }}
+                style={{
+                  backgroundColor: `rgba(0, 0, 0, ${darknessAlpha})`,
+                  transition: reduced
+                    ? undefined
+                    : "background-color 400ms cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
               />
 
               {/* 4. Cone (above darkness, below opened frame) + opened art + lamp */}
