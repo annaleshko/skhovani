@@ -101,6 +101,23 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 | Opened frame → passport → «Далі» same museum → hall blur/reveal/tour | [ ] |
 | Opened frame → passport → «Далі» other museum → 02в | [ ] |
 
+### Stage 3 — Halls
+
+| Decision | Detail |
+|---|---|
+| Melitopol glass blur | `blur(14px) brightness(0.5)` + glass clip + dark scrim so sharp chrome can't bleed; slight scale 1.06 |
+| Hint ring | Attached to glass corner (scrolls with hall); label left/top 8px; clear of Melitopol badge |
+| Empty copy | Font 11–14px, max 3 lines, pad 8; Капуцин/Дама → below frame |
+| Tour cone | Fade to 0 when zoomed; cone height clipped above artwork top |
+
+| Check | Result |
+|---|---|
+| Melitopol diadem unreadable before tap | [ ] |
+| Reopen Melitopol: hint ≠ badge overlap | [ ] |
+| Empty text fits / below for Дама+Капуцин | [ ] |
+| Hint scrolls with hall | [ ] |
+| Іконостас tour: cone/lamp not over painting | [ ] |
+
 ## Revisit + Melitopol + Figma wallpapers (2026-11-18)
 
 | # | Fix | Check |

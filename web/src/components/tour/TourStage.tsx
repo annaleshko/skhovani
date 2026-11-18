@@ -462,7 +462,9 @@ export function TourStage({
       })()
     : null;
 
-  const coneOpacity = zoomedIn ? 0.6 : 1;
+  // Zoomed artwork must stay above the cone; fade cone out so іконостас etc.
+  // never read as lamp/cone overlapping the painting.
+  const coneOpacity = zoomedIn ? 0 : 1;
   /** Ring at the stop point after edge clamp — not always stage center. */
   const tourRingPos = (() => {
     if (mode !== "tour" || !stop) return { x: focusX, y: focusY };
@@ -496,12 +498,13 @@ export function TourStage({
         <div className="absolute inset-0 animate-pulse bg-surface" aria-busy />
       ) : null}
 
-      {/* Cone + lamp behind the artwork so zoom never covers the lamp */}
+      {/* Cone + lamp behind artwork (z below). Cone fades when zoomed so it
+          never overlays Богородчанський іконостас / tall frames. */}
       <motion.div
         className="pointer-events-none absolute left-1/2 z-[1] -translate-x-1/2"
         style={{
           top: coneTop,
-          height: coneH,
+          height: Math.min(coneH, Math.max(0, imgLayout.y - coneTop + 8)),
           width: P.cone.w * sx,
         }}
         initial={false}
@@ -522,7 +525,7 @@ export function TourStage({
         <img
           src={hallUi.tourCone}
           alt=""
-          className="size-full object-contain mix-blend-screen"
+          className="size-full object-contain object-top mix-blend-screen"
           draggable={false}
         />
       </motion.div>
@@ -533,6 +536,7 @@ export function TourStage({
           top: lampTop,
           width: P.lamp.w * sx,
           height: P.lamp.h * sy,
+          maxHeight: Math.max(0, imgLayout.y - lampTop),
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -550,9 +554,9 @@ export function TourStage({
         />
       </div>
 
-      {/* Artwork above lamp/cone */}
+      {/* Artwork above lamp/cone — always wins when zoomed */}
       <motion.div
-        className="pointer-events-auto absolute z-[2]"
+        className="pointer-events-auto absolute z-[3]"
         style={{
           left: imgLayout.x,
           top: imgLayout.y,

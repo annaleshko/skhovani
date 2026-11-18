@@ -608,40 +608,6 @@ export function HallExperience({
   const emptyInset = paintingOpeningInset(
     showHall ? artworkId : focus.id,
   );
-  // Hint ring: top-right of glass/opening, clamped into the visible viewport (16px margin).
-  const markerPos = (() => {
-    const r = hallFocusSlot.frameRect;
-    const inset = emptyInset;
-    const glassRight = r.x + r.w * (1 - inset.right);
-    const glassTop = r.y + r.h * inset.top;
-    let cx = glassRight - 8;
-    let cy = glassTop + 14;
-    const margin = 16 / px;
-    const half = 28.5;
-    const scrollDes = scrollLeftPx / px;
-    const visL = scrollDes;
-    const visR = scrollDes + viewW / px;
-    const visT = 0;
-    const visB = viewH / px;
-    cx = Math.min(Math.max(cx, visL + margin + half), visR - margin - half);
-    cy = Math.min(Math.max(cy, visT + margin + half), visB - margin - half);
-    // Hint label (145×~40) sits above the ring, centered on cx
-    const hintW = 145;
-    const hintH = 40;
-    let hintLeft = cx - hintW / 2;
-    let hintTop = cy - 11.5 - 55;
-    hintLeft = Math.min(
-      Math.max(hintLeft, visL + margin),
-      visR - margin - hintW,
-    );
-    hintTop = Math.min(
-      Math.max(hintTop, visT + margin),
-      Math.max(visT + margin, cy - half - hintH - 8),
-    );
-    return { cx, cy, hintLeft, hintTop, hintW };
-  })();
-  const markerCx = markerPos.cx;
-  const markerCy = markerPos.cy;
 
   const showUi = intro === "ui" || intro === "done";
   const showCone = intro === "cone" || intro === "bright" || showUi;
@@ -653,6 +619,48 @@ export function HallExperience({
   const hintStolen = isStolen && stolenPhase === "empty" && !reopenHall;
   const hintTour = (isShelter || isSaved) && showUi && !reopenHall;
   const hintPassport = reopenHall && showUi;
+
+  // Hint ring stays on the glass corner (scrolls with the hall). Label is
+  // placed left/top with 8px gap; only the label is clamped on-screen so it
+  // never covers the Melitopol badge in reopen.
+  const markerPos = (() => {
+    const r = hallFocusSlot.frameRect;
+    const inset = emptyInset;
+    const glassRight = r.x + r.w * (1 - inset.right);
+    const glassTop = r.y + r.h * inset.top;
+    const cx = glassRight - 8;
+    const cy = glassTop + 14;
+    const half = 28.5;
+    const gap = 8;
+    const hintW = 145;
+    const hintH = hintPassport || hintStolen ? 20 : 40;
+    const margin = 16 / px;
+    const scrollDes = scrollLeftPx / px;
+    const visL = scrollDes;
+    const visR = scrollDes + viewW / px;
+    const visT = 0;
+    // Prefer label to the left of the ring (8px), else above.
+    let hintLeft = cx - half - gap - hintW;
+    let hintTop = cy - hintH / 2;
+    if (hintLeft < visL + margin) {
+      hintLeft = cx - hintW / 2;
+      hintTop = cy - half - gap - hintH;
+    }
+    const badgeBottom =
+      museumId === "melitopol" ? (layout.captions.badgeY ?? 254) + 28 : 0;
+    if (badgeBottom > 0 && hintTop < badgeBottom + gap) {
+      hintLeft = Math.min(cx - half - gap - hintW, visR - margin - hintW);
+      hintTop = Math.max(badgeBottom + gap, glassTop);
+    }
+    hintLeft = Math.min(
+      Math.max(hintLeft, visL + margin),
+      visR - margin - hintW,
+    );
+    hintTop = Math.max(hintTop, visT + margin);
+    return { cx, cy, hintLeft, hintTop, hintW };
+  })();
+  const markerCx = markerPos.cx;
+  const markerCy = markerPos.cy;
   const showMemoryLine =
     isStolen &&
     !reopenHall &&
@@ -703,9 +711,11 @@ export function HallExperience({
                   !isOpenedFrame && !isPathFocus && slot.hiddenSrc
                     ? slot.hiddenSrc
                     : slot.frameSrc;
+                // Blur stolen interiors with no hidden plate (Melitopol glass /
+                // neighbors). Path-focus Melitopol stays blurred under darkness
+                // before the lamp layer paints.
                 const needsBlurCover =
                   !isOpenedFrame &&
-                  !isPathFocus &&
                   !slot.hiddenSrc &&
                   art?.status === "stolen";
                 return (
@@ -880,6 +890,19 @@ export function HallExperience({
                                 className="pointer-events-none absolute inset-0 overflow-hidden"
                                 style={{ clipPath: clip }}
                               >
+                                {/* Opaque scrim so sharp chrome under the glass can't bleed through blur */}
+                                <motion.div
+                                  className="absolute inset-0 bg-black"
+                                  initial={false}
+                                  animate={{
+                                    opacity:
+                                      stolenPhase === "empty" ? 0.72 : 0,
+                                  }}
+                                  transition={{
+                                    duration: revealDuration,
+                                    ease: easings.easeInOut,
+                                  }}
+                                />
                                 {hallFocusSlot.hiddenSrc ? (
                                   <motion.img
                                     src={hallFocusSlot.hiddenSrc}
@@ -913,6 +936,11 @@ export function HallExperience({
                                       stolenPhase === "empty"
                                         ? stolenBlurFor(slot.artworkId)
                                         : "none",
+                                    scale:
+                                      stolenPhase === "empty" &&
+                                      slot.artworkId === 3
+                                        ? 1.06
+                                        : 1,
                                   }}
                                   transition={{
                                     duration: revealDuration,
@@ -927,30 +955,67 @@ export function HallExperience({
                               isStolen &&
                               !reopenHall &&
                               stolenPhase === "empty" ? (
-                                <motion.div
-                                  key="empty-label"
-                                  className="absolute flex items-center justify-center px-md text-center"
-                                  style={emptyInsetCss}
-                                  initial={false}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  transition={{
-                                    duration: revealDuration,
-                                    ease: easings.easeInOut,
-                                  }}
-                                >
-                                  <p
-                                    className="text-text-secondary"
-                                    style={{
-                                      fontSize: 14,
-                                      lineHeight: "20px",
-                                      textShadow:
-                                        "0 1px 6px rgba(0,0,0,0.85)",
-                                    }}
-                                  >
-                                    Цього твору зараз немає в Україні
-                                  </p>
-                                </motion.div>
+                                (() => {
+                                  // Narrow openings (Капуцин, Дама): label below the frame.
+                                  const openW =
+                                    slot.frameRect.w *
+                                    (1 - inset.left - inset.right);
+                                  const placeBelow =
+                                    slot.artworkId === 5 ||
+                                    slot.artworkId === 7 ||
+                                    openW < 140;
+                                  const fontPx = placeBelow
+                                    ? 14
+                                    : Math.max(
+                                        11,
+                                        Math.min(14, openW * 0.085),
+                                      );
+                                  return (
+                                    <motion.div
+                                      key="empty-label"
+                                      className={
+                                        placeBelow
+                                          ? "absolute left-1/2 flex w-[90%] -translate-x-1/2 items-center justify-center text-center"
+                                          : "absolute flex items-center justify-center text-center"
+                                      }
+                                      style={
+                                        placeBelow
+                                          ? {
+                                              top: "100%",
+                                              marginTop: 8 * px,
+                                              padding: 8,
+                                            }
+                                          : {
+                                              ...emptyInsetCss,
+                                              padding: 8,
+                                            }
+                                      }
+                                      initial={false}
+                                      animate={{ opacity: 1 }}
+                                      exit={{ opacity: 0 }}
+                                      transition={{
+                                        duration: revealDuration,
+                                        ease: easings.easeInOut,
+                                      }}
+                                    >
+                                      <p
+                                        className="max-w-full text-text-secondary"
+                                        style={{
+                                          fontSize: fontPx,
+                                          lineHeight: 1.25,
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: 3,
+                                          WebkitBoxOrient: "vertical",
+                                          overflow: "hidden",
+                                          textShadow:
+                                            "0 1px 6px rgba(0,0,0,0.85)",
+                                        }}
+                                      >
+                                        Цього твору зараз немає в Україні
+                                      </p>
+                                    </motion.div>
+                                  );
+                                })()
                               ) : null}
                             </AnimatePresence>
                           </motion.div>
