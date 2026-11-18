@@ -20,7 +20,7 @@ Removed from the MVP: onboarding, name, login, email code, rhythm, notifications
 | 09 | Guide | `236:1619` | `09-guide.png` | Header «Гід · <назва> · <автор>». «Я гід цієї картини» / «Питай про сюжет, автора чи долю твору. Відповідаю лише з перевірених джерел.» / «МОЖНА ПОЧАТИ З ЦЬОГО» + 3 questions. Conversation: `docs/figma-refs/20b-guide-chat.png`. Demo trap question: «Де зараз ця картина?» |
 | 16 | Passport | `240:1838` | `16-passport.png` | Tabs Історія / Про твір / Автор / Джерела, «Шпалери», «Спитати гіда». «×» → route map (02в). |
 | 11 | Wallpaper | `236:1720` | `11-wallpaper.png` | Only «Уся картина» (no toggle). «Зберегти на телефон». |
-| 17 | Wallpaper saved | `240:1889` | `17-wallpaper-saved.png` | Toast «Шпалери збережено у «Фото»», «Тепер постав їх на екран блокування» / «Займе хвилину. Твір буде з тобою щодня.», 3 steps, button «Далі — <next city>» (same museum: «Далі — <next artwork title>» `// TODO(copy confirm)`). |
+| 17 | Wallpaper saved | `240:1889` | `17-wallpaper-saved.png` | Toast «Шпалери збережено у «Фото»», «Тепер постав їх на екран блокування» / «Займе хвилину. Твір буде з тобою щодня.», 3 steps, button always «Далі — <next city>» (same museum keeps the city name; hall scrolls to the next frame). |
 | 02в | Route map | `238:1557` | `02v-route-map.png` | «Твій маршрут» / «10 творів у 5 музеях. Тапни на будь-який музей.» Start city ring+dot; target gold star; visited = smaller constellation stars linked by faint dotted lines; unvisited dim. Sheet: «Далі — <city>» / «≈ N км від тебе» + blurb / «Вирушити». After path 10: «Шлях пройдено» `// TODO(copy)`. |
 | 12 | Neighbor frame | `236:1749` | `12-neighbor-frame.png` | Tap on another frame: no modal, only a quiet caption «Відкриється наступним шляхом» under it. |
 

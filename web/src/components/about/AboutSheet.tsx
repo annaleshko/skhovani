@@ -6,7 +6,7 @@ import type { Artwork } from "@/data/types";
 import { cn } from "@/lib/cn";
 import { defaultSpring, easings, motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 type TabId = "history" | "about" | "author" | "sources";
 
@@ -22,41 +22,29 @@ type Props = {
   open: boolean;
   /** When true, sheet sits under the 08 detail dim (no interaction change). */
   dimmed?: boolean;
-  showFinish?: boolean;
   onWallpaper: () => void;
   onAskGuide: () => void;
-  onFinishPath: () => void;
   className?: string;
 };
 
 /**
  * Figma 16 / 16б–16д — passport sheet under the framed artwork.
  * Collapsed top y464; expanded y112; pinned actions y724.
+ * Path completion happens on reaching 16 (HallExperience) — no «Завершити шлях».
  */
 export function AboutSheet({
   artwork,
   open,
   dimmed = false,
-  showFinish: showFinishProp = true,
   onWallpaper,
   onAskGuide,
-  onFinishPath,
 }: Props) {
   const [tab, setTab] = useState<TabId>("history");
   const [expanded, setExpanded] = useState(false);
-  const [seenTab, setSeenTab] = useState(false);
-  const [finishReady, setFinishReady] = useState(false);
   const dragStartY = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!open || !showFinishProp) return;
-    const t = setTimeout(() => setFinishReady(true), 5000);
-    return () => clearTimeout(t);
-  }, [open, showFinishProp]);
 
   const selectTab = (id: TabId) => {
     setTab(id);
-    setSeenTab(true);
     setExpanded(true);
   };
 
@@ -69,7 +57,6 @@ export function AboutSheet({
           ? artwork.tabs.author
           : [];
 
-  const showFinish = showFinishProp && (seenTab || finishReady);
   const L = PASSPORT_LAYOUT;
   const sheetTop = expanded ? L.sheetExpanded.y : L.sheetCollapsed.y;
 
@@ -225,11 +212,6 @@ export function AboutSheet({
                     </div>
                   )}
 
-                  {showFinish && expanded ? (
-                    <div className="mt-2xl pb-md">
-                      <Button onClick={onFinishPath}>Завершити шлях</Button>
-                    </div>
-                  ) : null}
                 </motion.div>
               </AnimatePresence>
             </div>
