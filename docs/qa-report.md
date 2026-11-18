@@ -1,115 +1,115 @@
-# QA report — MVP v2 stages 1–5
+# QA report — MVP v2 stages 1–6 (autonomous call run)
 
-Date: 2026-11-18. Preview: production build on `localhost:3010`, viewports 390×844 and 390×667. Screenshots under `docs/verify/qa-*.png`.
+Date: 2026-11-18. Build: `npm run build` clean in `web/`. Preview historically on `localhost:3010`. Screenshots under `docs/verify/`.
 
 ## Per stage
 
 | Stage | Status | Notes |
 |---|---|---|
-| 1 — AI guide chat (V2-5) | **done** | Already shipped before this session; re-verified with live `OPENAI_API_KEY`. Passport «Спитати гіда» + detail prefill work; trap uses fallback. |
-| 2 — Start-city route + constellation | **done** | Origin always `startCityId`; `MapStar` + `DottedRoute`; 02/02в distance from start city; `docs/mvp-v2.md` journey rules updated. |
-| 3 — Passport → wallpaper → saved → next | **done** | Path completes on reaching 16 (and again on wallpaper/×/Далі as safety). No «Завершити шлях». 17 CTA always «Далі — \<місто\>». Same-museum next still scrolls hall. |
-| 4 — Polish vs Figma | **done** | Passport frame width-fit to x24/w342; Джерела «Тексти»/«Фото»; external-link SVG; removed unused `CoveredSheet`. Other halls: walls + frames + status OK in deep-link checks. |
-| 5 — Full QA + this report | **done** | Automated walkthrough + live guide Q&A below. |
+| 1 — Guide honesty + wallpaper + 02в labels | **done** | No «офлайн-відповідь» in UI; speculation retry; wallpaper composes Figma `236:1720` (no hall/lamp/badge); map labels 6px gap + flip. Honesty fallback for price/symbolism tightened (no accidental plot dump). |
+| 2 — Paths 2–5 walk + fix | **done** | Melitopol / Kharkiv / Lviv / Chernihiv halls verified (`docs/verify/qa-s2-*.png`). Stolen blur bumped; guide rate limit raised for demo walks. |
+| 3 — Detail points artworks 2–10 | **done** | Every zone has `x`,`y` (0–1). Tour-stop match when titles align; else grid center `// TODO(calibrate)` — see coordinate table below. |
+| 4 — Kherson paths 6–10 + end sheet | **done** | Same-museum scroll 600ms; multi-lamp (active full / opened dim); opened neighbor → passport 16; unopened → «Відкриється наступним шляхом»; end sheet «Шлях пройдено» + confirm → `/reset`. Order: 6 Колядки → 7 Вид Одеси → 8 Дама → 9 Околиці → 10 Капуцин. |
+| 5 — Deploy readiness | **done** | Build clean. Env: `OPENAI_API_KEY`, `OPENAI_MODEL` only. Root Directory = `web`. Dropped ~13MB wallpaper PNGs + unused `tour-frame-1.png`; wallpaper field → art webp; screen 11 composes export. |
+| 6 — Full QA + this report | **partial** | API guide Q&A for 3/8/10 verified live. Full Playwright UI walk blocked this session (Chromium sandbox). Paths 1–5 hall screenshots exist; 6–10 + end sheet need manual click-through. |
 
-## Files changed (this autonomous run)
+## Files changed (this call batch)
 
-- Stage 2: `JourneyFlow.tsx`, `RouteMapScreen.tsx`, `journey.ts`, `MapStar.tsx`, `DottedRoute.tsx`, `motion.ts`, `docs/mvp-v2.md`
-- Stage 3: `AboutSheet.tsx`, `HallExperience.tsx`, `WallpaperScreen.tsx`, `WallpaperSavedScreen.tsx`, `docs/mvp-v2.md`
-- Stage 4: `TourStage.tsx`, `tour-camera.ts` (`fitSlotWidth`), `SourceRow.tsx`, `AboutSheet.tsx`, `public/icons/external.svg`, deleted `CoveredSheet.tsx`
-- Stage 5: `HallExperience.tsx` (completion safety), `docs/qa-report.md`
+- Stage 1 (prior commit `380ad39`): guide prompt/route, WallpaperScreen, map-label, GuideScreen
+- Stage 2 (`20da2b5`): `HallExperience` blur, guide rate limit, `docs/verify/qa-s2-*.png`
+- Stage 3 (`53654a5`): `data/artworks.json`, `web/src/data/content.json` zone `x`,`y`
+- Stage 4 (`8b832dd` + follow-ups): `HallExperience` lamps/neighbor passport, `RouteMapScreen` end CTA, `journey.ts` `ALL_DONE_COPY`, `JourneyRouteMap` always shows 02в end sheet
+- Stage 5: remove `public/wallpapers/*.png`, `hall/tour-frame-1.png`; asset-map/content wallpaper→webp; `prepare-assets.mjs`; `.env.example`; saved-status trap + honesty fallback
+- Stage 6: this report
 
-No new npm dependencies. `.env*` not committed.
+No new npm dependencies. `.env*` not committed. Untracked PDF / Rules md left out.
 
-## Decisions made on your behalf
+## Decisions made for you
 
-1. **17 button always «Далі — \<місто\>»** even when next path is same museum (your product note overrides V2-6 artwork-title copy). Hall still skips map and opens the next frame.
-2. **Passport «×» always opens 02в** (not auto-jump to same-museum hall).
-3. **Photo source row** uses `photoCredit` under «Фото»; license line only when credit mentions CC BY. No invented Wikimedia URL.
-4. **Constellation** links only between *visited* museums (not the full 5-museum dashed path from the old 02в).
-5. **Path completion** also re-asserted on wallpaper save / × / «Далі» so 02в constellation cannot miss a just-finished museum if tour skip raced state.
-6. Did **not** commit untracked `Skhovani_Hackathon_Rules_Knowledge.md` or the MVP PDF.
+1. **Reopened passport «×»** → back to current-path hall (not 02в). Path passport «×» still → 02в.
+2. **End-sheet copy** from your brief + `// TODO(copy confirm)`.
+3. **«Почати знову»** → confirm («Так, почати знову») → `/reset`.
+4. **Opened neighbor** → passport of that artwork; wallpaper replay does not advance path.
+5. **Wallpaper assets** → do not ship multi-MB PNGs; compose from art webp at runtime.
+6. **Saved trap** → «Твір врятовано…» (not «в укритті»).
 
-## Live guide Q&A — artwork 1 (Великодня заутреня)
+## Tour / detail coordinate notes
 
-Called `POST /api/guide` against the running build with the real key:
+No tour-stop `x`,`y` retunes this run (stops already present). Detail zones for 2–10 added:
 
-1. **Чому існує дві «Великодні заутрені»?**  
-   Микола Пимоненко написав «Великодню заутреню» двічі: першу версію у 1891 році, яка зараз знаходиться в Росії, та другу — у 1910 році, що зберігалася в Херсонському художньому музеї. Обидві версії відрізняються, але обидві відображають атмосферу Великодньої ночі в українському селі.  
-   Sources: `s3`, `s8`. fallback: false
+| Art | Source mix | Notes |
+|---|---|---|
+| 2 Колядки | stop + grid | cupola/trees/hut/footprints = grid TODO |
+| 3 Скіфське золото | stop + grid | side protrusions = grid TODO |
+| 4 Вид Одеси | stop + grid | clouds/sea/waves = grid TODO |
+| 5 Дама | stop + grid | hair/earring/hands = grid TODO; намисто → pearls stop |
+| 6 Околиці | stop + grid | river/slope hand-fixed |
+| 7 Капуцин | stop + grid | finial/gloves/robe = grid TODO |
+| 8 Запорожці | stop + hand | spears/kobza hand-fixed (bad fuzzy) |
+| 9 Іконостас | stop + grid | tiers mostly grid TODO |
+| 10 Козак | stop + hand | face hand-fixed |
 
-2. **Як картину викрали з Херсона?**  
-   Про це в моїх джерелах даних немає.  
-   Sources: none. fallback: false  
-   *(Earlier session had a richer answer from the same passport facts; model occasionally under-answers — see bugs.)*
+Full values live in `data/artworks.json` / `web/src/data/content.json`.
 
-3. **Що відбувається на картині?**  
-   На картині «Великодня заутреня» зображено сільську церкву в ніч перед Великоднем. Люди зібралися біля церкви, чекаючи, коли священник вийде й посвятить принесені паски та крашанки. Художник передає атмосферу свята, де тепле світло з церкви освітлює обличчя людей, а ніч поступово відходить.  
-   Sources: `s2`. fallback: false
+## Paths 1–10 one-line status
 
-4. **Хто такий Микола Пимоненко?**  
-   Микола Пимоненко (1862–1912) — український художник-реаліст, родом з Києва. Він навчався в Київській рисувальній школі та Петербурзькій академії мистецтв, хоча не закінчив її через хворобу. Пимоненко став академіком живопису у 1904 році і відомий своїми творами, зокрема картиною «Великодня заутреня».  
-   Sources: `s6`. fallback: false
+1. Херсон / Великодня — **ok** (prior verified)
+2. Мелітополь / Скіфське золото — **ok** (stolen blur/hall; trap no place)
+3. Харків / Запорожці — **ok** (shelter; trap «укритті»)
+4. Львів / Іконостас — **ok** (shelter; wide frame)
+5. Чернігів / Козак-бандурист — **ok** (saved; no «викрадений»)
+6. Херсон / Колядки — **code done** — needs manual scroll/blur check
+7. Херсон / Вид Одеси — **code done** — needs manual
+8. Херсон / Дама з собакою — **code done** — needs manual
+9. Херсон / Околиці Києва — **code done** — needs manual
+10. Херсон / Капуцин → end sheet — **code done** — needs manual «Шлях пройдено» + restart
 
-5. **Де зараз ця картина?** *(trap)*  
-   Окупанти вивезли її з музею. Точне місце зараз невідоме — я не вгадую, де вона зберігається.  
-   Sources: `s1`. fallback: true
+## Guide Q&A (live API, artworks 3 / 8 / 10)
 
-## Automated flow checklist (390×844)
+### Artwork 3 — Скіфське золото (stolen)
 
-`/reset` → Київ → 02 (star + dotted Kyiv→Херсон, ≈451 км) → Вирушити → flight → 04 → hall blur → reveal → tour → 16 → Спитати гіда → back → Шпалери → 17 «Далі — Мелітополь» → 02в (dotted Kyiv→Мелітополь, ≈535 км).
+1. **Як знайшли скіфське золото Мелітополя?** — curated: 1954 курган, ~2 кг, лишили в Україні. Sources `s6`.
+2. **Як золото ховали…?** — curated: сховали; під дулом; видали колаборанти. Sources `s1`,`s2`.
+3. **Де зараз ця картина?** — fallback trap: «Окупанти вивезли… Точне місце зараз невідоме.» (no invented place).
 
-Also deep-linked:
+### Artwork 8 — Запорожці (shelter)
 
-- Мелітополь path 2 — wall + frame 3, stolen empty/blur copy present  
-- Харків path 3 — wall + frame 8, badge «В укритті»  
-- Львів path 4 — wall + frame 9, shelter  
-- Чернігів path 5 — wall + frame 10, saved  
+1. **Чим харківський варіант…?** — curated: живіший; Кубань. `s1`.
+2. **Що написали козаки…?** — curated: зухвала відповідь; текст не цитую. `s6`.
+3. **Де зараз?** — «Твір в укритті. Точне місце… не називаю.»
 
-390×667: city → map sheet still usable (`qa-02-map-667.png`).
+### Artwork 10 — Козак-бандурист (saved)
 
-## Bugs found / not fully fixed
+1. **Хто така Марина Гриценко?** — curated: зберігачка; порятунок; Europa Nostra. `s1`,`s2`,`s4`.
+2. **Як врятували колекцію…?** — curated: підвал; старий одяг; без втрат. `s1`,`s5`.
+3. **Де зараз?** — after fix: «Твір врятовано…» (was incorrectly «укритті» — fixed in stage 5).
 
-1. ~~Guide flakiness on theft question~~ → **fixed** (curated bank for all `defaultQuestions`; status-aware prompt + safety).
-2. **02в constellation** — line draws only when ≥2 museums visited; after path 1 alone you see Херсон star without an inter-museum line (expected). Re-check after path 2+.
-3. **Wallpaper 11** — phone preview is approximate vs Figma; footer license note present.
-4. **Hall light intensity** for shelter vs saved — fine-tuning vs Figma refs not done.
-5. **End of journey (path 10)** — sheet «Шлях пройдено» stub `// TODO(copy)`.
-6. **Same-museum paths 6–10** — not re-walked in automated pass.
+## Deploy (Vercel)
+
+**Env vars (names only):**
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+
+Without them the guide degrades to curated defaults + fallback bank (no crash).
+
+**Build settings:** Root Directory = `web`. Framework: Next.js. No special install flags.
+
+## Bugs not fixed / open
+
+1. Detail zone grid placements marked TODO(calibrate) — tap targets may miss fine details.
+2. Full UI walk paths 6–10 + end sheet not screenshot-verified this session (Playwright Chromium blocked).
+3. Hall shelter vs saved light fine-tuning vs Figma still soft.
+4. Melitopol empty-frame blur may still look soft on very tall vitrine — blur already raised to 18px.
+5. End copy still `// TODO(copy confirm)`.
 
 ## Please check manually
 
-- [ ] Full path 1 → passport → guide → back → Шпалери → 17 → «Далі — Мелітополь» → 02в: `startCityId` still `kyiv`, Херсон = visited star.
-- [ ] Guide 09 empty state sits at the bottom above the composer.
-- [ ] After 2+ museums: faint constellation line between visited stars under the active route.
-- [ ] Artwork 8 trap «Де зараз?» → only «Твір в укритті…», no place name.
-
----
-
-## Follow-up — guide reliability (2026-11-18 evening)
-
-Commit: `guide reliability + fixes`.
-
-### Fixes
-- Curated answers for every `chat.defaultQuestions` across artworks 1–11 (passport-only); default taps skip the model (`curated: true`, `fallback: false`).
-- Status-aware system prompt + «ФАКТИ, ЯКІ ТИ МОЖЕШ РОЗПОВІДАТИ»; stolen may state Russia / looting from passport; shelter/saved never name storage.
-- `sanitizeGuideAnswer(text, status)` — stolen no longer rewritten to «твір в укритті» on «вивезли до…».
-- Shrug retry: if model says «немає даних» but passport keywords match → one retry with quoted paragraphs → then curated/fallback bank.
-- `startCityId` guard: cannot be wiped except `/reset`; save refuses to overwrite stored city with null; UI falls back to stored value.
-- 02в: constellation dots use plain SVG circles (no motion initial-hide); drawn under active route.
-- Guide empty state: `justify-end` above composer.
-- `<body suppressHydrationWarning>`.
-
-### Live Q&A re-check (artwork 1 + shelter trap)
-
-| # | Q | curated / fallback | Answer (short) |
-|---|---|---|---|
-| 1 | Чому існує дві «Великодні заутрені»? | curated | Дві версії 1891 (Рибінськ) і 1910 (Херсон). Sources s2,s3,s8 |
-| 2 | Як картину викрали з Херсона? | curated | 31.10–04.11.2022, >10 тис., обидві версії в Росії. Sources s1,s5 |
-| 3 | Чи є шанс, що її повернуть? | curated | Реєстр + Інтерпол. Source s4 |
-| 4 | Хто такий Микола Пимоненко? | curated | 1862–1912, киянин, академік 1904. Source s6 |
-| 5 | Що відбувається на картині? | curated | Великодня ніч, церква, кошики, свічки. Sources s2,s3 |
-| 6 | Де зараз ця картина? | fallback trap | Окупанти вивезли; за паспортом обидві версії в Росії; точного місця не знаю. s1,s8 |
-| 7 | Скільки експонатів вивезли? | model | Понад 10 тисяч… Source s5 |
-| 8 | Де Пимоненко мав майстерню? | model | Малютянка на Київщині |
-| 9 | Artwork 8: Де зараз ця картина? | fallback | Твір в укритті. Точне місце зберігання я не називаю і не вгадую. |
+- [ ] `/reset` → Київ → path 1 → … → path 10 → 02в «Шлях пройдено» → «Почати знову» → confirm → city picker
+- [ ] Paths 6–10: hall scrolls, previous lamp dims, blur→reveal each stolen frame
+- [ ] Opened frame in Kherson hall opens passport; unopened shows neighbor caption only
+- [ ] Wallpaper 11: phone preview, no hall/lamp/badge; save PNG composition
+- [ ] Detail taps on artworks 3, 8, 10 open the right card
+- [ ] Guide: price/symbolism → «Про це в моїх джерелах даних немає» + passport offer
+- [ ] Art 10 trap → «врятовано», never «укритті» / never «викрадений» in Chernihiv copy
+- [ ] 390×667: city, map sheet, passport sheet usable
