@@ -219,6 +219,10 @@ export function JourneyFlow({
   /** Dedicated revisit→hall timer — never cleared by goFacade fade restarts. */
   const revisitEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enterDoorRef = useRef<() => void>(() => {});
+  /** Synced before enterMap so flight→zoom→facade closures see the picked path. */
+  const pathRef = useRef<ResolvedPath | null>(null);
+  const revisitRef = useRef(revisit);
+  const reopenHallRef = useRef(reopenHall);
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mapStageRef = useRef<HTMLDivElement>(null);
   const facadeRootRef = useRef<HTMLDivElement>(null);
@@ -486,6 +490,18 @@ export function JourneyFlow({
     phaseRef.current = phase;
   }, [phase]);
 
+  useEffect(() => {
+    revisitRef.current = revisit;
+  }, [revisit]);
+
+  useEffect(() => {
+    reopenHallRef.current = reopenHall;
+  }, [reopenHall]);
+
+  useEffect(() => {
+    if (path) pathRef.current = path;
+  }, [path]);
+
   // Place overlay pins once they mount
   useEffect(() => {
     if (!showStartPin && !showTargetPin) return;
@@ -630,6 +646,11 @@ export function JourneyFlow({
       setShowPathConfirm(confirm);
 
       const origin = getPathOrigin(startCityId, picked);
+      // Sync refs BEFORE enterMap — autoFlight runs flight in the same tick
+      // while React state `path` is still null (stale closures).
+      pathRef.current = picked;
+      revisitRef.current = revisit;
+      reopenHallRef.current = reopenHall;
       setStartCity(origin.city);
       setOriginAbroad(origin.abroad);
       setPath(picked);
@@ -662,10 +683,12 @@ export function JourneyFlow({
   }, []);
 
   const enterDoor = useCallback(() => {
-    if (!path || !museumUi) {
+    const p = pathRef.current;
+    const ui = p ? getMuseumUi(p.museumId) : undefined;
+    if (!p || !ui) {
       if (process.env.NODE_ENV !== "production") {
         console.warn(
-          `[revisit] enterDoor early-return path=${Boolean(path)} museumUi=${Boolean(museumUi)}`,
+          `[revisit] enterDoor early-return path=${Boolean(p)} museumUi=${Boolean(ui)}`,
         );
       }
       return;
@@ -673,8 +696,8 @@ export function JourneyFlow({
     if (facadeTimer.current) clearTimeout(facadeTimer.current);
     clearRevisitEnterTimer("enterDoor");
     setPhase("entering");
-    const reopenQs = reopenHall ? "&reopen=1" : "";
-    const hallUrl = `/hall/${path.museumId}?path=${path.n}&artwork=${path.artworkId}${reopenQs}`;
+    const reopenQs = reopenHallRef.current ? "&reopen=1" : "";
+    const hallUrl = `/hall/${p.museumId}?path=${p.n}&artwork=${p.artworkId}${reopenQs}`;
     if (reduced) {
       setBlackout(1);
       router.push(hallUrl);
@@ -686,21 +709,16 @@ export function JourneyFlow({
     });
     const t0 = performance.now();
     const fade = () => {
-      const p = Math.min(1, (performance.now() - t0) / (motionTokens.doorEnter * 1000));
-      setBlackout(p);
-      if (p < 1) requestAnimationFrame(fade);
+      const prog = Math.min(
+        1,
+        (performance.now() - t0) / (motionTokens.doorEnter * 1000),
+      );
+      setBlackout(prog);
+      if (prog < 1) requestAnimationFrame(fade);
       else router.push(hallUrl);
     };
     requestAnimationFrame(fade);
-  }, [
-    clearRevisitEnterTimer,
-    doorCamScale,
-    museumUi,
-    path,
-    reduced,
-    reopenHall,
-    router,
-  ]);
+  }, [clearRevisitEnterTimer, doorCamScale, reduced, router]);
 
   useEffect(() => {
     enterDoorRef.current = enterDoor;
@@ -714,8 +732,17 @@ export function JourneyFlow({
   }, [clearRevisitEnterTimer]);
 
   const scheduleRevisitEnter = useCallback(() => {
+    const p = pathRef.current;
+    const isRevisit = revisitRef.current;
     // Revisit auto-enter never for path 1
-    if (!revisit || !path || path.n === 1) return;
+    if (!isRevisit || !p || p.n === 1) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          `[revisit] scheduleRevisitEnter early-return revisit=${isRevisit} pathN=${p?.n ?? "null"}`,
+        );
+      }
+      return;
+    }
     clearRevisitEnterTimer("reschedule");
     const ms = reduced
       ? motionTokens.reducedCrossfade * 1000
@@ -724,7 +751,7 @@ export function JourneyFlow({
       revisitEnterTimer.current = null;
       enterDoorRef.current();
     }, ms);
-  }, [clearRevisitEnterTimer, path, reduced, revisit]);
+  }, [clearRevisitEnterTimer, reduced]);
 
   const goFacade = useCallback(() => {
     if (facadeTimer.current) clearTimeout(facadeTimer.current);
@@ -741,24 +768,34 @@ export function JourneyFlow({
     animate(facadeScale, 1, { duration: motionTokens.facadeScale, ease: easings.easeOut });
     const t0 = performance.now();
     const fade = () => {
-      const p = Math.min(1, (performance.now() - t0) / (motionTokens.facadeCrossfade * 1000));
-      setFacadeOpacity(p);
-      if (p < 1) requestAnimationFrame(fade);
+      const prog = Math.min(
+        1,
+        (performance.now() - t0) / (motionTokens.facadeCrossfade * 1000),
+      );
+      setFacadeOpacity(prog);
+      if (prog < 1) requestAnimationFrame(fade);
       else scheduleRevisitEnter();
     };
     requestAnimationFrame(fade);
   }, [facadeScale, reduced, scheduleRevisitEnter]);
 
   const afterZoom = useCallback(() => {
+    const p = pathRef.current;
+    const isRevisit = revisitRef.current;
     // Revisit: skip occupation note — straight to short facade hold (not path 1)
-    if (revisit && path && path.n !== 1) {
+    if (isRevisit && p && p.n !== 1) {
       facadeTimer.current = setTimeout(
         () => goFacade(),
         reduced ? 0 : FACADE_AUTO_MS,
       );
       return;
     }
-    const occupied = Boolean(path?.museum.occupied);
+    if (isRevisit && process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[revisit] afterZoom non-revisit branch pathN=${p?.n ?? "null"}`,
+      );
+    }
+    const occupied = Boolean(p?.museum.occupied);
     if (occupied && !reduced) {
       setPhase("occupation");
       setOccupationNote(true);
@@ -766,7 +803,7 @@ export function JourneyFlow({
     } else {
       facadeTimer.current = setTimeout(() => goFacade(), FACADE_AUTO_MS);
     }
-  }, [goFacade, path, reduced, revisit]);
+  }, [goFacade, reduced]);
 
   const runZoom = useCallback(() => {
     setPhase("zoom");

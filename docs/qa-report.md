@@ -76,6 +76,20 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
 
+## Release candidate stages (2026-11-18 evening)
+
+### Stage 1 — Revisit stuck (root cause)
+
+**Cause:** mount effect called `setPath(picked)` + `enterMap({autoFlight})` in one tick; flight→zoom→`afterZoom`/`scheduleRevisitEnter` closed over `path === null`, so revisit never scheduled `enterDoor`.
+
+**Fix:** `pathRef` / `revisitRef` / `reopenHallRef` written synchronously before `enterMap`; afterZoom / scheduleRevisitEnter / enterDoor read refs. Dev `console.warn` on early returns. Revisit name sheet stays in screen space (outside scaled facade).
+
+| Check | Result |
+|---|---|
+| 02в revisit Мелітополь → hall ~2–3s | [ ] |
+| 02в revisit Харків | [ ] |
+| 02в revisit Херсон (next unopened) | [ ] |
+
 ## Revisit + Melitopol + Figma wallpapers (2026-11-18)
 
 | # | Fix | Check |
