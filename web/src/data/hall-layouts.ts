@@ -33,7 +33,7 @@ const HIDDEN_FRAME_IDS = new Set([2, 4, 5, 6, 7]);
 function framePaths(id: number): Pick<HallSlot, "frameSrc" | "hiddenSrc"> {
   const frameSrc = `/hall/frames/${id}.webp`;
   if (HIDDEN_FRAME_IDS.has(id)) {
-    return { frameSrc, hiddenSrc: `/hall/frames/${id}-hidden.webp` };
+    return { frameSrc, hiddenSrc: `/hall/frames/${id}-hidden.png` };
   }
   return { frameSrc };
 }
@@ -167,4 +167,47 @@ export const hallLayouts: Record<string, HallLayout> = {
 
 export function getHallLayout(museumId: string): HallLayout | undefined {
   return hallLayouts[museumId];
+}
+
+/** Painting opening as 0–1 fractions of the outer frameRect. */
+export type OpeningInset = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
+
+/**
+ * Approximate painting opening — clip blur / vignette to the canvas,
+ * keeping the frame chrome sharp.
+ */
+export function paintingOpeningInset(artworkId: number): OpeningInset {
+  // Oval Дама
+  if (artworkId === 5) {
+    return { top: 0.1, right: 0.14, bottom: 0.1, left: 0.14 };
+  }
+  // Vertical Капуцин / Козак
+  if (artworkId === 7 || artworkId === 10) {
+    return { top: 0.08, right: 0.16, bottom: 0.08, left: 0.16 };
+  }
+  // Tall Melitopol case
+  if (artworkId === 3) {
+    return { top: 0.06, right: 0.1, bottom: 0.08, left: 0.1 };
+  }
+  // Landscape frames (Великодня, Колядки, Одеса, Околиці, Запорожці, іконостас)
+  return { top: 0.12, right: 0.11, bottom: 0.13, left: 0.11 };
+}
+
+export function openingInsetStyle(inset: OpeningInset) {
+  return {
+    top: `${inset.top * 100}%`,
+    right: `${inset.right * 100}%`,
+    bottom: `${inset.bottom * 100}%`,
+    left: `${inset.left * 100}%`,
+  };
+}
+
+/** CSS clip-path so a full-frame image is only visible in the opening. */
+export function openingClipPath(inset: OpeningInset) {
+  return `inset(${inset.top * 100}% ${inset.right * 100}% ${inset.bottom * 100}% ${inset.left * 100}%)`;
 }

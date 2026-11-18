@@ -1,11 +1,12 @@
 "use client";
 
 import { Button, Chip, SourceRow, StatusBadge } from "@/components/ui";
+import { PASSPORT_LAYOUT } from "@/components/tour/FramedArtwork";
 import type { Artwork } from "@/data/types";
 import { cn } from "@/lib/cn";
 import { defaultSpring, easings, motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type TabId = "history" | "about" | "author" | "sources";
 
@@ -19,31 +20,33 @@ const TABS: { id: TabId; label: string }[] = [
 type Props = {
   artwork: Artwork;
   open: boolean;
+  /** When true, sheet sits under the 08 detail dim (no interaction change). */
+  dimmed?: boolean;
   showFinish?: boolean;
-  /** MVP v2 passport «×» → route map (02в). */
-  onClose?: () => void;
   onWallpaper: () => void;
   onAskGuide: () => void;
-  onReplayTour: () => void;
   onFinishPath: () => void;
   className?: string;
 };
 
-/** Figma 16 / 16б–16д — «Про картину» sheet with tabs. */
+/**
+ * Figma 16 / 16б–16д — passport sheet under the framed artwork.
+ * Collapsed top y464; expanded y112; pinned actions y724.
+ */
 export function AboutSheet({
   artwork,
   open,
+  dimmed = false,
   showFinish: showFinishProp = true,
-  onClose,
   onWallpaper,
   onAskGuide,
-  onReplayTour,
   onFinishPath,
 }: Props) {
   const [tab, setTab] = useState<TabId>("history");
   const [expanded, setExpanded] = useState(false);
   const [seenTab, setSeenTab] = useState(false);
   const [finishReady, setFinishReady] = useState(false);
+  const dragStartY = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open || !showFinishProp) return;
@@ -54,6 +57,7 @@ export function AboutSheet({
   const selectTab = (id: TabId) => {
     setTab(id);
     setSeenTab(true);
+    setExpanded(true);
   };
 
   const paragraphs =
@@ -66,166 +70,207 @@ export function AboutSheet({
           : [];
 
   const showFinish = showFinishProp && (seenTab || finishReady);
+  const L = PASSPORT_LAYOUT;
+  const sheetTop = expanded ? L.sheetExpanded.y : L.sheetCollapsed.y;
+
+  const onHandlePointerDown = (e: React.PointerEvent) => {
+    dragStartY.current = e.clientY;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onHandlePointerUp = (e: React.PointerEvent) => {
+    if (dragStartY.current == null) return;
+    const dy = e.clientY - dragStartY.current;
+    dragStartY.current = null;
+    if (Math.abs(dy) < 8) {
+      setExpanded((v) => !v);
+      return;
+    }
+    if (dy < -24) setExpanded(true);
+    if (dy > 24) setExpanded(false);
+  };
 
   return (
     <AnimatePresence>
       {open ? (
-        <motion.div
-          className={cn(
-            "absolute inset-x-0 bottom-0 z-30 flex flex-col overflow-hidden rounded-t-lg border-t border-border-subtle bg-surface",
-            expanded ? "top-[120px]" : "max-h-[62dvh]",
-          )}
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={defaultSpring}
-        >
-          <button
-            type="button"
-            aria-label={expanded ? "Згорнути" : "Розгорнути"}
-            className="mx-auto mt-md h-1 w-10 shrink-0 rounded-pill bg-border-control/50"
-            onClick={() => setExpanded((e) => !e)}
-          />
+        <>
+          <motion.div
+            className={cn(
+              "absolute inset-x-0 z-[25] flex flex-col overflow-hidden rounded-t-lg border-t border-border-subtle bg-surface",
+              dimmed && "pointer-events-none",
+            )}
+            style={{
+              bottom: `calc(${L.actions.h / 844} * 100dvh)`,
+            }}
+            initial={{ y: 48, opacity: 0, top: `${(L.sheetCollapsed.y / 844) * 100}dvh` }}
+            animate={{
+              y: 0,
+              opacity: 1,
+              top: `${(sheetTop / 844) * 100}dvh`,
+            }}
+            exit={{ y: 48, opacity: 0 }}
+            transition={defaultSpring}
+          >
+            <button
+              type="button"
+              aria-label={expanded ? "Згорнути" : "Розгорнути"}
+              className="flex min-h-[44px] w-full shrink-0 flex-col items-center justify-center pt-sm"
+              onPointerDown={onHandlePointerDown}
+              onPointerUp={onHandlePointerUp}
+            >
+              <span className="h-1 w-10 rounded-pill bg-border-control/50" />
+            </button>
 
-          <div className="shrink-0 px-xl pt-md">
-            <div className="flex items-start justify-between gap-md">
-              <div className="min-w-0">
-                <h2 className="text-h2 text-text-primary">{artwork.title}</h2>
-                <p className="mt-2xs text-body-md text-text-caption">
-                  {artwork.author} · {artwork.year}
-                </p>
-                <div className="mt-sm flex flex-wrap items-center gap-sm">
+            <div className="shrink-0 px-xl">
+              <div className="flex flex-col gap-md">
+                <div>
+                  <h2 className="text-h2 text-text-primary">{artwork.title}</h2>
+                  <p className="mt-2xs text-body-md text-text-secondary">
+                    {artwork.author} ·{" "}
+                    {artwork.year.match(/\d{4}/)?.[0] ??
+                      artwork.year.split(/[;(]/)[0]?.trim() ??
+                      artwork.year}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-sm">
                   <StatusBadge status={artwork.status} />
                   {/* TODO(copy): status meta date from passport */}
-                  <span className="text-caption text-text-secondary">восени 2022</span>
+                  <span className="text-caption text-text-secondary">
+                    восени 2022
+                  </span>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2xs">
-                <button
-                  type="button"
-                  aria-label="Повторити тур"
-                  className="flex size-11 items-center justify-center rounded-full bg-surface-raised text-text-accent"
-                  onClick={onReplayTour}
-                >
-                  ▶
-                </button>
-                {onClose ? (
-                  <button
-                    type="button"
-                    aria-label="Закрити"
-                    className="flex size-11 items-center justify-center rounded-full bg-surface-raised text-text-primary"
-                    onClick={onClose}
+
+              <div className="mt-2xl flex gap-sm overflow-x-auto pb-xs">
+                {TABS.map((t) => (
+                  <Chip
+                    key={t.id}
+                    active={tab === t.id}
+                    onClick={() => selectTab(t.id)}
                   >
-                    ×
-                  </button>
-                ) : null}
+                    {t.label}
+                  </Chip>
+                ))}
               </div>
             </div>
 
-            <div className="relative mt-lg flex gap-lg overflow-x-auto">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => selectTab(t.id)}
-                  className={cn(
-                    "relative shrink-0 pb-sm text-label-md",
-                    tab === t.id ? "text-text-primary" : "text-text-secondary",
-                  )}
+            <div
+              className="min-h-0 flex-1 overflow-y-auto px-xl py-lg"
+              onScroll={(e) => {
+                if (e.currentTarget.scrollTop > 24) setExpanded(true);
+              }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={tab}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: motionTokens.tabContent }}
                 >
-                  {t.label}
-                  {tab === t.id ? (
-                    <motion.span
-                      layoutId="about-tab-underline"
-                      className="absolute inset-x-0 bottom-0 h-0.5 bg-accent"
-                      transition={{ duration: motionTokens.tabUnderline, ease: easings.easeOut }}
-                    />
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          </div>
+                  {tab === "sources" ? (
+                    <div>
+                      {(expanded
+                        ? artwork.sources
+                        : artwork.sources.slice(0, 1)
+                      ).map((s) =>
+                        s.url ? (
+                          <SourceRow
+                            key={s.id}
+                            label={s.label}
+                            date={s.note}
+                            href={s.url}
+                          />
+                        ) : (
+                          <div
+                            key={s.id}
+                            className="border-b border-divider py-md text-label-md text-text-secondary"
+                          >
+                            {s.label}
+                            {s.note ? (
+                              <span className="mt-2xs block text-caption">
+                                {s.note}
+                              </span>
+                            ) : null}
+                          </div>
+                        ),
+                      )}
+                      {expanded ? (
+                        <>
+                          <p className="mt-lg text-caption text-text-secondary">
+                            {artwork.photoCredit}
+                          </p>
+                          <a
+                            href="mailto:todo@example.com?subject=Помилка%20у%20Сховані"
+                            className="mt-md inline-block min-h-[44px] text-label-md text-text-accent"
+                          >
+                            {/* TODO(copy): real report email */}
+                            Повідомити про помилку
+                          </a>
+                        </>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="space-y-md">
+                      {(expanded ? paragraphs : paragraphs.slice(0, 1)).map(
+                        (p, i) => (
+                          <p
+                            key={i}
+                            className="text-body-lg text-text-primary"
+                          >
+                            {p}
+                          </p>
+                        ),
+                      )}
+                    </div>
+                  )}
 
-          <div
-            className="min-h-0 flex-1 overflow-y-auto px-xl py-md"
-            onScroll={(e) => {
-              if (e.currentTarget.scrollTop > 24) setExpanded(true);
+                  {showFinish && expanded ? (
+                    <div className="mt-2xl pb-md">
+                      <Button onClick={onFinishPath}>Завершити шлях</Button>
+                    </div>
+                  ) : null}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* Pinned actions — Figma y724 h88 */}
+          <motion.div
+            className={cn(
+              "absolute inset-x-0 z-[26] flex items-center gap-md border-t border-border-subtle bg-surface px-xl",
+              dimmed && "pointer-events-none",
+            )}
+            style={{
+              top: `calc(${L.actions.y / 844} * 100dvh)`,
+              height: `calc(${L.actions.h / 844} * 100dvh)`,
+            }}
+            initial={{ y: 24, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 24, opacity: 0 }}
+            transition={{
+              duration: motionTokens.sheetSlide,
+              ease: easings.easeOut,
             }}
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tab}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: motionTokens.tabContent }}
-              >
-                {tab === "sources" ? (
-                  <div>
-                    {artwork.sources.map((s) =>
-                      s.url ? (
-                        <SourceRow
-                          key={s.id}
-                          label={s.label}
-                          date={s.note}
-                          href={s.url}
-                        />
-                      ) : (
-                        <div
-                          key={s.id}
-                          className="border-b border-divider py-md text-label-md text-text-secondary"
-                        >
-                          {s.label}
-                          {s.note ? (
-                            <span className="mt-2xs block text-caption">{s.note}</span>
-                          ) : null}
-                        </div>
-                      ),
-                    )}
-                    <p className="mt-lg text-caption text-text-secondary">
-                      Фото: {artwork.photoCredit}
-                    </p>
-                    <a
-                      href="mailto:todo@example.com?subject=Помилка%20у%20Сховані"
-                      className="mt-md inline-block min-h-[44px] text-label-md text-text-accent"
-                    >
-                      {/* TODO(copy): real report email */}
-                      Повідомити про помилку
-                    </a>
-                  </div>
-                ) : (
-                  <div className="space-y-md">
-                    {paragraphs.map((p, i) => (
-                      <p key={i} className="text-body-md text-text-secondary">
-                        {p}
-                      </p>
-                    ))}
-                  </div>
-                )}
-
-                {showFinish ? (
-                  <div className="mt-2xl pb-md">
-                    <Button onClick={onFinishPath}>Завершити шлях</Button>
-                  </div>
-                ) : null}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          <div className="flex shrink-0 gap-sm border-t border-border-subtle px-xl py-md pb-[calc(16px+var(--safe-bottom))]">
-            <Chip onClick={onWallpaper}>Шпалери</Chip>
-            <Chip onClick={onAskGuide}>Спитати гіда</Chip>
-            {showFinish ? (
-              <button
-                type="button"
-                onClick={onFinishPath}
-                className="ml-auto text-label-md text-text-accent"
-              >
-                Завершити шлях
-              </button>
-            ) : null}
-          </div>
-        </motion.div>
+            <Button
+              variant="secondary"
+              fullWidth={false}
+              className="h-14 min-h-[56px] flex-1 border border-border-subtle"
+              onClick={onWallpaper}
+            >
+              Шпалери
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth={false}
+              className="h-14 min-h-[56px] flex-1 border border-border-button"
+              onClick={onAskGuide}
+            >
+              Спитати гіда
+            </Button>
+          </motion.div>
+        </>
       ) : null}
     </AnimatePresence>
   );

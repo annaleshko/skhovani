@@ -37,7 +37,10 @@ export function MapPin({
   onClick,
 }: Props) {
   const fill =
-    variant === "star" || variant === "target" || variant === "museum"
+    variant === "star" ||
+    variant === "target" ||
+    variant === "museum" ||
+    variant === "start"
       ? "var(--color-bg-accent)"
       : "var(--color-text-primary)";
 
@@ -53,7 +56,11 @@ export function MapPin({
         <circle r={4} fill={fill} />
       </>
     ) : (
-      <circle r={5} fill={fill} />
+      /* start — Figma «You» 24px: ring + gold dot */
+      <>
+        <circle r={10} fill="none" stroke={fill} strokeWidth={1.5} />
+        <circle r={3.5} fill={fill} />
+      </>
     );
 
   const labelEl = label ? (

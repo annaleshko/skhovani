@@ -2,6 +2,7 @@
 
 import { CityPicker } from "@/components/journey/CityPicker";
 import { JourneyFlow } from "@/components/journey/JourneyFlow";
+import { JourneyRouteMap } from "@/components/journey/JourneyRouteMap";
 import { useAppState } from "@/state/AppState";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -9,8 +10,10 @@ import { Suspense } from "react";
 function JourneyInner() {
   const { ready, startCityId } = useAppState();
   const params = useSearchParams();
+  const mode = params.get("mode");
   const raw = params.get("path");
   const pathN = raw ? Number(raw) : undefined;
+  const autostart = params.get("autostart") === "1";
 
   if (!ready) return <div className="min-h-dvh bg-screen" aria-busy />;
 
@@ -18,7 +21,16 @@ function JourneyInner() {
     return <CityPicker />;
   }
 
-  return <JourneyFlow pathN={Number.isFinite(pathN) ? pathN : undefined} />;
+  if (mode === "route") {
+    return <JourneyRouteMap />;
+  }
+
+  return (
+    <JourneyFlow
+      pathN={Number.isFinite(pathN) ? pathN : undefined}
+      autostart={autostart}
+    />
+  );
 }
 
 export default function JourneyPage() {

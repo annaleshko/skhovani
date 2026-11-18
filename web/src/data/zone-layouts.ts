@@ -58,3 +58,35 @@ export function getZoneCenter(
   const rect = getZoneRect(grid, positionOrHint);
   return { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
 }
+
+/** Point for a touch zone: explicit x/y or grid cell center. */
+export function getZonePoint(
+  zone: { position: string; x?: number | null; y?: number | null },
+  grid: "3x3" | "3x2" | "custom",
+): { x: number; y: number } {
+  if (zone.x != null && zone.y != null) {
+    return { x: zone.x, y: zone.y };
+  }
+  return getZoneCenter(grid, zone.position);
+}
+
+/** Nearest zone within `radius` (normalized). Returns index or -1. */
+export function hitTestZonePoint(
+  nx: number,
+  ny: number,
+  zones: { position: string; x?: number | null; y?: number | null }[],
+  grid: "3x3" | "3x2" | "custom",
+  radius = 0.12,
+): number {
+  let best = -1;
+  let bestD = radius;
+  for (let i = 0; i < zones.length; i++) {
+    const p = getZonePoint(zones[i]!, grid);
+    const d = Math.hypot(nx - p.x, ny - p.y);
+    if (d <= bestD) {
+      bestD = d;
+      best = i;
+    }
+  }
+  return best;
+}

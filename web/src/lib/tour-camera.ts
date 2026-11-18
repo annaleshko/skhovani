@@ -22,7 +22,10 @@ export function hintToGridPosition(hint: string): string {
   return "middle-center";
 }
 
-/** Resolve stop camera; null x/y/zoom → center of locationHint grid cell, zoom 2.4. */
+/**
+ * Resolve stop camera. x/y/zoom are 0–1 / zoom of the whole composed art image
+ * relative to the full framed fit (scale 1 at tour start).
+ */
 export function resolveStopTarget(
   stop: TourStop,
   touchZones: TouchZones,
@@ -30,50 +33,86 @@ export function resolveStopTarget(
   if (stop.x != null && stop.y != null && stop.zoom != null) {
     return { x: stop.x, y: stop.y, zoom: stop.zoom };
   }
+  if (process.env.NODE_ENV === "development") {
+    console.warn(
+      `[tour] stop ${stop.n} «${stop.title}» missing x/y/zoom — falling back to locationHint grid`,
+    );
+  }
   const pos = hintToGridPosition(stop.locationHint);
   const c = getZoneCenter(touchZones.grid, pos);
-  return { x: c.x, y: c.y, zoom: 2.4 };
+  return { x: c.x, y: c.y, zoom: stop.zoom ?? 2.4 };
 }
 
 /**
- * Camera that scales from top-left (origin 0 0) so point (nx,ny) in 0–1
- * lands at the stage center at the given zoom.
+ * Camera: scale from the fitted image's top-left so (nx,ny) lands at focus.
+ * `zoom` is relative to the full framed artwork (fit = 1).
+ * Clamps translate when possible so empty margins past the frame don't show.
  */
 export function lensCamera(
   nx: number,
   ny: number,
   zoom: number,
+  img: { x: number; y: number; w: number; h: number },
+  focusX: number,
+  focusY: number,
   stageW: number,
-  stageH: number,
-  imgW: number,
-  imgH: number,
+  viewH: number,
 ): { tx: number; ty: number; scale: number } {
   const scale = zoom;
+  let tx = focusX - img.x - nx * img.w * scale;
+  let ty = focusY - img.y - ny * img.h * scale;
+
+  const scaledW = img.w * scale;
+  const scaledH = img.h * scale;
+
+  // Prefer covering the visible stage when the zoomed frame is large enough
+  if (scaledW >= stageW) {
+    const minTx = stageW - img.x - scaledW;
+    const maxTx = -img.x;
+    tx = Math.min(maxTx, Math.max(minTx, tx));
+  }
+  if (scaledH >= viewH) {
+    const minTy = viewH - img.y - scaledH;
+    const maxTy = -img.y;
+    ty = Math.min(maxTy, Math.max(minTy, ty));
+  }
+
+  return { tx, ty, scale };
+}
+
+/** Fit image into a slot at its own aspect (full framed artwork view). */
+export function fitSlotOrigin(
+  slot: { x: number; y: number; w: number; h: number },
+  imgW: number,
+  imgH: number,
+): { x: number; y: number; w: number; h: number } {
+  const fit = Math.min(slot.w / imgW, slot.h / imgH);
+  const w = imgW * fit;
+  const h = imgH * fit;
   return {
-    tx: stageW / 2 - nx * imgW * scale,
-    ty: stageH / 2 - ny * imgH * scale,
-    scale,
+    x: slot.x + (slot.w - w) / 2,
+    y: slot.y + (slot.h - h) / 2,
+    w,
+    h,
   };
 }
 
-/** Fit image to stage width (full artwork view). */
-export function fitWidthCamera(
-  stageW: number,
-  stageH: number,
-  imgW: number,
-  imgH: number,
-): { tx: number; ty: number; scale: number } {
-  const scale = stageW / imgW;
-  const scaledH = imgH * scale;
-  return {
-    tx: 0,
-    ty: (stageH - scaledH) / 2,
-    scale,
-  };
-}
+/** Pointer ring diameter (screen px). */
+export const POINTER_RING_PX = 120;
 
 /** Ring timer duration from stop text (spec: max(6s, words × 0.45s)). */
 export function stopDurationSec(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(6, words * 0.45);
+}
+
+/** Composed image used for tour / calibrate (Melitopol uses the open variant). */
+export function tourImageSrc(artwork: {
+  slug: string;
+  image: string | null;
+}): string | null {
+  if (artwork.slug === "skifske-zoloto-melitopolia") {
+    return "/art/skifske-zoloto-melitopolia-open.webp";
+  }
+  return artwork.image;
 }

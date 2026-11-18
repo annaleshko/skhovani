@@ -2,7 +2,13 @@
 
 import { Button } from "@/components/ui";
 import { MapPin } from "@/components/map/MapPin";
-import { getMuseums } from "@/data";
+import { MuseumDot } from "@/components/map/MuseumDot";
+import { getMuseum, getMuseums } from "@/data";
+import {
+  cityGenitiveForMuseum,
+  JOURNEY_MUSEUM_ORDER,
+  pathSheetBlurb,
+} from "@/data/museum-copy";
 import {
   FACADE_NATIVE_H,
   FACADE_NATIVE_W,
@@ -67,6 +73,8 @@ type Phase =
 
 type Props = {
   pathN?: number;
+  /** From 02в «Вирушити» — skip screen-02 sheet and start flight. */
+  autostart?: boolean;
 };
 
 const PICK_DELAY_MS = 0;
@@ -136,13 +144,15 @@ function fitFacadeLayout(
   return { width, height, x, y, scale };
 }
 
-export function JourneyFlow({ pathN }: Props) {
+export function JourneyFlow({ pathN, autostart = false }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
   const { startCityId, completedPaths, setCurrentPath } = useAppState();
 
   const [phase, setPhase] = useState<Phase>("boot");
   const [path, setPath] = useState<ResolvedPath | null>(null);
+  /** Path 1 only — «Твій шлях» sheet. Paths ≥2 confirm on 02в. */
+  const [showPathConfirm, setShowPathConfirm] = useState(true);
   const [originAbroad, setOriginAbroad] = useState(false);
   const [startCity, setStartCity] = useState(() => ({
     id: "kyiv",
@@ -216,11 +226,29 @@ export function JourneyFlow({ pathN }: Props) {
   }, [path, startPt]);
   const ctrl = useMemo(() => arcControl(startPt, targetPt), [startPt, targetPt]);
   const arcD = useMemo(() => quadPath(startPt, ctrl, targetPt), [startPt, ctrl, targetPt]);
+  const midPt = useMemo(() => pointOnQuad(startPt, ctrl, targetPt, 0.5), [
+    startPt,
+    ctrl,
+    targetPt,
+  ]);
 
   const distanceKm = useMemo(() => {
     if (!path) return 0;
     return haversineKm(startCity, path.museum);
   }, [path, startCity]);
+
+  /**
+   * Other journey museums (not the target) — dim 14px markers on screen 02.
+   * When origin is a museum, skip it so the start pin is the only label there.
+   */
+  const dimMuseums = useMemo(() => {
+    if (!path) return [];
+    return JOURNEY_MUSEUM_ORDER.filter(
+      (id) => id !== path.museumId && id !== startCity.id,
+    )
+      .map((id) => getMuseum(id))
+      .filter((m): m is NonNullable<typeof m> => Boolean(m));
+  }, [path, startCity.id]);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
 
@@ -461,7 +489,10 @@ export function JourneyFlow({ pathN }: Props) {
     [],
   );
 
-  const enterMap = useCallback(() => {
+  const runFlightRef = useRef<() => void>(() => {});
+
+  const enterMap = useCallback((opts?: { autoFlight?: boolean }) => {
+    const autoFlight = Boolean(opts?.autoFlight);
     clearEntryTimers();
     journeyLockedRef.current = false;
     lockedCam09Ref.current = null;
@@ -477,7 +508,12 @@ export function JourneyFlow({ pathN }: Props) {
       setShowStartPin(true);
       setArcDrawn(true);
       setShowTargetPin(true);
-      setSheetVisible(true);
+      if (autoFlight) {
+        setSheetVisible(false);
+        scheduleEntry(() => runFlightRef.current(), 0);
+      } else {
+        setSheetVisible(true);
+      }
       return;
     }
     // Absolute timeline ≈ 2.8s — no nested onComplete / extra gaps
@@ -497,7 +533,12 @@ export function JourneyFlow({ pathN }: Props) {
       glowOpacity.set(0);
       animate(glowOpacity, 1, { duration: ENTRY_TARGET_MS / 1000, ease: easings.easeOut });
     }, ENTRY_T_TARGET);
-    scheduleEntry(() => setSheetVisible(true), ENTRY_T_SHEET);
+    if (autoFlight) {
+      // Pins + arc ready, then fly — no screen-02 sheet
+      scheduleEntry(() => runFlightRef.current(), ENTRY_T_SHEET);
+    } else {
+      scheduleEntry(() => setSheetVisible(true), ENTRY_T_SHEET);
+    }
   }, [
     clearEntryTimers,
     flightT,
@@ -538,12 +579,22 @@ export function JourneyFlow({ pathN }: Props) {
         return;
       }
 
+      // Paths ≥2 confirm on 02в — do not open screen-02 «Твій шлях».
+      if (pathN == null && picked.n > 1) {
+        router.replace("/journey?mode=route");
+        return;
+      }
+
+      const confirm = picked.n === 1 && !autostart;
+      const autoFlight = !confirm;
+      setShowPathConfirm(confirm);
+
       const origin = getPathOrigin(startCityId, picked, completedPaths);
       setStartCity(origin.city);
       setOriginAbroad(origin.abroad);
       setPath(picked);
       setCurrentPath(picked.n);
-      enterMap();
+      enterMap({ autoFlight });
     })();
     return () => {
       cancelled = true;
@@ -627,6 +678,7 @@ export function JourneyFlow({ pathN }: Props) {
     journeyLockedRef.current = true;
     setStageSize({ w, h });
 
+    const hadSheet = sheetVisible;
     setSheetVisible(false);
     setPhase("flight");
     flightT.set(0);
@@ -658,8 +710,11 @@ export function JourneyFlow({ pathN }: Props) {
       });
     };
 
-    // Wait for sheet hide, then fly — map never unmounts / reflows
-    setTimeout(startFlight, reduced ? 0 : motionTokens.sheetHide * 1000);
+    // Wait for sheet hide only when the path-1 sheet was visible
+    setTimeout(
+      startFlight,
+      reduced || !hadSheet ? 0 : motionTokens.sheetHide * 1000,
+    );
   }, [
     camForFlightT,
     flightT,
@@ -667,11 +722,16 @@ export function JourneyFlow({ pathN }: Props) {
     reduced,
     runZoom,
     setCam,
+    sheetVisible,
     stageSize.h,
     stageSize.w,
     targetPt,
     writeOverlay,
   ]);
+
+  useEffect(() => {
+    runFlightRef.current = runFlight;
+  }, [runFlight]);
 
   const enterDoor = useCallback(() => {
     if (!path || !museumUi) return;
@@ -767,11 +827,39 @@ export function JourneyFlow({ pathN }: Props) {
                     : `stroke-dashoffset ${motionTokens.arcDraw}s ease-in-out`,
                 }}
               />
+              {/* Midpoint spark on the arc (Figma «Світлячок») */}
+              {phase === "map" && arcDrawn ? (
+                <circle
+                  cx={midPt.x}
+                  cy={midPt.y}
+                  r={3}
+                  fill="var(--color-bg-accent)"
+                  style={{
+                    filter: "drop-shadow(0 0 4px var(--color-bg-accent))",
+                  }}
+                />
+              ) : null}
+              {/* Dim journey museums — screen 02; hide when zoomed */}
+              {phase === "map" && !hideFarLabels
+                ? dimMuseums.map((m) => {
+                    const p = projectToMap(m.lat, m.lng);
+                    return (
+                      <MuseumDot
+                        key={m.id}
+                        x={p.x}
+                        y={p.y}
+                        label={m.city}
+                        labelSide={m.id === "lviv" ? "left" : "right"}
+                        tone="dim"
+                      />
+                    );
+                  })
+                : null}
               {debugMap &&
                 getMuseums().map((m) => {
                   const p = projectToMap(m.lat, m.lng);
                   return (
-                    <g key={m.id} transform={`translate(${p.x} ${p.y})`}>
+                    <g key={`dbg-${m.id}`} transform={`translate(${p.x} ${p.y})`}>
                       <circle r={3} fill="#7FCB94" />
                       <text
                         y={-8}
@@ -846,9 +934,8 @@ export function JourneyFlow({ pathN }: Props) {
               <MapPin
                 x={0}
                 y={0}
-                label={startCity.name}
+                label={originAbroad ? "Ти" : startCity.name}
                 variant="start"
-                pulsing={phase === "map" && !reduced}
               />
             </g>
 
@@ -875,13 +962,13 @@ export function JourneyFlow({ pathN }: Props) {
         </div>
       )}
 
-      {/* Header — MVP v2 screen 02 «Твій шлях» (full map polish in V2-2) */}
-      {phase === "map" && (
+      {/* Header — MVP v2 screen 02 «Твій шлях» (path 1 only) */}
+      {phase === "map" && showPathConfirm && (
         <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-xl pb-md pt-[calc(56px+var(--safe-top))]">
           <h1 className="text-h1">Твій шлях</h1>
           <p className="mt-sm text-body-md text-text-secondary">
             10 творів у 5 музеях. Сьогодні шлях веде до{" "}
-            {getMuseumShortLabel(path.museumId)}.
+            {cityGenitiveForMuseum(path.museumId)}.
           </p>
         </header>
       )}
@@ -902,7 +989,7 @@ export function JourneyFlow({ pathN }: Props) {
       </AnimatePresence>
 
       <AnimatePresence>
-        {sheetVisible && phase === "map" && (
+        {sheetVisible && phase === "map" && showPathConfirm && (
           <motion.div
             className="absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
             initial={reduced ? false : { y: "100%" }}
@@ -914,19 +1001,9 @@ export function JourneyFlow({ pathN }: Props) {
               Твій шлях — {getMuseumShortLabel(path.museumId)}
             </h2>
             <p className="mt-sm text-body-md text-text-secondary">
-              {originAbroad ? (
-                <>
-                  Звідти, де ти зараз.{" "}
-                  {/* TODO(copy): Kherson passport line for V2-2 sheet */}
-                  Музей пограбували у 2022 році, але ми пам&apos;ятаємо, що тут
-                  висіло.
-                </>
-              ) : (
-                <>
-                  ≈ {distanceKm} км від тебе. Музей пограбували у 2022 році, але
-                  ми пам&apos;ятаємо, що тут висіло.
-                </>
-              )}
+              {originAbroad
+                ? `Звідти, де ти зараз. ${pathSheetBlurb(path.museumId)}`
+                : `≈ ${distanceKm} км від тебе. ${pathSheetBlurb(path.museumId)}`}
             </p>
             <div className="mt-lg">
               <Button onClick={runFlight}>Вирушити</Button>

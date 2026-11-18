@@ -57,6 +57,26 @@ export function shouldSkipMapToHall(
   return Boolean(prev && prev.museumId === next.museumId);
 }
 
+/** Next not-yet-seen path in a museum (journey order). */
+export function getNextPathInMuseum(
+  museumId: string,
+  completedPaths: number[],
+): ResolvedPath | undefined {
+  const done = new Set(completedPaths);
+  const next = getPaths().find((p) => p.museumId === museumId && !done.has(p.n));
+  if (!next) return undefined;
+  return getPath(next.n);
+}
+
+/** True if any path in this museum is completed. */
+export function isMuseumPassed(
+  museumId: string,
+  completedPaths: number[],
+): boolean {
+  const done = new Set(completedPaths);
+  return getPaths().some((p) => p.museumId === museumId && done.has(p.n));
+}
+
 /**
  * Map origin for a path: chosen city (path 1) or previous museum (n>1).
  * Abroad → west of the map at the target museum's latitude; label «Ти».

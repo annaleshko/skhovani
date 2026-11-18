@@ -20,11 +20,24 @@ export const motionTokens = {
   doorEnter: 0.6,
   spotlight: { duration: 0.3, step: 0.12 },
   frameShake: 0.3,
+  /** Stolen empty → memory painting (MVP v2 screen 06). */
+  memoryReveal: 2.5,
+  /** Pause after reveal before the tour opens. */
+  memoryHold: 1.2,
+  /** Same-museum scroll to the next frame. */
+  hallScroll: 0.6,
+  neighborCaption: 2.5,
   artworkExpand: 0.5,
-  lens: 0.9,
+  /** Camera glide between tour stops. */
+  lens: 0.7,
+  /** Pointer ring fade+scale after camera arrives. */
+  lensAppear: 0.35,
+  /** Cone opacity fade during zoom. */
+  tourLamp: 0.3,
   stopCrossfade: 0.25,
   pauseMorph: 0.2,
-  tourExitZoom: 0.7,
+  /** Tour → passport (16): zoom out to full frame. */
+  tourExitZoom: 0.6,
   sheetSpring: 0.35,
   scrim: 0.2,
   tabUnderline: 0.2,

@@ -22,6 +22,9 @@ export type TouchZone = {
   label: string;
   title: string;
   text: string;
+  /** Optional point on the composed image (0–1). Falls back to grid cell center. */
+  x?: number | null;
+  y?: number | null;
 };
 
 export type TouchZones = {
@@ -30,10 +33,12 @@ export type TouchZones = {
   zones: TouchZone[];
 };
 
+/** Passport «База знань» row — source pointer + how the guide may use it. */
 export type KnowledgeBaseEntry = {
-  q: string;
-  a: string;
+  source: string;
+  url: string | null;
   sourceId: string | null;
+  use: string;
 };
 
 export type ArtworkChat = {

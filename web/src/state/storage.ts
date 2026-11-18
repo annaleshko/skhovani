@@ -8,6 +8,11 @@ export type ChatMessage = {
   role: "user" | "guide";
   content: string;
   sourceIds?: string[];
+  /** Detail title when opened from 08 «Спитати гіда про це». */
+  detailTitle?: string;
+  followUps?: string[];
+  error?: boolean;
+  fallback?: boolean;
 };
 
 export type PersistedState = {

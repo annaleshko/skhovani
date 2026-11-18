@@ -18,3 +18,19 @@ export const TOUR_LAYOUT = {
   lamp: { x: 146, y: 8, w: 98, h: 109 },
   cone: { x: 13, y: 432, w: 346, h: 324 },
 } as const;
+
+/** Figma 16 · Паспорт / 08 · Detail (240:1838 / 236:1564), 390×844. */
+export const PASSPORT_LAYOUT = {
+  header: { y: 44, h: 64 },
+  iconBtn: { size: 40, xClose: 24, xPlay: 326 },
+  lamp: { y: -42, w: 98, h: 109 },
+  cone: { w: 346, h: 380 },
+  frame: { x: 24, y: 125, w: 342, h: 265 },
+  credit: { y: 400 },
+  hint: { y: 424 },
+  sheetCollapsed: { y: 464 },
+  sheetExpanded: { y: 112 },
+  dim: { y: 440 },
+  card: { x: 24, y: 500, w: 342 },
+  actions: { y: 724, h: 88 },
+} as const;

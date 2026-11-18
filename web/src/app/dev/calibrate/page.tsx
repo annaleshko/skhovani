@@ -2,16 +2,17 @@
 
 import { Button, Chip } from "@/components/ui";
 import { getArtworks } from "@/data";
-import { resolveStopTarget } from "@/lib/tour-camera";
-import type { TourStop } from "@/data/types";
+import { getZonePoint } from "@/data/zone-layouts";
+import { resolveStopTarget, tourImageSrc } from "@/lib/tour-camera";
+import type { TourStop, TouchZone } from "@/data/types";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+
+type Mode = "stops" | "zones";
 
 /**
- * Dev-only tour stop calibrator.
- * Tap image → set x/y (0–1); slider → zoom 1–5; Copy JSON for content patch.
- * Hidden from production nav; route still exists in prod but is unlabeled.
+ * Dev calibrator — same 0–1 space as tourStops / touch zone points.
  */
 export default function CalibratePage() {
   const artworks = useMemo(
@@ -20,35 +21,107 @@ export default function CalibratePage() {
   );
   const [slug, setSlug] = useState(artworks[0]?.slug ?? "");
   const artwork = artworks.find((a) => a.slug === slug) ?? artworks[0];
+  const [mode, setMode] = useState<Mode>("stops");
   const [stopN, setStopN] = useState(1);
-  const [drafts, setDrafts] = useState<Record<string, TourStop[]>>({});
+  const [zonePos, setZonePos] = useState(
+    artwork?.touchZones.zones[0]?.position ?? "middle-center",
+  );
+  const [stopDrafts, setStopDrafts] = useState<Record<string, TourStop[]>>({});
+  const [zoneDrafts, setZoneDrafts] = useState<Record<string, TouchZone[]>>({});
+  const [natural, setNatural] = useState({ w: 4, h: 3 });
+  const imgWrapRef = useRef<HTMLDivElement>(null);
 
-  const stops = drafts[artwork?.slug ?? ""] ?? artwork?.tourStops ?? [];
+  const stops = stopDrafts[artwork?.slug ?? ""] ?? artwork?.tourStops ?? [];
   const stop = stops.find((s) => s.n === stopN) ?? stops[0];
+  const zones =
+    zoneDrafts[artwork?.slug ?? ""] ?? artwork?.touchZones.zones ?? [];
+  const zone =
+    zones.find((z) => z.position === zonePos) ?? zones[0] ?? null;
+  const src = artwork ? tourImageSrc(artwork) : null;
+  const grid = artwork?.touchZones.grid ?? "3x3";
 
   const updateStop = (patch: Partial<TourStop>) => {
     if (!artwork) return;
     const next = stops.map((s) => (s.n === stopN ? { ...s, ...patch } : s));
-    setDrafts((d) => ({ ...d, [artwork.slug]: next }));
+    setStopDrafts((d) => ({ ...d, [artwork.slug]: next }));
   };
 
-  const resolved = stop && artwork ? resolveStopTarget(stop, artwork.touchZones) : null;
+  const updateZone = (patch: Partial<TouchZone>) => {
+    if (!artwork || !zone) return;
+    const next = zones.map((z) =>
+      z.position === zone.position ? { ...z, ...patch } : z,
+    );
+    setZoneDrafts((d) => ({ ...d, [artwork.slug]: next }));
+  };
+
+  const resolved =
+    stop && artwork ? resolveStopTarget(stop, artwork.touchZones) : null;
+  const zonePoint = zone ? getZonePoint(zone, grid) : null;
 
   const copyJson = async (all = false) => {
     if (!artwork) return;
+    if (mode === "stops") {
+      const payload = all
+        ? Object.fromEntries(
+            artworks.map((a) => [a.slug, stopDrafts[a.slug] ?? a.tourStops]),
+          )
+        : { [artwork.slug]: stops };
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      alert(all ? "Скопійовано всі stops" : `Stops: ${artwork.slug}`);
+      return;
+    }
     const payload = all
       ? Object.fromEntries(
-          artworks.map((a) => [a.slug, drafts[a.slug] ?? a.tourStops]),
+          artworks.map((a) => [
+            a.slug,
+            zoneDrafts[a.slug] ?? a.touchZones.zones,
+          ]),
         )
-      : { [artwork.slug]: stops };
-    const text = JSON.stringify(payload, null, 2);
-    await navigator.clipboard.writeText(text);
-    alert(all ? "Скопійовано всі stops" : `Скопійовано stops для ${artwork.slug}`);
+      : { [artwork.slug]: zones };
+    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    alert(all ? "Скопійовано всі zones" : `Zones: ${artwork.slug}`);
+  };
+
+  const onImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    const wrap = imgWrapRef.current;
+    if (!wrap) return;
+    const img = wrap.querySelector("img");
+    if (!img) return;
+    const ir = img.getBoundingClientRect();
+    if (
+      e.clientX < ir.left ||
+      e.clientX > ir.right ||
+      e.clientY < ir.top ||
+      e.clientY > ir.bottom
+    ) {
+      return;
+    }
+    const x = Number(((e.clientX - ir.left) / ir.width).toFixed(3));
+    const y = Number(((e.clientY - ir.top) / ir.height).toFixed(3));
+    if (mode === "stops") updateStop({ x, y });
+    else updateZone({ x, y });
   };
 
   if (!artwork) {
-    return <div className="min-h-dvh bg-screen p-xl text-text-secondary">Немає творів</div>;
+    return (
+      <div className="min-h-dvh bg-screen p-xl text-text-secondary">
+        Немає творів
+      </div>
+    );
   }
+
+  const marker =
+    mode === "stops"
+      ? resolved
+        ? {
+            x: stop?.x ?? resolved.x,
+            y: stop?.y ?? resolved.y,
+            size: 12 * (stop?.zoom ?? resolved.zoom),
+          }
+        : null
+      : zonePoint
+        ? { x: zonePoint.x, y: zonePoint.y, size: 16 }
+        : null;
 
   return (
     <main className="min-h-dvh bg-screen px-xl pb-2xl pt-[calc(48px+var(--safe-top))] text-text-primary">
@@ -59,10 +132,20 @@ export default function CalibratePage() {
         <p className="text-label-md text-text-secondary">/dev/calibrate</p>
       </div>
 
-      <h1 className="text-h2">Калібрування туру</h1>
+      <h1 className="text-h2">Калібрування</h1>
       <p className="mt-sm text-caption text-text-secondary">
-        Тап по зображенню ставить x/y. Слайдер — zoom. Copy JSON → встав у content.
+        x/y — частки всього складеного зображення (рама включно). Той самий простір
+        для tourStops і touchZones.
       </p>
+
+      <div className="mt-lg flex gap-sm">
+        <Chip active={mode === "stops"} onClick={() => setMode("stops")}>
+          Tour stops
+        </Chip>
+        <Chip active={mode === "zones"} onClick={() => setMode("zones")}>
+          Touch zones
+        </Chip>
+      </div>
 
       <label className="mt-lg block text-label-md text-text-secondary">
         Твір
@@ -72,6 +155,9 @@ export default function CalibratePage() {
           onChange={(e) => {
             setSlug(e.target.value);
             setStopN(1);
+            const next = artworks.find((a) => a.slug === e.target.value);
+            setZonePos(next?.touchZones.zones[0]?.position ?? "middle-center");
+            setNatural({ w: 4, h: 3 });
           }}
         >
           {artworks.map((a) => (
@@ -83,53 +169,78 @@ export default function CalibratePage() {
       </label>
 
       <div className="mt-md flex flex-wrap gap-2xs">
-        {stops.map((s) => (
-          <Chip key={s.n} active={s.n === stopN} onClick={() => setStopN(s.n)}>
-            {s.n}. {s.title}
-          </Chip>
-        ))}
+        {mode === "stops"
+          ? stops.map((s) => (
+              <Chip
+                key={s.n}
+                active={s.n === stopN}
+                onClick={() => setStopN(s.n)}
+              >
+                {s.n}. {s.title}
+              </Chip>
+            ))
+          : zones.map((z) => (
+              <Chip
+                key={z.position}
+                active={z.position === zone?.position}
+                onClick={() => setZonePos(z.position)}
+              >
+                {z.title}
+              </Chip>
+            ))}
       </div>
 
       <div
-        className="relative mt-lg aspect-[4/3] w-full overflow-hidden rounded-md bg-surface"
-        onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = (e.clientX - rect.left) / rect.width;
-          const y = (e.clientY - rect.top) / rect.height;
-          updateStop({ x: Number(x.toFixed(3)), y: Number(y.toFixed(3)) });
-        }}
+        ref={imgWrapRef}
+        className="relative mt-lg w-full overflow-hidden rounded-md bg-surface"
+        style={{ aspectRatio: `${natural.w} / ${natural.h}` }}
+        onClick={onImageTap}
       >
-        {artwork.image ? (
-          <Image src={artwork.image} alt="" fill className="object-contain" sizes="390px" />
+        {src ? (
+          <Image
+            src={src}
+            alt=""
+            fill
+            className="object-contain"
+            sizes="390px"
+            unoptimized
+            onLoadingComplete={(img) => {
+              if (img.naturalWidth) {
+                setNatural({ w: img.naturalWidth, h: img.naturalHeight });
+              }
+            }}
+          />
         ) : null}
-        {resolved ? (
+        {marker ? (
           <span
-            className="pointer-events-none absolute size-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent"
+            className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent"
             style={{
-              left: `${(stop.x ?? resolved.x) * 100}%`,
-              top: `${(stop.y ?? resolved.y) * 100}%`,
-              width: `${12 * (stop.zoom ?? resolved.zoom)}px`,
-              height: `${12 * (stop.zoom ?? resolved.zoom)}px`,
+              left: `${marker.x * 100}%`,
+              top: `${marker.y * 100}%`,
+              width: `${marker.size}px`,
+              height: `${marker.size}px`,
             }}
           />
         ) : null}
       </div>
 
-      <label className="mt-lg block text-label-md text-text-secondary">
-        Zoom {(stop?.zoom ?? resolved?.zoom ?? 2.4).toFixed(2)}
-        <input
-          type="range"
-          min={1}
-          max={5}
-          step={0.1}
-          className="mt-2xs w-full accent-[var(--color-bg-accent)]"
-          value={stop?.zoom ?? resolved?.zoom ?? 2.4}
-          onChange={(e) => updateStop({ zoom: Number(e.target.value) })}
-        />
-      </label>
+      {mode === "stops" ? (
+        <label className="mt-lg block text-label-md text-text-secondary">
+          Zoom {(stop?.zoom ?? resolved?.zoom ?? 2.4).toFixed(2)}
+          <input
+            type="range"
+            min={1}
+            max={5}
+            step={0.1}
+            className="mt-2xs w-full accent-[var(--color-bg-accent)]"
+            value={stop?.zoom ?? resolved?.zoom ?? 2.4}
+            onChange={(e) => updateStop({ zoom: Number(e.target.value) })}
+          />
+        </label>
+      ) : null}
 
       <pre className="mt-md overflow-auto rounded-md bg-surface p-md text-caption text-text-secondary">
-        {JSON.stringify(stop, null, 2)}
+        {JSON.stringify(mode === "stops" ? stop : zone, null, 2)}
       </pre>
 
       <div className="mt-lg space-y-sm">

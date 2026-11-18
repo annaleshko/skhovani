@@ -51,22 +51,24 @@ function findByBasename(dir, basename) {
   return null;
 }
 
-async function toWebp(src, dest, maxSide, { keepAlpha = true } = {}) {
-  ensureDir(path.dirname(dest));
+async function resizePipeline(src, maxSide) {
   const image = sharp(src);
   const meta = await image.metadata();
   const w = meta.width ?? maxSide;
   const h = meta.height ?? maxSide;
   const long = Math.max(w, h);
-  const pipeline =
-    long > maxSide
-      ? image.resize({
-          width: w >= h ? maxSide : undefined,
-          height: h > w ? maxSide : undefined,
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-      : image;
+  if (long <= maxSide) return image;
+  return image.resize({
+    width: w >= h ? maxSide : undefined,
+    height: h > w ? maxSide : undefined,
+    fit: "inside",
+    withoutEnlargement: true,
+  });
+}
+
+async function toWebp(src, dest, maxSide, { keepAlpha = true } = {}) {
+  ensureDir(path.dirname(dest));
+  const pipeline = await resizePipeline(src, maxSide);
   await pipeline
     .webp({
       quality: 82,
@@ -75,6 +77,13 @@ async function toWebp(src, dest, maxSide, { keepAlpha = true } = {}) {
       force: true,
     })
     .toFile(dest);
+}
+
+/** PNG with alpha — used for neighbor «hidden art» frames. */
+async function toPng(src, dest, maxSide) {
+  ensureDir(path.dirname(dest));
+  const pipeline = await resizePipeline(src, maxSide);
+  await pipeline.png({ compressionLevel: 9, effort: 10 }).toFile(dest);
 }
 
 async function copyFile(src, dest) {
@@ -130,8 +139,8 @@ for (const artwork of content.artworks) {
 
   const hiddenSrc = findByBasename(HIDDEN_DIR, base);
   if (hiddenSrc) {
-    const hiddenRel = `hall/frames/${artwork.id}-hidden.webp`;
-    await toWebp(hiddenSrc, path.join(PUBLIC, hiddenRel), HALL_FRAME_MAX);
+    const hiddenRel = `hall/frames/${artwork.id}-hidden.png`;
+    await toPng(hiddenSrc, path.join(PUBLIC, hiddenRel), HALL_FRAME_MAX);
     track(path.relative(REPO_ROOT, hiddenSrc), `/` + hiddenRel);
   }
 }
