@@ -1,5 +1,6 @@
 "use client";
 
+import { LandscapeLock } from "@/components/layout/LandscapeLock";
 import { DesktopPhonePreview } from "@/components/preview/DesktopPhonePreview";
 import { EmbedUrlSync } from "@/components/preview/EmbedUrlSync";
 import { useEffect, useState, type ReactNode } from "react";
@@ -20,7 +21,8 @@ function shouldUsePhonePreview(): boolean {
     return false;
   }
   if (isPwaStandalone()) return false;
-  return window.innerWidth >= 600;
+  // Phone-frame demo preview on wide desktops; ≤500px uses the centered shell.
+  return window.innerWidth > 500;
 }
 
 /**
@@ -58,6 +60,7 @@ export function DesktopPreviewGate({ children }: { children: ReactNode }) {
     <>
       <EmbedUrlSync />
       <div id="app-shell">{children}</div>
+      <LandscapeLock />
     </>
   );
 }

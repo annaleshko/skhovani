@@ -102,12 +102,15 @@ export function AboutSheet({
             initial={{
               y: 48,
               opacity: 0,
-              top: `${(L.sheetCollapsed.y / 844) * 100}dvh`,
+              // Collapsed: title/meta/status/tabs + ≥2 lines above the bar on short phones.
+              top: `min(52dvh, max(38dvh, ${(L.sheetCollapsed.y / 844) * 100}dvh))`,
             }}
             animate={{
               y: 0,
               opacity: 1,
-              top: `${(sheetTop / 844) * 100}dvh`,
+              top: expanded
+                ? `max(12dvh, ${(L.sheetExpanded.y / 844) * 100}dvh)`
+                : `min(52dvh, max(38dvh, ${(sheetTop / 844) * 100}dvh))`,
             }}
             exit={{ y: 48, opacity: 0 }}
             transition={defaultSpring}
@@ -160,6 +163,10 @@ export function AboutSheet({
 
             <div
               className="relative min-h-0 flex-1 overflow-y-auto px-xl py-lg"
+              style={{
+                // Always show at least ~2 lines of the first paragraph when collapsed.
+                minHeight: expanded ? undefined : "2.75rem",
+              }}
               onScroll={(e) => {
                 if (e.currentTarget.scrollTop > 24) setExpanded(true);
               }}

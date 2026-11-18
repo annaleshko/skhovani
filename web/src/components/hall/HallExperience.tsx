@@ -226,7 +226,10 @@ export function HallExperience({
 
   const designH = layout?.designHeight ?? 844;
   const designW = layout?.designWidth ?? 390;
-  const px = viewH / designH;
+  // Uniform scale vs 390×844 phone frame; floor/lamp sit on the bottom edge.
+  const px = Math.min(viewW / 390, viewH / 844);
+  const stageH = designH * px;
+  const stageOffsetY = Math.max(0, viewH - stageH);
   const hallWidthPx = designW * px;
 
   const isStolen = focus?.status === "stolen";
@@ -691,13 +694,27 @@ export function HallExperience({
             className="absolute inset-0 cursor-grab overflow-x-auto overflow-y-hidden snap-x snap-mandatory select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ userSelect: "none", WebkitUserSelect: "none" }}
           >
-            <div className="relative h-dvh" style={{ width: hallWidthPx }}>
+            <div
+              className="relative"
+              style={{
+                width: hallWidthPx,
+                height: viewH,
+              }}
+            >
+              <div
+                className="absolute left-0 right-0"
+                style={{
+                  top: stageOffsetY,
+                  height: stageH,
+                  width: hallWidthPx,
+                }}
+              >
               {/* 1. Wall */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={layout.wallSrc}
                 alt=""
-                className="pointer-events-none absolute left-0 top-0 z-0 h-dvh w-auto max-w-none select-none"
+                className="pointer-events-none absolute left-0 top-0 z-0 h-full w-auto max-w-none select-none"
                 draggable={false}
               />
 
@@ -1313,6 +1330,7 @@ export function HallExperience({
                   </>
                 ) : null}
               </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>

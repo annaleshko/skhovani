@@ -133,6 +133,25 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 | Козак «2022, облога Чернігова» | [ ] |
 | Hall author ellipsis / passport full | [ ] |
 
+### Stage 5 — Responsive
+
+| Decision | Detail |
+|---|---|
+| Viewport | `100dvh` + safe-area vars; `#app-shell` max 430px, dark body sides |
+| Preview | Presets 360×640, 390×667/740/844, 430×932; phone frame when width >500 |
+| Hall scale | `min(vw/390, vh/844)`, stage bottom-anchored |
+| Type | h1/h2 clamp; body-sm floor 14px |
+| Passport | Frame max-height ~34dvh; collapsed sheet `min/max` dvh so title+tabs+2 lines show |
+| Landscape | Soft overlay «Поверни телефон вертикально» (`LandscapeLock`) |
+
+Screenshots: `docs/verify/responsive/` (01, 02, 02в, 04, hall×3, tour, 16, 08, 09, 11, 17, end × 4 sizes).
+
+| Remaining issues | Notes |
+|---|---|
+| Melitopol @360×640 | Hint label can sit close to empty glass copy; badge+meta tight above vitrine |
+| 17-saved shots | May show wallpaper 11 if share sheet / save path blocked in headless |
+| 08 detail | Depends on touch-zone hit; some sizes show passport without detail card |
+
 ## Revisit + Melitopol + Figma wallpapers (2026-11-18)
 
 | # | Fix | Check |

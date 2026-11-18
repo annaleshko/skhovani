@@ -118,11 +118,18 @@ export function TourStage({
 
   const frameSlot = useMemo(() => {
     if (mode === "explore") {
+      // Passport framed artwork: clamp height for short phones.
+      const maxH = Math.min(
+        P.frame.h * sy,
+        Math.max(180, Math.min(stage.h * 0.34, 265 * sy)),
+      );
+      const h = maxH;
+      const w = P.frame.w * sx;
       return {
         x: P.frame.x * sx,
-        y: P.frame.y * sy,
-        w: P.frame.w * sx,
-        h: P.frame.h * sy,
+        y: Math.min(P.frame.y * sy, stage.h * 0.16),
+        w,
+        h,
       };
     }
     return {
@@ -131,7 +138,16 @@ export function TourStage({
       w: TOUR_LAYOUT.frame.w * sx,
       h: TOUR_LAYOUT.frame.h * sy,
     };
-  }, [P.frame.h, P.frame.w, P.frame.x, P.frame.y, mode, sx, sy]);
+  }, [
+    P.frame.h,
+    P.frame.w,
+    P.frame.x,
+    P.frame.y,
+    mode,
+    stage.h,
+    sx,
+    sy,
+  ]);
 
   /** Passport 16: contain in Figma box x24 y125 w342 h265 (never under header / over hint). */
   const imgLayout = useMemo(
