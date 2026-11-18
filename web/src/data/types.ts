@@ -47,6 +47,12 @@ export type ArtworkChat = {
   aiNotes: string;
 };
 
+/** Optional verified facts beyond the passport (imported from docs/guide-knowledge-extra.md). */
+export type ExtendedKnowledgeFact = {
+  fact: string;
+  sourceId: string;
+};
+
 export type ArtworkTabs = {
   history: string[];
   about: string[];
@@ -80,6 +86,8 @@ export type Artwork = {
   tourStops: TourStop[];
   sources: Source[];
   chat: ArtworkChat;
+  /** Extra verified facts for the guide — passport + these only. */
+  extendedKnowledge?: ExtendedKnowledgeFact[];
   openQuestions: string;
   sourceAssets: SourceAssets;
 };
