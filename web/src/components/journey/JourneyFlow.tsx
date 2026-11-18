@@ -966,16 +966,28 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
             </g>
 
             <g ref={targetPinRef} opacity={showTargetPin ? 1 : 0}>
-              <MapStar
-                x={0}
-                y={0}
-                size={22}
-                label={path.museum.city}
-                labelSide="right"
-                glow="strong"
-                labelTone="primary"
-                pulsing={!reduced && phase === "map"}
-              />
+              {/* Star only after museum opened; otherwise ring+dot target pin */}
+              {visitedOrder.includes(path.museumId) ? (
+                <MapStar
+                  x={0}
+                  y={0}
+                  size={22}
+                  label={path.museum.city}
+                  labelSide="right"
+                  glow="strong"
+                  labelTone="primary"
+                  pulsing={!reduced && phase === "map"}
+                />
+              ) : (
+                <MapPin
+                  x={0}
+                  y={0}
+                  label={path.museum.city}
+                  labelSide="right"
+                  variant="target"
+                  pulsing={!reduced && phase === "map"}
+                />
+              )}
             </g>
 
             <g ref={flightDotRef} opacity={0}>

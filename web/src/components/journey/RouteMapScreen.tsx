@@ -217,19 +217,35 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
               })}
 
               {targetMuseum ? (
-                <MapStar
-                  key={`target-${selectedMuseumId}`}
-                  x={targetPt.x}
-                  y={targetPt.y}
-                  size={22}
-                  label={targetMuseum.city}
-                  labelSide={mapLabelSide(targetPt.x)}
-                  glow="strong"
-                  labelTone="primary"
-                  pulsing={!reduced}
-                  appear
-                  onClick={() => setPickedMuseumId(selectedMuseumId)}
-                />
+                visitedSet.has(selectedMuseumId) ? (
+                  <MapStar
+                    key={`target-${selectedMuseumId}`}
+                    x={targetPt.x}
+                    y={targetPt.y}
+                    size={22}
+                    label={targetMuseum.city}
+                    labelSide={mapLabelSide(targetPt.x)}
+                    glow="strong"
+                    labelTone="primary"
+                    pulsing={!reduced}
+                    appear
+                    onClick={() => setPickedMuseumId(selectedMuseumId)}
+                  />
+                ) : (
+                  <MapPin
+                    key={`target-${selectedMuseumId}`}
+                    x={targetPt.x}
+                    y={targetPt.y}
+                    label={targetMuseum.city}
+                    labelSide={
+                      mapLabelSide(targetPt.x) === "left" ? "top" : "right"
+                    }
+                    variant="target"
+                    pulsing={!reduced}
+                    appear
+                    onClick={() => setPickedMuseumId(selectedMuseumId)}
+                  />
+                )
               ) : null}
             </svg>
           </div>
