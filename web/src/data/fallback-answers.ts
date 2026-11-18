@@ -131,6 +131,13 @@ export const FALLBACK_ANSWERS: Record<number, FallbackAnswer[]> = {
       sourceIds: ["s6"],
       reviewed: false,
     },
+    {
+      question: "Чи є ще скіфське золото?",
+      answer:
+        "Якщо говорити ширше… Найвідоміша скіфська знахідка України — золота пектораль IV ст. до н. е. з кургану Товста Могила (знайшов Борис Мозолевський у 1971-му); вона в Національному музеї історії України. Окрема історія — «кримське скіфське золото»: у листопаді 2023 року колекції з амстердамської виставки повернулися до Києва.",
+      sourceIds: ["xk_2cff5e86", "xk_7337d793", "xk_e52b68b4"],
+      reviewed: false,
+    },
   ],
   4: [
     {
@@ -468,6 +475,20 @@ export function findFallbackAnswer(
   if (partial?.answer) return partial;
 
   const art = getArtwork(artworkId);
+
+  // Broader topic questions → context-bank style (esp. Melitopol gold).
+  if (
+    artworkId === 3 &&
+    /(ще|інш|крім|взагалі).{0,24}(ск[іi]ф|золот)|ск[іi]ф.{0,24}(ще|інш)/i.test(
+      q,
+    )
+  ) {
+    const broader = FALLBACK_ANSWERS[3]?.find((f) =>
+      /Чи є ще скіфське/.test(f.question),
+    );
+    if (broader) return { ...broader, question };
+  }
+
   const outOfPassport =
     /цін[аи]|кошт|вартіст|аукціон|символізу|що означає|навіщо червон/i.test(q);
   if (outOfPassport) {

@@ -50,6 +50,9 @@ function validateSourceIds(artworkId: number, ids: unknown): string[] {
   const art = getArtwork(artworkId);
   if (!art || !Array.isArray(ids)) return [];
   const allowed = new Set(art.sources.map((s) => s.id));
+  for (const e of art.extendedKnowledge ?? []) {
+    allowed.add(e.sourceId);
+  }
   return ids
     .filter((id): id is string => typeof id === "string")
     .filter((id) => allowed.has(id));

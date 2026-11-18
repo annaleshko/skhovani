@@ -32,7 +32,18 @@ export function getArtworksByMuseum(museumId: string): Artwork[] {
 
 export function getSource(artworkId: number, sourceId: string): Source | undefined {
   const artwork = getArtwork(artworkId);
-  return artwork?.sources.find((s) => s.id === sourceId);
+  if (!artwork) return undefined;
+  const fromPassport = artwork.sources.find((s) => s.id === sourceId);
+  if (fromPassport) return fromPassport;
+  // extendedKnowledge chips (xk_…)
+  const ext = artwork.extendedKnowledge?.find((e) => e.sourceId === sourceId);
+  if (!ext) return undefined;
+  return {
+    id: ext.sourceId,
+    label: ext.sourceLabel ?? ext.sourceId,
+    url: null,
+    note: null,
+  };
 }
 
 export function getChatRules(): string {

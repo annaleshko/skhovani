@@ -62,6 +62,8 @@ export function GuideScreen({
   const inputRef = useRef<HTMLInputElement>(null);
   /** Consume attached detail on first send after open from 08. */
   const [attachedDetail, setAttachedDetail] = useState(detailTitle);
+  /** iOS/Android keyboard: keep composer above the keyboard. */
+  const [keyboardInset, setKeyboardInset] = useState(0);
 
   useEffect(() => {
     if (!open) return;
@@ -71,10 +73,27 @@ export function GuideScreen({
 
   useEffect(() => {
     if (!open) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const sync = () => {
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardInset(inset);
+    };
+    sync();
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
+    return () => {
+      vv.removeEventListener("resize", sync);
+      vv.removeEventListener("scroll", sync);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     const el = listRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages, waiting, open, error]);
+  }, [messages, waiting, open, error, keyboardInset]);
 
   const send = useCallback(
     async (text: string) => {
@@ -157,6 +176,12 @@ export function GuideScreen({
       {open ? (
         <motion.div
           className="absolute inset-0 z-50 flex flex-col bg-screen text-text-primary"
+          style={{
+            // Keep shell in the visual viewport (composer above keyboard).
+            bottom: keyboardInset > 0 ? keyboardInset : undefined,
+            height: keyboardInset > 0 ? "auto" : undefined,
+            maxHeight: "100dvh",
+          }}
           initial={reduced ? false : { x: "100%" }}
           animate={{ x: 0 }}
           exit={reduced ? { opacity: 0 } : { x: "100%" }}

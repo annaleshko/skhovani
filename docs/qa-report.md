@@ -99,6 +99,15 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 | Opened Kherson lit + captions | keep |
 | Melitopol blur + hint clear of badge @667/640 | [ ] |
 
+### Stage 3 — Guide
+
+| Check | Result |
+|---|---|
+| «Чи є ще скіфське золото?» → Товста Могила + кримське 2023 + sources | [ ] |
+| source chips for s… and xk_… | [ ] |
+| Composer above keyboard @360×640 | [ ] |
+| Trap / curated defaults unchanged | keep |
+
 ## Release candidate stages (2026-11-18 evening)
 
 ### Stage 1 — Revisit stuck (root cause)
