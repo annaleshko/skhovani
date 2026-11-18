@@ -27,7 +27,11 @@ import {
   type ResolvedPath,
 } from "@/data/journey";
 import { getMuseumShortLabel } from "@/data/museums";
-import { displayAuthorMeta, displayHeadline } from "@/lib/artwork-display";
+import {
+  displayAuthorMeta,
+  displayHeadline,
+  displayStatusMeta,
+} from "@/lib/artwork-display";
 import {
   easings,
   motionTokens,
@@ -1114,7 +1118,7 @@ export function HallExperience({
                               {displayHeadline(art)}
                             </p>
                             <p
-                              className="w-full text-body-md text-text-caption"
+                              className="w-full truncate text-body-md text-text-caption"
                               style={{
                                 marginTop:
                                   (layout.captions.metaY -
@@ -1122,11 +1126,12 @@ export function HallExperience({
                                     24) *
                                   px,
                               }}
+                              title={displayAuthorMeta(art)}
                             >
                               {displayAuthorMeta(art)}
                             </p>
                             <div
-                              className="flex w-full justify-center"
+                              className="flex w-full flex-wrap items-center justify-center gap-sm"
                               style={{
                                 marginTop:
                                   (layout.captions.badgeY -
@@ -1136,6 +1141,11 @@ export function HallExperience({
                               }}
                             >
                               <StatusBadge status={art.status} />
+                              {displayStatusMeta(art) ? (
+                                <span className="text-caption text-text-secondary">
+                                  {displayStatusMeta(art)}
+                                </span>
+                              ) : null}
                             </div>
                           </motion.div>
                         );

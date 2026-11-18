@@ -118,6 +118,21 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 | Hint scrolls with hall | [ ] |
 | Іконостас tour: cone/lamp not over painting | [ ] |
 
+### Stage 4 — Copy under titles
+
+| Decision | Detail |
+|---|---|
+| Status meta | Per-id from passport via `displayStatusMeta` (no shared «восени 2022») |
+| Author · year | Hall: one line + ellipsis; passport: full; іконостас «Йов Кондзелевич та помічники · 1699–1705» |
+
+| Check | Result |
+|---|---|
+| Мелітополь badge meta «квітень 2022» | [ ] |
+| Херсон stolen «восени 2022» | [ ] |
+| Запорожці / Іконостас «з 2022 року» | [ ] |
+| Козак «2022, облога Чернігова» | [ ] |
+| Hall author ellipsis / passport full | [ ] |
+
 ## Revisit + Melitopol + Figma wallpapers (2026-11-18)
 
 | # | Fix | Check |

@@ -41,9 +41,40 @@ export function displayYear(year: string): string {
   return s || "";
 }
 
+/**
+ * Status date next to the badge — per-artwork from the passport.
+ * Omit when unknown (never a shared default).
+ */
+const STATUS_META_BY_ID: Record<number, string> = {
+  1: "восени 2022", // Великодня
+  2: "восени 2022", // Колядки
+  3: "квітень 2022", // Скіфське золото
+  4: "восени 2022", // Одеса
+  5: "восени 2022", // Дама
+  6: "восени 2022", // Околиці
+  7: "восени 2022", // Капуцин
+  8: "з 2022 року", // Запорожці
+  9: "з 2022 року", // Іконостас
+  10: "2022, облога Чернігова", // Козак-бандурист
+};
+
+export function displayStatusMeta(artwork: Artwork): string {
+  return STATUS_META_BY_ID[artwork.id] ?? "";
+}
+
+/** Short author for UI meta (passport short form). */
+export function displayAuthor(artwork: Artwork): string {
+  if (artwork.id === 9) return "Йов Кондзелевич та помічники";
+  return artwork.author
+    .replace(/\s*\(\d{4}\s*[–-]\s*\d{4}\)\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** «Автор» or «Автор · рік» — never « · не встановлено». */
 export function displayAuthorMeta(artwork: Artwork): string {
   const year = displayYear(artwork.year);
-  if (!year) return artwork.author;
-  return `${artwork.author} · ${year}`;
+  const author = displayAuthor(artwork);
+  if (!year) return author;
+  return `${author} · ${year}`;
 }

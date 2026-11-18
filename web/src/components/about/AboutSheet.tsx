@@ -3,7 +3,11 @@
 import { Button, Chip, SourceRow, StatusBadge } from "@/components/ui";
 import { PASSPORT_LAYOUT } from "@/components/tour/FramedArtwork";
 import type { Artwork } from "@/data/types";
-import { displayAuthorMeta, displayHeadline } from "@/lib/artwork-display";
+import {
+  displayAuthorMeta,
+  displayHeadline,
+  displayStatusMeta,
+} from "@/lib/artwork-display";
 import { cn } from "@/lib/cn";
 import { defaultSpring, easings, motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
@@ -126,13 +130,19 @@ export function AboutSheet({
                     {displayAuthorMeta(artwork)}
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-sm">
-                  <StatusBadge status={artwork.status} />
-                  {/* TODO(copy): status meta date from passport */}
-                  <span className="text-caption text-text-secondary">
-                    восени 2022
-                  </span>
-                </div>
+                {(() => {
+                  const statusMeta = displayStatusMeta(artwork);
+                  return (
+                    <div className="flex flex-wrap items-center gap-sm">
+                      <StatusBadge status={artwork.status} />
+                      {statusMeta ? (
+                        <span className="text-caption text-text-secondary">
+                          {statusMeta}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="mt-2xl flex gap-sm overflow-x-auto pb-xs">
