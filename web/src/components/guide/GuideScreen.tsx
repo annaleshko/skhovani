@@ -300,11 +300,7 @@ export function GuideScreen({
                             );
                           })
                         : null}
-                      {m.fallback ? (
-                        <span className="mt-2xs block text-caption text-text-secondary">
-                          офлайн-відповідь
-                        </span>
-                      ) : null}
+                      {/* fallback/curated flags stay in API payload only */}
                     </div>
                   </motion.div>
                 ))}

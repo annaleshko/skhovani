@@ -43,6 +43,7 @@ import {
   projectToMap,
   type MapPoint,
 } from "@/lib/geo";
+import { mapLabelSide } from "@/lib/map-label";
 import {
   easings,
   motionTokens,
@@ -857,7 +858,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
                         y={p.y}
                         size={14}
                         label={m.city}
-                        labelSide={id === "lviv" ? "left" : "right"}
+                        labelSide={mapLabelSide(p.x)}
                         glow="soft"
                         labelTone="secondary"
                       />
@@ -874,7 +875,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
                         x={p.x}
                         y={p.y}
                         label={m.city}
-                        labelSide={m.id === "lviv" ? "left" : "right"}
+                        labelSide={mapLabelSide(p.x)}
                         tone="dim"
                       />
                     );

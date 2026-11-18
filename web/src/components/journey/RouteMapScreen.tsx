@@ -24,6 +24,7 @@ import {
   haversineKm,
   projectToMap,
 } from "@/lib/geo";
+import { mapLabelSide } from "@/lib/map-label";
 import {
   defaultSpring,
   motionTokens,
@@ -185,7 +186,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                     y={p.y}
                     size={14}
                     label={m.city}
-                    labelSide={id === "lviv" ? "left" : "right"}
+                    labelSide={mapLabelSide(p.x)}
                     glow="soft"
                     labelTone="secondary"
                     onClick={() => setPickedMuseumId(id)}
@@ -204,7 +205,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                     x={p.x}
                     y={p.y}
                     label={m.city}
-                    labelSide={id === "lviv" ? "left" : "right"}
+                    labelSide={mapLabelSide(p.x)}
                     tone="dim"
                     onClick={() => setPickedMuseumId(id)}
                   />
@@ -218,7 +219,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                   y={targetPt.y}
                   size={22}
                   label={targetMuseum.city}
-                  labelSide="right"
+                  labelSide={mapLabelSide(targetPt.x)}
                   glow="strong"
                   labelTone="primary"
                   pulsing={!reduced}

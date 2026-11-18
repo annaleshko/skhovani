@@ -62,3 +62,18 @@ export function looksLikeNoDataShrug(text: string): boolean {
     text,
   );
 }
+
+/**
+ * Speculative symbolism / opinions not grounded in the passport.
+ * Triggers a stricter retry, then curated/fallback bank.
+ */
+export function looksLikeSpeculation(text: string): boolean {
+  return (
+    /може\s+символізувати/i.test(text) ||
+    /символізує/i.test(text) ||
+    /\bймовірно\b/i.test(text) ||
+    /\bмабуть\b/i.test(text) ||
+    /можливо,\s+це\s+означає/i.test(text) ||
+    /натякає\s+на/i.test(text)
+  );
+}

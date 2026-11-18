@@ -81,8 +81,9 @@ export function MuseumDot({
       {/* 14px ring, 6px dot */}
       <circle r={7} fill="none" stroke={stroke} strokeWidth={1.25} />
       <circle r={3} fill={fill} />
+      {/* 6px gap from ring edge (r=7 → ±13) */}
       <text
-        x={labelSide === "left" ? -10 : 10}
+        x={labelSide === "left" ? -13 : 13}
         y={4}
         textAnchor={labelSide === "left" ? "end" : "start"}
         fill={labelFill}

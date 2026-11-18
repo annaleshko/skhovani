@@ -8,6 +8,7 @@ import { buildGuideSystemPrompt } from "@/lib/guide-prompt";
 import {
   isLocationTrapQuestion,
   looksLikeNoDataShrug,
+  looksLikeSpeculation,
   sanitizeGuideAnswer,
 } from "@/lib/guide-safety";
 import OpenAI from "openai";
@@ -196,22 +197,37 @@ export async function POST(req: Request) {
       return NextResponse.json(fallbackResponse(artworkId, question));
     }
 
-    // If model shrugs but passport has matching text — retry once with quote.
     const snippets = passportSnippetsForQuestion(artworkId, question);
+
+    // Shrug despite passport coverage → retry with quoted paragraphs.
     if (looksLikeNoDataShrug(result.answer) && snippets.length > 0) {
-      const retryMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
-        [
-          ...baseMessages,
-          {
-            role: "system",
-            content: `Користувач спитав про факт, який Є в паспорті. Ось уривки — відповідай ТІЛЬКИ з них, 2–4 речення, з sourceIds:\n\n${snippets.join("\n\n")}`,
-          },
-        ];
-      const retry = await callModel(openai, model, retryMessages);
-      if (retry && !looksLikeNoDataShrug(retry.answer)) {
+      const retry = await callModel(openai, model, [
+        ...baseMessages,
+        {
+          role: "system",
+          content: `Користувач спитав про факт, який Є в паспорті. Ось уривки — відповідай ТІЛЬКИ з них, 2–4 речення, з sourceIds:\n\n${snippets.join("\n\n")}`,
+        },
+      ]);
+      if (retry && !looksLikeNoDataShrug(retry.answer) && !looksLikeSpeculation(retry.answer)) {
         result = retry;
       } else {
-        // Prefer curated/fallback bank over a second shrug.
+        return NextResponse.json(fallbackResponse(artworkId, question));
+      }
+    }
+
+    // Speculative symbolism / opinions → one stricter retry, then bank.
+    if (looksLikeSpeculation(result.answer)) {
+      const retry = await callModel(openai, model, [
+        ...baseMessages,
+        {
+          role: "system",
+          content:
+            "СТРОГО: без символізму, без «може символізувати», «ймовірно», «мабуть». Лише факти з паспорта. Якщо факту немає — одне речення «Про це в моїх джерелах даних немає.» і одне питання з паспорта.",
+        },
+      ]);
+      if (retry && !looksLikeSpeculation(retry.answer)) {
+        result = retry;
+      } else {
         return NextResponse.json(fallbackResponse(artworkId, question));
       }
     }
