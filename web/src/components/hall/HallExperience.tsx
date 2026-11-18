@@ -191,9 +191,17 @@ export function HallExperience({
   const [focusKey, setFocusKey] = useState(artworkId);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const hallStageInnerRef = useRef<HTMLDivElement>(null);
   const [viewH, setViewH] = useState(844);
   const [viewW, setViewW] = useState(390);
   const [scrollLeftPx, setScrollLeftPx] = useState(0);
+  /** Focus frame in design px after object-contain (from DOM measure). */
+  const [focusFrameDes, setFocusFrameDes] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
   const neighborTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revealTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -269,6 +277,59 @@ export function HallExperience({
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, [phase]);
+
+  // Measure the rendered focus frame (object-contain) → design px for the hint ring.
+  useEffect(() => {
+    if (phase !== "hall" || px <= 0) return;
+    const measure = () => {
+      const stage = hallStageInnerRef.current;
+      const frame = stage?.querySelector(
+        `[data-hall-idx="${artworkId}"]`,
+      ) as HTMLElement | null;
+      const img = frame?.querySelector("img") as HTMLImageElement | null;
+      if (!stage || !frame) return;
+      const stageBox = stage.getBoundingClientRect();
+      const box = (img ?? frame).getBoundingClientRect();
+      let x = (box.left - stageBox.left + scrollLeftPx) / px;
+      let y = (box.top - stageBox.top) / px;
+      let w = box.width / px;
+      let h = box.height / px;
+      if (img && img.naturalWidth > 0 && img.clientWidth > 0) {
+        const nw = img.naturalWidth;
+        const nh = img.naturalHeight;
+        const cw = img.clientWidth;
+        const ch = img.clientHeight;
+        const scale = Math.min(cw / nw, ch / nh);
+        const rw = nw * scale;
+        const rh = nh * scale;
+        const ox = (cw - rw) / 2;
+        const oy = (ch - rh) / 2;
+        x = (box.left - stageBox.left + scrollLeftPx + ox) / px;
+        y = (box.top - stageBox.top + oy) / px;
+        w = rw / px;
+        h = rh / px;
+      }
+      setFocusFrameDes((prev) => {
+        if (
+          prev &&
+          Math.abs(prev.x - x) < 0.5 &&
+          Math.abs(prev.y - y) < 0.5 &&
+          Math.abs(prev.w - w) < 0.5 &&
+          Math.abs(prev.h - h) < 0.5
+        ) {
+          return prev;
+        }
+        return { x, y, w, h };
+      });
+    };
+    measure();
+    const id = window.setTimeout(measure, 160);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener("resize", measure);
+    };
+  }, [phase, artworkId, px, scrollLeftPx, viewW, viewH, stolenPhase]);
 
   // Mouse drag-to-scroll (momentum + snap), no text selection
   useEffect(() => {
@@ -636,69 +697,76 @@ export function HallExperience({
   const hintTour = (isShelter || isSaved) && showUi && !reopenHall;
   const hintPassport = reopenHall && showUi;
 
-  // Figma 05: ring on frame top-right (scrolls with hall); label ABOVE the
-  // ring, outside the frame. Melitopol: label above glass, clear of badge.
+  // Figma 05: ring ON the frame's top-right after scale (design rect × px).
+  // Melitopol: glass corner (not pedestal). Label above, never over the edge.
   const markerPos = (() => {
-    const r = hallFocusSlot.frameRect;
+    const box = hallFocusSlot.frameRect;
     const inset = emptyInset;
-    const glassRight = r.x + r.w * (1 - inset.right);
-    const glassTop = r.y + r.h * inset.top;
-    // Ring sits on the frame corner (just outside / on the chrome edge).
-    const cx = r.x + r.w - 8;
-    const cy = r.y + 14;
+    const glass = {
+      x: box.x + box.w * inset.left,
+      y: box.y + box.h * inset.top,
+      w: box.w * (1 - inset.left - inset.right),
+      h: box.h * (1 - inset.top - inset.bottom),
+    };
+    // Melitopol: always the glass corner (pedestal PNG measure is wrong).
+    // Others: measured object-contain rect, clamped to the layout box so the
+    // ring sits on the chrome — not floating past the gold edge (Харків).
+    let cx: number;
+    let cy: number;
+    let frameTop: number;
+    if (museumId === "melitopol") {
+      cx = glass.x + glass.w - 4;
+      cy = glass.y + 10;
+      frameTop = glass.y;
+    } else {
+      const measured = focusFrameDes;
+      const rawR = measured && measured.w > 8 ? measured : box;
+      // Clamp into layout box; bias to the outer chrome top-right.
+      const r = {
+        x: Math.max(box.x, Math.min(rawR.x, box.x + box.w * 0.15)),
+        y: Math.max(box.y, Math.min(rawR.y, box.y + box.h * 0.15)),
+        w: Math.min(rawR.w, box.w),
+        h: Math.min(rawR.h, box.h),
+      };
+      // Sit on the gold chrome (~12–20px inset from PNG bounds / shadow pad).
+      cx = Math.min(r.x + r.w - 22, box.x + box.w - 26);
+      cy = Math.max(r.y + 12, box.y + 12);
+      frameTop = Math.max(r.y, box.y);
+    }
     const half = 28.5;
     const gap = 8;
-    const hintW = 145;
-    const hintH = hintPassport || hintStolen ? 20 : 40;
-    const margin = 16 / px;
+    const hintW = hintPassport ? 172 : 150;
+    const hintH = hintPassport || hintTour ? 40 : 22;
+    const margin = 12 / px;
     const scrollDes = scrollLeftPx / px;
     const visL = scrollDes;
     const visR = scrollDes + viewW / px;
     const visT = 0;
-    // Default: centered above the ring, outside the frame.
     let hintLeft = cx - hintW / 2;
-    let hintTop = cy - half - gap - hintH;
+    let hintTop = Math.min(cy - half - gap - hintH, frameTop - gap - hintH);
     if (museumId === "melitopol") {
-      // Vitrine: ring on glass corner; label above glass, never over badge
-      // (tight on 667/640 — prefer left of ring if vertical space is gone).
-      const glassCx = glassRight - 8;
-      const glassCy = glassTop + 14;
-      const badgeBottom = (layout.captions.badgeY ?? 254) + 28;
-      hintLeft = glassCx - hintW / 2;
-      hintTop = Math.min(
-        glassCy - half - gap - hintH,
-        glassTop - gap - hintH,
-      );
-      if (hintTop < badgeBottom + gap) {
-        hintLeft = glassCx - half - gap - hintW;
-        hintTop = Math.max(badgeBottom + gap, glassTop);
-        if (hintLeft < visL + margin) {
-          hintLeft = visL + margin;
-          hintTop = Math.max(badgeBottom + gap, glassCy - half - gap - hintH);
-        }
-      }
-      return {
-        cx: glassCx,
-        cy: glassCy,
-        hintLeft: Math.min(
-          Math.max(hintLeft, visL + margin),
-          visR - margin - hintW,
-        ),
-        hintTop: Math.max(hintTop, visT + margin),
-        hintW,
-      };
-    }
-    // Keep label outside the frame opening (above frame top).
-    const frameTop = r.y;
-    if (hintTop + hintH > frameTop - gap) {
+      // Badge hidden while reopened hint shows — park label left of ring,
+      // fully above the glass (never on the vitrine top edge).
+      const metaBottom = (layout.captions.metaY ?? 198) + 24;
+      hintLeft = cx - half - gap - hintW;
       hintTop = frameTop - gap - hintH;
+      if (hintTop < metaBottom + gap) {
+        hintLeft = Math.max(visL + margin, glass.x + 4);
+        hintTop = metaBottom + gap;
+      }
+      if (hintTop + hintH > frameTop - gap) {
+        hintTop = frameTop - gap - hintH;
+      }
     }
     hintLeft = Math.min(
       Math.max(hintLeft, visL + margin),
       visR - margin - hintW,
     );
     hintTop = Math.max(hintTop, visT + margin);
-    return { cx, cy, hintLeft, hintTop, hintW };
+    if (hintTop + hintH > frameTop - 4) {
+      hintTop = Math.max(visT + margin, frameTop - 4 - hintH);
+    }
+    return { cx, cy, hintLeft, hintTop, hintW, hintH };
   })();
   const markerCx = markerPos.cx;
   const markerCy = markerPos.cy;
@@ -736,6 +804,7 @@ export function HallExperience({
               }}
             >
               <div
+                ref={hallStageInnerRef}
                 className="absolute left-0 right-0"
                 style={{
                   top: stageOffsetY,
@@ -1181,65 +1250,69 @@ export function HallExperience({
                             >
                               {displayAuthorMeta(art)}
                             </p>
-                            <div
-                              className="flex w-full flex-wrap items-center justify-center gap-sm"
-                              style={{
-                                marginTop:
-                                  (layout.captions.badgeY -
-                                    layout.captions.metaY -
-                                    20) *
-                                  px,
-                              }}
-                            >
-                              <StatusBadge status={art.status} />
-                              {displayStatusMeta(art) ? (
-                                <span className="text-caption text-text-secondary">
-                                  {displayStatusMeta(art)}
-                                </span>
-                              ) : null}
-                            </div>
+                            {!(
+                              museumId === "melitopol" &&
+                              isActiveCap &&
+                              (showMemoryLine || hintPassport)
+                            ) ? (
+                              <div
+                                className="flex w-full flex-wrap items-center justify-center gap-sm"
+                                style={{
+                                  marginTop:
+                                    (layout.captions.badgeY -
+                                      layout.captions.metaY -
+                                      20) *
+                                    px,
+                                }}
+                              >
+                                <StatusBadge status={art.status} />
+                                {displayStatusMeta(art) ? (
+                                  <span className="text-caption text-text-secondary">
+                                    {displayStatusMeta(art)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </motion.div>
                         );
                       })
                   : null}
               </AnimatePresence>
 
-              {/* Memory line (06): Melitopol between badge & vitrine; else above frame */}
+              {/* Memory line (06): Melitopol between badge & vitrine (≥12px);
+                  hide badge while the line is up if space is tight. */}
               <AnimatePresence>
                 {showMemoryLine
                   ? (() => {
                       const r = hallFocusSlot.frameRect;
                       const glassTop = r.y + r.h * emptyInset.top;
-                      const lineH = 20;
-                      const badgeBottom = layout.captions.badgeY + 28;
-                      // Figma Melitopol: between badge and vitrine top
+                      const lineH = museumId === "melitopol" ? 36 : 20;
+                      const gap = 12;
+                      // Melitopol: badge hidden while line shows — occupy badge Y
+                      // with ≥12px clearance above the glass.
                       const topDes =
                         museumId === "melitopol"
                           ? Math.min(
-                              badgeBottom + 4,
-                              glassTop - lineH - 4,
+                              layout.captions.badgeY,
+                              glassTop - lineH - gap,
                             )
                           : glassTop - 16 - lineH;
                       const lampBottom = layout.lamp.y + layout.lamp.h + 8;
                       const titleTop = layout.captions.titleY;
                       const overlapsTitle =
+                        museumId !== "melitopol" &&
                         titleTop < glassTop &&
                         topDes < titleTop + 48 &&
                         topDes + lineH > titleTop;
-                      const overlapsBadge =
-                        museumId === "melitopol" &&
-                        topDes < badgeBottom &&
-                        topDes + lineH > layout.captions.badgeY;
                       const fits =
                         topDes * px >= 16 &&
                         topDes >= lampBottom &&
-                        !overlapsTitle &&
-                        !overlapsBadge;
+                        !overlapsTitle;
                       if (!fits) return null;
                       return (
                         <motion.p
                           key="memory-line"
-                          className="pointer-events-none absolute z-[10] text-center text-body-md text-text-primary"
+                          className="pointer-events-none absolute z-[11] text-center text-body-md text-text-primary"
                           style={{
                             left: (r.x + r.w / 2) * px,
                             top: topDes * px,
@@ -1301,11 +1374,14 @@ export function HallExperience({
                 (hintStolen || hintTour || hintPassport) ? (
                   <>
                     <motion.p
-                      className="pointer-events-none absolute z-[10] text-right text-label-md leading-4 text-text-primary"
+                      className="pointer-events-none absolute z-[10] text-right text-label-md leading-snug text-text-primary"
                       style={{
                         left: markerPos.hintLeft * px,
                         top: markerPos.hintTop * px,
                         width: markerPos.hintW * px,
+                        // Never ellipsize — wrap to 2 lines on narrow halls.
+                        whiteSpace: "normal",
+                        overflow: "visible",
                       }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -1314,7 +1390,11 @@ export function HallExperience({
                       {hintStolen ? (
                         <>Торкнись, щоб згадати</>
                       ) : hintPassport ? (
-                        <>Торкнись картини</>
+                        <>
+                          Торкнись, щоб
+                          <br />
+                          почати тур
+                        </>
                       ) : (
                         <>
                           Торкнись картини,

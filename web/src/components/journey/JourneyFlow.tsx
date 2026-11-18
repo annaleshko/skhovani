@@ -237,6 +237,8 @@ export function JourneyFlow({
   const reopenHallRef = useRef(reopenHall);
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mapStageRef = useRef<HTMLDivElement>(null);
+  const mapLayerRef = useRef<HTMLDivElement>(null);
+  const flightLogRaf = useRef<number | null>(null);
   /** Flight lerp start — 02в map cam when fromRouteMap, else stage cam07. */
   const flightStartCamRef = useRef<CameraTransform | null>(
     fromRouteMap && initialCam ? initialCam : null,
@@ -873,6 +875,74 @@ export function JourneyFlow({
       flightStartCamRef.current = readCam();
     }
 
+    // Dev-only: sample map layer rect for 600ms after «Вирушити».
+    if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_FLIGHT_LOG === "1") {
+      if (flightLogRaf.current) cancelAnimationFrame(flightLogRaf.current);
+      const samples: {
+        t: number;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }[] = [];
+      const t0 = performance.now();
+      const pre = mapLayerRef.current?.getBoundingClientRect();
+      const tick = () => {
+        const now = performance.now();
+        const layer = mapLayerRef.current;
+        if (layer) {
+          const r = layer.getBoundingClientRect();
+          samples.push({
+            t: Math.round(now - t0),
+            x: Math.round(r.x * 10) / 10,
+            y: Math.round(r.y * 10) / 10,
+            w: Math.round(r.width * 10) / 10,
+            h: Math.round(r.height * 10) / 10,
+          });
+        }
+        if (now - t0 < 600) {
+          flightLogRaf.current = requestAnimationFrame(tick);
+        } else {
+          flightLogRaf.current = null;
+          const f0 = samples[0];
+          const jumps = samples.slice(1).map((s, i) => {
+            const p = samples[i]!;
+            return {
+              t: s.t,
+              dX: Math.round((s.x - p.x) * 10) / 10,
+              dY: Math.round((s.y - p.y) * 10) / 10,
+              dWpct:
+                p.w > 0
+                  ? Math.round((Math.abs(s.w - p.w) / p.w) * 1000) / 10
+                  : 0,
+            };
+          });
+          const maxJump = jumps.reduce(
+            (m, j) => Math.max(m, Math.abs(j.dX), Math.abs(j.dY)),
+            0,
+          );
+          const maxW = jumps.reduce((m, j) => Math.max(m, j.dWpct), 0);
+          console.info("[shovani:flight-log]", {
+            path: path?.n,
+            viewport: { w, h },
+            preTap: pre
+              ? {
+                  x: Math.round(pre.x * 10) / 10,
+                  y: Math.round(pre.y * 10) / 10,
+                  w: Math.round(pre.width * 10) / 10,
+                  h: Math.round(pre.height * 10) / 10,
+                }
+              : null,
+            frame0: f0 ?? null,
+            maxJumpPx: maxJump,
+            maxWidthStepPct: maxW,
+            samples,
+          });
+        }
+      };
+      flightLogRaf.current = requestAnimationFrame(tick);
+    }
+
     // Sheet slides down while the camera already moves (no wait).
     setSheetVisible(false);
     setPhase("flight");
@@ -914,6 +984,7 @@ export function JourneyFlow({
     flightT,
     fromRouteMap,
     mapOpacity,
+    path?.n,
     readCam,
     reduced,
     revisit,
@@ -966,6 +1037,7 @@ export function JourneyFlow({
           }
         >
           <motion.div
+            ref={mapLayerRef}
             className="absolute left-0 top-0"
             style={{
               opacity: mapOpacity,

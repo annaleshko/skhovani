@@ -102,15 +102,16 @@ export function AboutSheet({
             initial={{
               y: 48,
               opacity: 0,
-              // Collapsed: title/meta/status/tabs + ≥2 lines above the bar on short phones.
-              top: `min(52dvh, max(38dvh, ${(L.sheetCollapsed.y / 844) * 100}dvh))`,
+              // Collapsed: title/meta/status/tabs(1 row) + ≥2 lines. Short
+              // phones raise the sheet (frame box shrinks first in TourStage).
+              top: `min(48dvh, max(34dvh, ${(L.sheetCollapsed.y / 844) * 100}dvh))`,
             }}
             animate={{
               y: 0,
               opacity: 1,
               top: expanded
                 ? `max(12dvh, ${(L.sheetExpanded.y / 844) * 100}dvh)`
-                : `min(52dvh, max(38dvh, ${(sheetTop / 844) * 100}dvh))`,
+                : `min(48dvh, max(34dvh, ${(sheetTop / 844) * 100}dvh))`,
             }}
             exit={{ y: 48, opacity: 0 }}
             transition={defaultSpring}
@@ -148,7 +149,7 @@ export function AboutSheet({
                 })()}
               </div>
 
-              <div className="mt-2xl flex gap-sm overflow-x-auto pb-xs">
+              <div className="mt-lg flex flex-nowrap gap-sm overflow-x-auto pb-xs [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {TABS.map((t) => (
                   <Chip
                     key={t.id}

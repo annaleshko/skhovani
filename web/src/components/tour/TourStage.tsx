@@ -118,19 +118,16 @@ export function TourStage({
 
   const frameSlot = useMemo(() => {
     if (mode === "explore") {
-      // Passport framed artwork: clamp height for short phones.
-      const maxH = Math.min(
-        P.frame.h * sy,
-        Math.max(180, Math.min(stage.h * 0.34, 265 * sy)),
-      );
-      const h = maxH;
-      const w = P.frame.w * sx;
-      return {
-        x: P.frame.x * sx,
-        y: Math.min(P.frame.y * sy, stage.h * 0.16),
-        w,
-        h,
-      };
+      // Short phones: shrink the frame box first (sheet needs room); keep ≥55% design.
+      const designH = P.frame.h * sy;
+      const shortCap = Math.max(160, stage.h * 0.3);
+      const h = Math.min(designH, Math.max(designH * 0.55, shortCap));
+      const scale = h / (P.frame.h * sy || 1);
+      const w = P.frame.w * sx * Math.min(1, scale);
+      const x = (stage.w - w) / 2;
+      // Keep lamp room above; never push frame under the header icons.
+      const y = Math.max(88 * sy, Math.min(P.frame.y * sy, stage.h * 0.18));
+      return { x, y, w, h };
     }
     return {
       x: TOUR_LAYOUT.frame.x * sx,
@@ -141,10 +138,10 @@ export function TourStage({
   }, [
     P.frame.h,
     P.frame.w,
-    P.frame.x,
     P.frame.y,
     mode,
     stage.h,
+    stage.w,
     sx,
     sy,
   ]);
@@ -478,9 +475,9 @@ export function TourStage({
       })()
     : null;
 
-  // Zoomed artwork must stay above the cone; fade cone out so іконостас etc.
-  // never read as lamp/cone overlapping the painting.
-  const coneOpacity = zoomedIn ? 0 : 1;
+  // Keep a readable glow while zoomed (was 0 → dark tour). Screen-blend
+  // layer sits above the art so margins + dark paint still catch light.
+  const coneOpacity = zoomedIn ? 0.7 : 1;
   /** Ring at the stop point after edge clamp — not always stage center. */
   const tourRingPos = (() => {
     if (mode !== "tour" || !stop) return { x: focusX, y: focusY };
@@ -501,33 +498,50 @@ export function TourStage({
   const tourRingCy = tourRingPos.y;
   const photoLine = photographerCreditLine(artwork.photoCredit);
 
+  // Figma 16 lamp y−42 / cone 346×380; tour 07 lamp + cone 346×324 behind art.
+  // Scale cone with the frame box; never shrink below 80% of design size.
+  const designCone = mode === "explore"
+    ? { w: P.cone.w, h: P.cone.h, top: 58 }
+    : { w: TOUR_LAYOUT.cone.w, h: TOUR_LAYOUT.cone.h, top: 100 };
+  const designFrameW = mode === "explore" ? P.frame.w : TOUR_LAYOUT.frame.w;
+  const frameScale = frameSlot.w / designFrameW;
+  const coneScale = Math.max(frameScale, 0.8);
+  const coneW = designCone.w * coneScale;
+  const coneH = designCone.h * coneScale;
+  // Passport: cone from y≈58 (under lamp at −42). Tour: y≈100.
+  const coneTop = designCone.top * sy;
   const lampTop = mode === "explore" ? P.lamp.y * sy : 8 * sy;
-  const coneTop = mode === "explore" ? 58 * sy : 100 * sy;
-  const coneH = mode === "explore" ? P.cone.h * sy : 340 * sy;
+  const lampW = P.lamp.w * Math.max(sx, coneScale * 0.9);
+  const lampH = P.lamp.h * Math.max(sy, coneScale * 0.9);
 
   return (
     <div
       ref={stageRef}
-      className="pointer-events-none absolute inset-0 z-20 overflow-hidden bg-[var(--color-bg-hall-dark)]"
+      className="pointer-events-none absolute inset-0 z-20 overflow-x-hidden bg-[var(--color-bg-hall-dark)]"
     >
       {!loaded ? (
         <div className="absolute inset-0 animate-pulse bg-surface" aria-busy />
       ) : null}
 
-      {/* Cone + lamp behind artwork (z below). Cone fades when zoomed so it
-          never overlays Богородчанський іконостас / tall frames. */}
+      {/* Warm cone 346×324 (Figma 100:1660): behind art in passport; above art
+          with screen blend in tour so zoom + dim-mask never kill the glow. */}
       <motion.div
-        className="pointer-events-none absolute left-1/2 z-[1] -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
         style={{
           top: coneTop,
-          height: Math.min(coneH, Math.max(0, imgLayout.y - coneTop + 8)),
-          width: P.cone.w * sx,
+          height: coneH,
+          width: coneW,
+          zIndex: mode === "tour" ? 5 : 1,
+          background:
+            "radial-gradient(ellipse 70% 55% at 50% 18%, rgba(233,184,114,0.55) 0%, rgba(233,184,114,0.2) 42%, transparent 72%)",
         }}
         initial={false}
         animate={
-          reduced || zoomedIn
+          reduced
             ? { opacity: coneOpacity }
-            : { opacity: [0.85, 1, 0.85] }
+            : zoomedIn
+              ? { opacity: coneOpacity }
+              : { opacity: [0.9, 1, 0.9] }
         }
         transition={
           reduced
@@ -541,18 +555,18 @@ export function TourStage({
         <img
           src={hallUi.tourCone}
           alt=""
-          className="size-full object-contain object-top mix-blend-screen"
+          className="size-full object-fill object-top mix-blend-screen"
           draggable={false}
         />
       </motion.div>
 
+      {/* Lamp above the artwork so zoom never swallows it (Figma 07/16). */}
       <div
-        className="pointer-events-none absolute left-1/2 z-[1] -translate-x-1/2 overflow-hidden"
+        className="pointer-events-none absolute left-1/2 z-[6] -translate-x-1/2"
         style={{
           top: lampTop,
-          width: P.lamp.w * sx,
-          height: P.lamp.h * sy,
-          maxHeight: Math.max(0, imgLayout.y - lampTop),
+          width: lampW,
+          height: lampH,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

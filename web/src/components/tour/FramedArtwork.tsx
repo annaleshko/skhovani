@@ -16,7 +16,8 @@ export const TOUR_LAYOUT = {
   frame: { x: 24, y: 194, w: 341.56, h: 265 },
   painting: { x: 60.81, y: 230.81, w: 266.47, h: 195.81 },
   lamp: { x: 146, y: 8, w: 98, h: 109 },
-  cone: { x: 13, y: 432, w: 346, h: 324 },
+  /** Cone vector sits behind the frame (screen y≈100), not at y432. */
+  cone: { x: 22, y: 100, w: 346, h: 324 },
 } as const;
 
 /** Figma 16 · Паспорт / 08 · Detail (240:1838 / 236:1564), 390×844. */

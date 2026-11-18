@@ -12,7 +12,7 @@ export function Chip({ active = false, className, children, ...rest }: Props) {
       type="button"
       aria-pressed={active}
       className={cn(
-        "inline-flex h-8 min-h-[32px] items-center rounded-pill border px-md text-label-md transition-colors duration-150",
+        "inline-flex h-8 min-h-[32px] shrink-0 items-center whitespace-nowrap rounded-pill border px-md text-label-md transition-colors duration-150",
         active
           ? "border-border-accent bg-accent-selected text-text-primary"
           : "border-border-subtle bg-surface text-text-secondary",

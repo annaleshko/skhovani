@@ -40,7 +40,7 @@ export function TourMagnifier({
 
   return (
     <motion.div
-      className="pointer-events-none absolute inset-0 z-[3]"
+      className="pointer-events-none absolute inset-0 z-[7]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -51,11 +51,11 @@ export function TourMagnifier({
       }
       aria-hidden
     >
-      {/* Soft dim outside the ring */}
+      {/* Soft dim outside the ring — keep low so lamp/cone stay readable. */}
       <div
         className="absolute inset-0 bg-hall-dark"
         style={{
-          opacity: 0.35,
+          opacity: 0.18,
           WebkitMaskImage: mask,
           maskImage: mask,
         }}

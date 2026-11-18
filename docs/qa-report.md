@@ -182,6 +182,50 @@ Automated @ 390×844 (`reducedMotion`) + `/api/guide`. Guide chat UI / detail / 
 | «Почати спочатку → Так, почати» → city picker | OK |
 | Mobile `/reset` → city picker | OK |
 
+## Light + layout polish (2026-11-19)
+
+| Fix | Notes |
+|---|---|
+| Passport / tour lamp+cone | Full 346×324 cone (≥80% design); lamp z above art; tour screen-blend + radial glow; magnifier dim 0.18 |
+| Melitopol memory / reopen hint | Badge hidden while memory or reopen hint; hint left of ring, above glass |
+| Hint ring | Measured object-contain rect, clamped onto chrome (Харків inset); Melitopol = glass corner |
+| 360 passport | Tabs `nowrap` + horizontal scroll; sheet top raised; frame box shrinks first |
+| Flight logger | `NEXT_PUBLIC_FLIGHT_LOG=1` / dev: samples map layer 600ms after «Вирушити» |
+
+### Flight handoff samples (`next start`, map layer rect)
+
+**Path 1 · 390×844**
+
+| | x | y | w | h |
+|---|---:|---:|---:|---:|
+| preTap | −9 | 239 | 408 | 296 |
+| frame0 (t=34ms) | −9.8 | 238.7 | 409.6 | 297.2 |
+| Δ frame0−preTap | 0.8 | 0.3 | 0.4% | — |
+
+**Path 1 · 360×640**
+
+| | x | y | w | h |
+|---|---:|---:|---:|---:|
+| preTap | −8.6 | 181.5 | 376.6 | 273.2 |
+| frame0 (t=37ms) | −9.2 | 181 | 378.5 | 274.6 |
+| Δ | 0.6 | 0.5 | 0.5% | — |
+
+**Path 2 · 390×844** (02в → flight; early samples)
+
+| t ms | x | y | w | h |
+|---:|---:|---:|---:|---:|
+| 17 (frame0) | 15.6 | 206 | 358.8 | 260.3 |
+| 32 | 15.4 | 205.9 | 359.2 | 260.6 |
+
+**Path 2 · 360×640**
+
+| t ms | x | y | w | h |
+|---:|---:|---:|---:|---:|
+| 8 (frame0) | 14.4 | 164.4 | 331.2 | 240.3 |
+| 22 | 14.4 | 164.4 | 331.3 | 240.4 |
+
+Frame 0 vs pre-tap: Δ &lt; 8px and width step &lt; 5% on path 1. Path 2 consecutive early frames &lt; 1px. Full JSON: `docs/verify/light/flight-log.json`. Screenshots: `docs/verify/light/`.
+
 ## Release candidate stages (2026-11-18 evening)
 
 ### Stage 1 — Revisit stuck (root cause)
