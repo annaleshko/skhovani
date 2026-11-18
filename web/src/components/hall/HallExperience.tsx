@@ -25,6 +25,7 @@ import {
   shouldSkipMapToHall,
   type ResolvedPath,
 } from "@/data/journey";
+import { getMuseumShortLabel } from "@/data/museums";
 import {
   easings,
   motionTokens,
@@ -123,9 +124,6 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const nextPath = useMemo(
     () => getNextPath(completedWithCurrent),
     [completedWithCurrent],
-  );
-  const nextSameMuseum = Boolean(
-    nextPath && shouldSkipMapToHall(completedWithCurrent, nextPath),
   );
   /** Frames already opened (completed path or tour-seen). */
   const openedIds = useMemo(() => {
@@ -354,21 +352,47 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
     [completedPaths, router],
   );
 
-  const continueAfterWallpaper = useCallback(() => {
-    if (isReplayPassport) {
-      setViewArtworkId(artworkId);
-      setPhase("hall");
+  /** Next unfinished path for passport «Далі — <місто>». */
+  const continueTarget = useMemo(() => {
+    // Reopened passport: don't treat the in-progress path as done.
+    const base = isReplayPassport ? completedPaths : completedWithCurrent;
+    return getNextPath(base) ?? null;
+  }, [completedPaths, completedWithCurrent, isReplayPassport]);
+
+  const continueLabel = useMemo(() => {
+    if (!continueTarget) return "Шлях пройдено";
+    return `Далі — ${getMuseumShortLabel(continueTarget.museumId)}`;
+  }, [continueTarget]);
+
+  const goContinueFromPassport = useCallback(() => {
+    completeCurrentPath();
+    setViewArtworkId(artworkId);
+    setDetailZone(null);
+    const target = continueTarget;
+    if (!target) {
+      setPhase("route");
       return;
     }
-    // Same museum: scroll/replace to next frame. Else → 02в.
-    if (nextSameMuseum && nextPath) {
+    const skipMap = shouldSkipMapToHall(
+      isReplayPassport ? completedPaths : completedWithCurrent,
+      target,
+    );
+    if (skipMap) {
       router.replace(
-        `/hall/${nextPath.museumId}?path=${nextPath.n}&artwork=${nextPath.artworkId}`,
+        `/hall/${target.museumId}?path=${target.n}&artwork=${target.artworkId}`,
       );
       return;
     }
     setPhase("route");
-  }, [artworkId, isReplayPassport, nextPath, nextSameMuseum, router]);
+  }, [
+    artworkId,
+    completeCurrentPath,
+    completedPaths,
+    completedWithCurrent,
+    continueTarget,
+    isReplayPassport,
+    router,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -929,6 +953,10 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
             setTourKey((k) => k + 1);
             setPhase("tour");
           }}
+          onSaveWallpaper={() => {
+            setDetailZone(null);
+            setPhase("wallpaper");
+          }}
           onZoneChange={setDetailZone}
           detailOpen={detailZone != null}
         />
@@ -939,10 +967,8 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         artwork={focus}
         open={phase === "about" || phase === "explore"}
         dimmed={detailZone != null}
-        onWallpaper={() => {
-          setDetailZone(null);
-          setPhase("wallpaper");
-        }}
+        continueLabel={continueLabel}
+        onContinue={goContinueFromPassport}
         onAskGuide={() => {
           setDetailZone(null);
           setGuidePrefill(null);
@@ -1008,19 +1034,16 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         open={phase === "wallpaper"}
         onClose={() => setPhase("about")}
         onSaved={() => {
-          if (!isReplayPassport) completeCurrentPath();
           setPhase("wallpaper-saved");
         }}
       />
 
       <WallpaperSavedScreen
         open={phase === "wallpaper-saved"}
-        next={isReplayPassport ? null : nextPath ?? null}
         previewSrc={focus.image ?? focus.wallpaper}
-        artworkTitle={focus.title}
+        artworkTitle={focus.headline || focus.title}
         onContinue={() => {
-          if (!isReplayPassport) completeCurrentPath();
-          continueAfterWallpaper();
+          setPhase("about");
         }}
       />
 

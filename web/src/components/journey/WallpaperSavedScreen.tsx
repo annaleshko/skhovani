@@ -1,17 +1,15 @@
 "use client";
 
 import { Button, NumberBadge } from "@/components/ui";
-import type { ResolvedPath } from "@/data/journey";
-import { getMuseumShortLabel } from "@/data/museums";
 import { motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 
 type Props = {
   open: boolean;
-  next: ResolvedPath | null;
   previewSrc?: string | null;
   artworkTitle?: string;
+  /** Back to passport 16. */
   onContinue: () => void;
 };
 
@@ -23,17 +21,15 @@ const STEPS = [
 
 /**
  * MVP v2 screen 17 — Figma `240:1889`.
- * CTA is always «Далі — <місто>» (same museum keeps the city name).
+ * Product decision 2026-11-18: CTA «Повернутись до твору» → passport 16
+ * (journey continue lives on passport «Далі — <місто>»).
  */
 export function WallpaperSavedScreen({
   open,
-  next,
   previewSrc,
   artworkTitle,
   onContinue,
 }: Props) {
-  const nextCity = next ? getMuseumShortLabel(next.museumId) : null;
-
   return (
     <AnimatePresence>
       {open ? (
@@ -99,9 +95,7 @@ export function WallpaperSavedScreen({
           </ol>
 
           <div className="mt-auto">
-            <Button onClick={onContinue}>
-              {nextCity ? `Далі — ${nextCity}` : "Далі"}
-            </Button>
+            <Button onClick={onContinue}>Повернутись до твору</Button>
           </div>
         </motion.div>
       ) : null}

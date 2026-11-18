@@ -52,6 +52,8 @@ type Props = {
   onClose?: () => void;
   /** Header ▶ → replay tour. */
   onReplayTour?: () => void;
+  /** Header ⬇ → wallpaper 11. */
+  onSaveWallpaper?: () => void;
   /** Selected touch zone for 08 detail card (parent renders card above sheet). */
   onZoneChange?: (zone: TouchZone | null) => void;
   /** Parent closed the detail card — clear ring. */
@@ -72,6 +74,7 @@ export function TourStage({
   startExplore = false,
   onClose,
   onReplayTour,
+  onSaveWallpaper,
   onZoneChange,
   detailOpen = false,
 }: Props) {
@@ -622,43 +625,54 @@ export function TourStage({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/ui/icon-close.svg" alt="" width={20} height={20} />
             </IconButton>
-            <IconButton
-              label="Автотур ще раз"
-              className="size-10 min-h-10 min-w-10 border border-border-subtle bg-surface text-text-accent"
-              onClick={() => onReplayTour?.()}
-            >
-              <span className="text-[14px] leading-none" aria-hidden>
-                ▶
-              </span>
-            </IconButton>
+            <div className="flex items-center gap-sm">
+              <IconButton
+                label="Автотур ще раз"
+                className="size-10 min-h-10 min-w-10 border border-border-subtle bg-surface text-text-accent"
+                onClick={() => onReplayTour?.()}
+              >
+                <span className="text-[14px] leading-none" aria-hidden>
+                  ▶
+                </span>
+              </IconButton>
+              <IconButton
+                label="Зберегти шпалери"
+                className="size-10 min-h-10 min-w-10 border border-border-subtle bg-surface text-text-accent"
+                onClick={() => onSaveWallpaper?.()}
+              >
+                <span className="text-[16px] leading-none" aria-hidden>
+                  ⬇
+                </span>
+              </IconButton>
+            </div>
           </div>
 
-          <p
-            className="pointer-events-none absolute z-[5] px-xl text-caption text-text-secondary"
+          {/* Credit + hint in normal flow under the frame (stage 3 also) */}
+          <div
+            className="pointer-events-none absolute inset-x-0 z-[5] flex flex-col gap-sm px-xl"
             style={{
-              left: 0,
-              right: 0,
-              top: P.credit.y * sy,
+              top: (P.frame.y + P.frame.h + 10) * sy,
             }}
           >
-            {artwork.photoCredit}
-          </p>
-          <motion.p
-            className="pointer-events-none absolute z-[5] flex items-center gap-sm px-xl text-caption text-text-secondary"
-            style={{ left: 0, right: 0, top: P.hint.y * sy }}
-            animate={
-              hintPulse
-                ? { opacity: [1, 0.35, 1], scale: [1, 1.04, 1] }
-                : { opacity: 1, scale: 1 }
-            }
-            transition={{ duration: 0.55, ease: easings.easeInOut }}
-          >
-            <span
-              className="inline-block size-2 shrink-0 rounded-full bg-accent"
-              aria-hidden
-            />
-            Торкнись будь-якої деталі — гід підкаже, що там
-          </motion.p>
+            <p className="text-caption text-text-secondary">
+              {artwork.photoCredit}
+            </p>
+            <motion.p
+              className="flex items-start gap-sm text-caption text-text-secondary"
+              animate={
+                hintPulse
+                  ? { opacity: [1, 0.35, 1], scale: [1, 1.04, 1] }
+                  : { opacity: 1, scale: 1 }
+              }
+              transition={{ duration: 0.55, ease: easings.easeInOut }}
+            >
+              <span
+                className="mt-1 inline-block size-2 shrink-0 rounded-full bg-accent"
+                aria-hidden
+              />
+              <span>Торкнись будь-якої деталі — гід підкаже, що там</span>
+            </motion.p>
+          </div>
         </>
       ) : null}
 

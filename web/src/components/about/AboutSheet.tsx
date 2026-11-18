@@ -22,22 +22,25 @@ type Props = {
   open: boolean;
   /** When true, sheet sits under the 08 detail dim (no interaction change). */
   dimmed?: boolean;
-  onWallpaper: () => void;
+  /** Primary CTA label, e.g. «Далі — Мелітополь». */
+  continueLabel: string;
   onAskGuide: () => void;
+  onContinue: () => void;
   className?: string;
 };
 
 /**
- * Figma 16 / 16б–16д — passport sheet under the framed artwork.
- * Collapsed top y464; expanded y112; pinned actions y724.
- * Path completion happens on reaching 16 (HallExperience) — no «Завершити шлях».
+ * Figma 16 — passport sheet under the framed artwork.
+ * Pinned bar: «Спитати гіда» + «Далі — <місто>» (product decision 2026-11-18).
+ * Wallpaper lives on the header download icon → screen 11.
  */
 export function AboutSheet({
   artwork,
   open,
   dimmed = false,
-  onWallpaper,
+  continueLabel,
   onAskGuide,
+  onContinue,
 }: Props) {
   const [tab, setTab] = useState<TabId>("history");
   const [expanded, setExpanded] = useState(false);
@@ -59,6 +62,7 @@ export function AboutSheet({
 
   const L = PASSPORT_LAYOUT;
   const sheetTop = expanded ? L.sheetExpanded.y : L.sheetCollapsed.y;
+  const title = artwork.headline || artwork.title;
 
   const onHandlePointerDown = (e: React.PointerEvent) => {
     dragStartY.current = e.clientY;
@@ -87,9 +91,14 @@ export function AboutSheet({
               dimmed && "pointer-events-none",
             )}
             style={{
-              bottom: `calc(${L.actions.h / 844} * 100dvh)`,
+              // Sit above the pinned action bar (+ safe area)
+              bottom: "calc(72px + var(--safe-bottom))",
             }}
-            initial={{ y: 48, opacity: 0, top: `${(L.sheetCollapsed.y / 844) * 100}dvh` }}
+            initial={{
+              y: 48,
+              opacity: 0,
+              top: `${(L.sheetCollapsed.y / 844) * 100}dvh`,
+            }}
             animate={{
               y: 0,
               opacity: 1,
@@ -111,12 +120,9 @@ export function AboutSheet({
             <div className="shrink-0 px-xl">
               <div className="flex flex-col gap-md">
                 <div>
-                  <h2 className="text-h2 text-text-primary">{artwork.title}</h2>
+                  <h2 className="text-h2 text-text-primary">{title}</h2>
                   <p className="mt-2xs text-body-md text-text-secondary">
-                    {artwork.author} ·{" "}
-                    {artwork.year.match(/\d{4}/)?.[0] ??
-                      artwork.year.split(/[;(]/)[0]?.trim() ??
-                      artwork.year}
+                    {artwork.author} · {artwork.year}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-sm">
@@ -142,7 +148,7 @@ export function AboutSheet({
             </div>
 
             <div
-              className="min-h-0 flex-1 overflow-y-auto px-xl py-lg"
+              className="relative min-h-0 flex-1 overflow-y-auto px-xl py-lg"
               onScroll={(e) => {
                 if (e.currentTarget.scrollTop > 24) setExpanded(true);
               }}
@@ -218,21 +224,27 @@ export function AboutSheet({
                       )}
                     </div>
                   )}
-
                 </motion.div>
               </AnimatePresence>
+
+              {/* Collapsed: fade last lines into the bar — never cut mid-line */}
+              {!expanded ? (
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface via-surface/90 to-transparent"
+                  aria-hidden
+                />
+              ) : null}
             </div>
           </motion.div>
 
-          {/* Pinned actions — Figma y724 h88 */}
+          {/* Pinned actions — flush on safe-area bottom */}
           <motion.div
             className={cn(
-              "absolute inset-x-0 z-[26] flex items-center gap-md border-t border-border-subtle bg-surface px-xl",
+              "absolute inset-x-0 bottom-0 z-[26] flex items-center gap-md border-t border-border-subtle bg-surface px-xl pt-md",
               dimmed && "pointer-events-none",
             )}
             style={{
-              top: `calc(${L.actions.y / 844} * 100dvh)`,
-              height: `calc(${L.actions.h / 844} * 100dvh)`,
+              paddingBottom: "calc(12px + var(--safe-bottom))",
             }}
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -246,17 +258,17 @@ export function AboutSheet({
               variant="secondary"
               fullWidth={false}
               className="h-14 min-h-[56px] flex-1 border border-border-subtle"
-              onClick={onWallpaper}
+              onClick={onAskGuide}
             >
-              Шпалери
+              Спитати гіда
             </Button>
             <Button
               variant="primary"
               fullWidth={false}
               className="h-14 min-h-[56px] flex-1 border border-border-button"
-              onClick={onAskGuide}
+              onClick={onContinue}
             >
-              Спитати гіда
+              {continueLabel}
             </Button>
           </motion.div>
         </>
