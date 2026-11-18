@@ -94,6 +94,8 @@ export function TourStage({
   const [hintPulse, setHintPulse] = useState(false);
   const src = tourImageSrc(artwork);
   const [loaded, setLoaded] = useState(() => !src);
+  /** True after onLoadingComplete with real metrics (avoids 1200×900 placeholder lens). */
+  const [hasNatural, setHasNatural] = useState(() => !src);
 
   const camX = useMotionValue(0);
   const camY = useMotionValue(0);
@@ -276,6 +278,10 @@ export function TourStage({
       }
       clearTimers();
       advancing.current = false;
+      // Keep refs in sync immediately — layout-sync effect must not
+      // snap the camera back to the previous stop mid-flight (replay bug).
+      stopIdxRef.current = idx;
+      zoomedInRef.current = true;
       setStopIdx(idx);
       setTextKey((k) => k + 1);
       pausedRef.current = false;
@@ -344,7 +350,7 @@ export function TourStage({
   }, [detailOpen]);
 
   useEffect(() => {
-    if (!loaded || startExplore) return;
+    if (!loaded || !hasNatural || startExplore) return;
     camX.set(0);
     camY.set(0);
     camScale.set(1);
@@ -353,8 +359,9 @@ export function TourStage({
       clearTimeout(t);
       clearTimers();
     };
-  }, [camScale, camX, camY, clearTimers, loaded, startExplore]);
+  }, [camScale, camX, camY, clearTimers, hasNatural, loaded, startExplore]);
 
+  // Re-snap lens when the fitted layout changes (stage resize / natural size).
   useEffect(() => {
     if (!zoomedInRef.current || mode !== "tour") return;
     const s = stops[stopIdxRef.current];
@@ -553,6 +560,7 @@ export function TourStage({
             onLoadingComplete={(img) => {
               if (img.naturalWidth) {
                 setImgNatural({ w: img.naturalWidth, h: img.naturalHeight });
+                setHasNatural(true);
               }
               setLoaded(true);
             }}
