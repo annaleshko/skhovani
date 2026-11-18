@@ -10,7 +10,6 @@ import {
 import { createSilentAudio } from "@/lib/audio";
 import {
   fitSlotOrigin,
-  fitSlotWidth,
   lensCamera,
   resolveStopTarget,
   stopDurationSec,
@@ -134,12 +133,10 @@ export function TourStage({
     };
   }, [P.frame.h, P.frame.w, P.frame.x, P.frame.y, mode, sx, sy]);
 
+  /** Passport 16: contain in Figma box x24 y125 w342 h265 (never under header / over hint). */
   const imgLayout = useMemo(
-    () =>
-      mode === "explore"
-        ? fitSlotWidth(frameSlot, imgNatural.w, imgNatural.h)
-        : fitSlotOrigin(frameSlot, imgNatural.w, imgNatural.h),
-    [frameSlot, imgNatural.h, imgNatural.w, mode],
+    () => fitSlotOrigin(frameSlot, imgNatural.w, imgNatural.h),
+    [frameSlot, imgNatural.h, imgNatural.w],
   );
 
   const audioRef = useRef(createSilentAudio(6));

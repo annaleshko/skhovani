@@ -3,7 +3,7 @@
 import { Button, Chip, SourceRow, StatusBadge } from "@/components/ui";
 import { PASSPORT_LAYOUT } from "@/components/tour/FramedArtwork";
 import type { Artwork } from "@/data/types";
-import { displayHeadline, displayYear } from "@/lib/artwork-display";
+import { displayAuthorMeta, displayHeadline } from "@/lib/artwork-display";
 import { cn } from "@/lib/cn";
 import { defaultSpring, easings, motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
@@ -123,7 +123,7 @@ export function AboutSheet({
                 <div>
                   <h2 className="text-h2 text-text-primary">{title}</h2>
                   <p className="mt-2xs text-body-md text-text-secondary">
-                    {artwork.author} · {displayYear(artwork.year)}
+                    {displayAuthorMeta(artwork)}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-sm">

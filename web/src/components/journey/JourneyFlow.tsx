@@ -9,6 +9,7 @@ import { getMuseum, getMuseums } from "@/data";
 import {
   cityGenitiveForMuseum,
   JOURNEY_MUSEUM_ORDER,
+  museumFacadeBlurb,
   pathSheetBlurb,
 } from "@/data/museum-copy";
 import {
@@ -857,7 +858,7 @@ export function JourneyFlow({
               aria-label="Карта України"
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
-              {/* Faint rays start → visited; bright start → target */}
+              {/* Rays start → visited (~45%); active start → target (~80%) */}
               {phase === "map" && !hideFarLabels
                 ? visitedOrder.map((id) => {
                     const m = getMuseum(id);
@@ -869,7 +870,9 @@ export function JourneyFlow({
                         start={startPt}
                         ctrl={arcControl(startPt, end)}
                         end={end}
-                        opacity={0.22}
+                        dot={1.5}
+                        gap={5}
+                        opacity={0.45}
                         animateDraw={false}
                         routeKey={`ray-${id}`}
                       />
@@ -881,8 +884,10 @@ export function JourneyFlow({
                   start={startPt}
                   ctrl={ctrl}
                   end={targetPt}
+                  dot={1.5}
+                  gap={5}
                   routeKey={`path-${path?.n ?? 0}-${path?.museumId ?? ""}`}
-                  opacity={0.6}
+                  opacity={0.8}
                 />
               ) : null}
               {phase === "map" && !hideFarLabels
@@ -1181,7 +1186,7 @@ export function JourneyFlow({
                 {getMuseumDisplayName(path.museumId)}
               </h2>
               <p className="mt-sm text-body-md text-text-secondary">
-                Двері відчинені. Усередині на тебе чекає твір.
+                {museumFacadeBlurb(path.museumId)}
               </p>
               <div className="mt-lg">
                 <Button onClick={enterDoor}>Зайти всередину</Button>

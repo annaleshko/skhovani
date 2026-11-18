@@ -76,6 +76,19 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
 
+## Polish after test 2 (2026-11-18)
+
+| # | Fix | Check |
+|---|---|---|
+| 1 | Map museum hits = 44×44 `<button>`; nearest center wins; labels outside hit circles | [ ] 390×844 |
+| 2 | Rays start→visited dotted `#E9B872` ~45% 1.5px; target ~80% | [ ] |
+| 3 | 02в blurb = selected path `headline` + museum passport line (path 6 → Колядки) | [ ] |
+| 4 | Passport vertical art contain in Figma box 24/125/342/265 | [ ] 844 + 667 |
+| 5 | Unknown year → author only (hall / passport / wallpaper) | [ ] Колядки |
+| 6 | Hall mouse drag-to-scroll + momentum/snap; `user-select: none` | [ ] |
+| 7 | Museum 04 factual blurb (no «Двері відчинені») | [ ] all 5 |
+| 8 | Screen 17: «Шпалери збережено» on download; «у Фото» only after touch Web Share | [ ] |
+
 ## 8 fixes after test (2026-11-18)
 
 | # | Fix | Check |

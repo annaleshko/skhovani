@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { MAP_HIT_R_SVG } from "@/lib/map-label";
 import { defaultSpring, motionTokens, useReducedMotionSafe } from "@/lib/motion";
 import { motion } from "framer-motion";
 
@@ -66,7 +67,8 @@ export function MapStar({
       : "var(--color-text-primary)";
   const glowR = glow === "strong" ? half * 1.55 : half * 1.2;
   const glowOp = glow === "strong" ? 0.45 : glow === "soft" ? 0.22 : 0;
-  const gap = half + 6;
+  /** Keep labels outside the 44×44 hit circle. */
+  const gap = Math.max(half + 6, MAP_HIT_R_SVG + 6);
   const labelPos =
     labelSide === "left"
       ? { x: -gap, y: 4 + labelDy, anchor: "end" as const }
@@ -123,21 +125,10 @@ export function MapStar({
     <g
       transform={`translate(${x} ${y})`}
       className={cn(className)}
-      role={onClick ? "button" : "img"}
-      tabIndex={onClick ? 0 : undefined}
-      aria-label={label ?? "Зірка на карті"}
-      onClick={onClick}
-      onKeyDown={
-        onClick
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onClick();
-              }
-            }
-          : undefined
-      }
-      style={onClick ? { cursor: "pointer" } : undefined}
+      role="img"
+      aria-hidden={onClick ? true : undefined}
+      aria-label={onClick ? undefined : (label ?? "Зірка на карті")}
+      style={{ pointerEvents: "none" }}
     >
       {appear && !reduced ? (
         <motion.g

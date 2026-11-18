@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { MAP_HIT_R_SVG } from "@/lib/map-label";
 
 type Props = {
   x: number;
@@ -38,34 +39,24 @@ export function MuseumDot({
   const labelFill =
     tone === "dim" ? "var(--color-text-secondary)" : "var(--color-text-primary)";
   const opacity = tone === "dim" ? 0.85 : 1;
+  const gap = MAP_HIT_R_SVG + 6;
   const labelPos =
     labelSide === "left"
-      ? { x: -13, y: 4 + labelDy, anchor: "end" as const }
+      ? { x: -gap, y: 4 + labelDy, anchor: "end" as const }
       : labelSide === "right"
-        ? { x: 13, y: 4 + labelDy, anchor: "start" as const }
+        ? { x: gap, y: 4 + labelDy, anchor: "start" as const }
         : labelSide === "top"
-          ? { x: 0, y: -16 + labelDy, anchor: "middle" as const }
-          : { x: 0, y: 18 + labelDy, anchor: "middle" as const };
+          ? { x: 0, y: -gap - 2 + labelDy, anchor: "middle" as const }
+          : { x: 0, y: gap + 10 + labelDy, anchor: "middle" as const };
 
   return (
     <g
       transform={`translate(${x} ${y})`}
       className={cn(className)}
-      role={onClick ? "button" : "img"}
-      tabIndex={onClick ? 0 : undefined}
-      aria-label={label}
-      onClick={onClick}
-      onKeyDown={
-        onClick
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onClick();
-              }
-            }
-          : undefined
-      }
-      style={onClick ? { cursor: "pointer" } : undefined}
+      role="img"
+      aria-hidden={onClick ? true : undefined}
+      aria-label={onClick ? undefined : label}
+      style={{ pointerEvents: "none" }}
       opacity={opacity}
     >
       {pulsing ? (

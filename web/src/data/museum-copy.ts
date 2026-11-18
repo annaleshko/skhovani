@@ -1,8 +1,11 @@
 /**
  * MVP v2 map copy — genitive city names and sheet blurbs.
  * Keep as data maps; do not invent forms in UI strings.
- * Facts from docs/artwork-passports.md / data/artworks.json (first path per museum).
+ * Facts from docs/artwork-passports.md / data/artworks.json.
  */
+
+import type { ResolvedPath } from "@/data/journey";
+import { displayHeadline } from "@/lib/artwork-display";
 
 /** Museum id → city in genitive («веде до Херсона»). */
 export const MUSEUM_CITY_GENITIVE: Record<string, string> = {
@@ -25,28 +28,29 @@ export const JOURNEY_MUSEUM_ORDER = [
 export type JourneyMuseumId = (typeof JOURNEY_MUSEUM_ORDER)[number];
 
 /**
- * Screen 02 path-1 sheet body after «≈ N км від тебе.»
- * Path 1 is always Kherson; other keys kept for safety if reused.
+ * Screen 02 / museum 04 factual line (no «Двері відчинені»).
+ * From passports — one line per museum.
  */
 export const MUSEUM_PATH_SHEET_BLURB: Record<string, string> = {
   kherson: "Музей пограбували у 2022 році, але ми пам'ятаємо, що тут висіло.",
-  // stolen — passport: April 2022, occupiers removed the collection
+  // stolen — passport: April 2022, occupiers removed the Scythian gold
   melitopol: "У квітні 2022 року окупанти вивезли скіфське золото з музею.",
   // shelter
   kharkiv: "Твір в укритті.",
   // shelter
   lviv: "Твір в укритті.",
-  // saved — passport: collection rescued in Feb 2022, no losses
-  chernihiv: "Твір врятовано.",
+  // saved — passport: collection rescued during the Chernihiv siege, Feb 2022
+  chernihiv: "Колекцію врятовано під час облоги Чернігова.",
 };
 
-/** Screen 02в sheet — one short line for the museum's next unseen artwork. */
+/** @deprecated Prefer routeSheetBlurbForPath — kept for museum-only callers. */
 export const MUSEUM_ROUTE_SHEET_BLURB: Record<string, string> = {
-  kherson: "Великодня заутреня. Музей пограбували у 2022 році, але ми пам'ятаємо, що тут висіло.",
+  kherson:
+    "Великодня заутреня. Музей пограбували у 2022 році, але ми пам'ятаємо, що тут висіло.",
   melitopol: "Скіфське золото. У квітні 2022 року окупанти вивезли його з музею.",
   kharkiv: "Запорожці пишуть листа турецькому султанові. Твір в укритті.",
   lviv: "Богородчанський іконостас. Твір в укритті.",
-  chernihiv: "Козак-бандурист. Твір врятовано.",
+  chernihiv: "Козак-бандурист. Колекцію врятовано під час облоги Чернігова.",
 };
 
 export function cityGenitiveForMuseum(museumId: string): string {
@@ -61,6 +65,22 @@ export function pathSheetBlurb(museumId: string): string {
   );
 }
 
+/** Museum 04 body under the title — factual passport line only. */
+export function museumFacadeBlurb(museumId: string): string {
+  return pathSheetBlurb(museumId);
+}
+
+/**
+ * 02в sheet: selected path artwork headline + one museum passport line.
+ * Path 6 → «Колядки. Музей пограбували…» (not Великодня).
+ */
+export function routeSheetBlurbForPath(path: ResolvedPath): string {
+  const title = displayHeadline(path.artwork);
+  const line = pathSheetBlurb(path.museumId);
+  return `${title}. ${line}`;
+}
+
+/** @deprecated Use routeSheetBlurbForPath when a path is known. */
 export function routeSheetBlurb(museumId: string): string {
   return MUSEUM_ROUTE_SHEET_BLURB[museumId] ?? pathSheetBlurb(museumId);
 }

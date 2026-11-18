@@ -27,7 +27,7 @@ import {
   type ResolvedPath,
 } from "@/data/journey";
 import { getMuseumShortLabel } from "@/data/museums";
-import { displayHeadline, displayYear } from "@/lib/artwork-display";
+import { displayAuthorMeta, displayHeadline } from "@/lib/artwork-display";
 import {
   easings,
   motionTokens,
@@ -163,6 +163,7 @@ export function HallExperience({
   const [stolenPhase, setStolenPhase] = useState<StolenPhase>(() =>
     reopenHall ? "remembered" : "empty",
   );
+  const [wallpaperShared, setWallpaperShared] = useState(false);
   const [focusKey, setFocusKey] = useState(artworkId);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -226,6 +227,111 @@ export function HallExperience({
     }, 40);
     return () => window.clearTimeout(t);
   }, [pathSlotIndex, phase, reduced, slots, px, artworkId]);
+
+  // Mouse drag-to-scroll (momentum + snap), no text selection
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || phase !== "hall") return;
+    let dragging = false;
+    let moved = false;
+    let startX = 0;
+    let startScroll = 0;
+    let lastX = 0;
+    let lastT = 0;
+    let velocity = 0;
+    let momentumId = 0;
+
+    const stopMomentum = () => {
+      if (momentumId) cancelAnimationFrame(momentumId);
+      momentumId = 0;
+    };
+
+    const nearestSnap = () => {
+      if (!slots.length) return el.scrollLeft;
+      let best = el.scrollLeft;
+      let bestD = Infinity;
+      for (const slot of slots) {
+        const centerX = (slot.frameRect.x + slot.frameRect.w / 2) * px;
+        const left = Math.max(0, centerX - el.clientWidth / 2);
+        const d = Math.abs(left - el.scrollLeft);
+        if (d < bestD) {
+          bestD = d;
+          best = left;
+        }
+      }
+      return best;
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return; // native touch scroll + snap
+      if (e.button !== 0) return;
+      stopMomentum();
+      dragging = true;
+      moved = false;
+      startX = e.clientX;
+      lastX = e.clientX;
+      lastT = performance.now();
+      startScroll = el.scrollLeft;
+      velocity = 0;
+      el.setPointerCapture(e.pointerId);
+      el.style.cursor = "grabbing";
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 3) moved = true;
+      el.scrollLeft = startScroll - dx;
+      const now = performance.now();
+      const dt = Math.max(1, now - lastT);
+      velocity = ((e.clientX - lastX) / dt) * 16;
+      lastX = e.clientX;
+      lastT = now;
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.cursor = "";
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      if (!moved) return;
+      // Suppress the click that would open a frame after a drag
+      const swallow = (ev: Event) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        el.removeEventListener("click", swallow, true);
+      };
+      el.addEventListener("click", swallow, true);
+      window.setTimeout(() => el.removeEventListener("click", swallow, true), 0);
+      // Momentum then snap
+      const tick = () => {
+        velocity *= 0.92;
+        if (Math.abs(velocity) < 0.4) {
+          scrollLeftTo(el, nearestSnap(), motionTokens.hallScroll, reduced);
+          return;
+        }
+        el.scrollLeft -= velocity;
+        momentumId = requestAnimationFrame(tick);
+      };
+      momentumId = requestAnimationFrame(tick);
+    };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("pointercancel", onPointerUp);
+    return () => {
+      stopMomentum();
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [phase, px, reduced, slots]);
 
   // Entry: darkness 100%→70% → lamp → cone → bright → UI
   useEffect(() => {
@@ -467,7 +573,8 @@ export function HallExperience({
         <div className="absolute inset-0 z-0">
           <div
             ref={scrollerRef}
-            className="absolute inset-0 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="absolute inset-0 cursor-grab overflow-x-auto overflow-y-hidden snap-x snap-mandatory select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            style={{ userSelect: "none", WebkitUserSelect: "none" }}
           >
             <div className="relative h-dvh" style={{ width: hallWidthPx }}>
               {/* 1. Wall */}
@@ -833,8 +940,7 @@ export function HallExperience({
                           px,
                       }}
                     >
-                      {(getArtwork(artworkId) ?? focus).author} ·{" "}
-                      {displayYear((getArtwork(artworkId) ?? focus).year)}
+                      {displayAuthorMeta(getArtwork(artworkId) ?? focus)}
                     </p>
                     <div
                       className="flex w-full justify-center"
@@ -1091,7 +1197,8 @@ export function HallExperience({
         artwork={focus}
         open={phase === "wallpaper"}
         onClose={() => setPhase("about")}
-        onSaved={() => {
+        onSaved={({ shared }) => {
+          setWallpaperShared(shared);
           setPhase("wallpaper-saved");
         }}
       />
@@ -1100,6 +1207,7 @@ export function HallExperience({
         open={phase === "wallpaper-saved"}
         previewSrc={focus.image ?? focus.wallpaper}
         artworkTitle={displayHeadline(focus)}
+        sharedViaShare={wallpaperShared}
         onContinue={() => {
           setPhase("about");
         }}

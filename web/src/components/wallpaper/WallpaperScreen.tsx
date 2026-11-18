@@ -2,7 +2,11 @@
 
 import { Button, IconButton } from "@/components/ui";
 import type { Artwork } from "@/data/types";
-import { displayHeadline, displayYear } from "@/lib/artwork-display";
+import {
+  displayAuthorMeta,
+  displayHeadline,
+  displayYear,
+} from "@/lib/artwork-display";
 import { photographerCreditLine } from "@/lib/photo-credit";
 import { motionTokens } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,8 +17,8 @@ type Props = {
   artwork: Artwork;
   open: boolean;
   onClose: () => void;
-  /** After save → screen 17. */
-  onSaved?: () => void;
+  /** After save → screen 17. `shared` = Web Share on touch; else download. */
+  onSaved?: (opts: { shared: boolean }) => void;
 };
 
 /** Design preview 220×476 → export 1170×2532 (×5.318). */
@@ -115,11 +119,10 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
     ctx.fillText(headline, EXPORT.w / 2, cy);
     ctx.fillStyle = "#98928c";
     ctx.font = `400 ${12 * SCALE}px Manrope, sans-serif`;
-    ctx.fillText(
-      `${artwork.author} · ${year} · Сховані`,
-      EXPORT.w / 2,
-      cy + 18 * SCALE,
-    );
+    const metaLine = year
+      ? `${artwork.author} · ${year} · Сховані`
+      : `${artwork.author} · Сховані`;
+    ctx.fillText(metaLine, EXPORT.w / 2, cy + 18 * SCALE);
     if (photoLine) {
       ctx.font = `400 ${8 * SCALE}px Manrope, sans-serif`;
       ctx.fillText(photoLine, EXPORT.w / 2, cy + 34 * SCALE);
@@ -163,7 +166,7 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
       if (!shared) {
         downloadBlob(blob, filename);
       }
-      onSaved?.();
+      onSaved?.({ shared });
     } catch {
       showError();
     } finally {
@@ -239,7 +242,9 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
                   {displayHeadline(artwork)}
                 </p>
                 <p className="text-caption text-text-secondary">
-                  {artwork.author} · {displayYear(artwork.year)} · Сховані
+                  {displayYear(artwork.year)
+                    ? `${displayAuthorMeta(artwork)} · Сховані`
+                    : `${artwork.author} · Сховані`}
                 </p>
                 {photoLine ? (
                   <p className="text-[8px] leading-4 text-text-secondary">

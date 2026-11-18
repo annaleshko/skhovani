@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui";
 import { DottedRoute } from "@/components/map/DottedRoute";
+import { MapMuseumHits } from "@/components/map/MapMuseumHits";
 import { MapPin } from "@/components/map/MapPin";
 import { MapStar } from "@/components/map/MapStar";
 import { MuseumDot } from "@/components/map/MuseumDot";
@@ -18,7 +19,7 @@ import {
 } from "@/data/journey";
 import {
   JOURNEY_MUSEUM_ORDER,
-  routeSheetBlurb,
+  routeSheetBlurbForPath,
 } from "@/data/museum-copy";
 import { getMuseumShortLabel } from "@/data/museums";
 import {
@@ -121,6 +122,15 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     return layoutMapLabels(markers);
   }, []);
 
+  const hitTargets = useMemo(() => {
+    return JOURNEY_MUSEUM_ORDER.map((id) => {
+      const m = getMuseum(id);
+      if (!m) return null;
+      const p = projectToMap(m.lat, m.lng);
+      return { id, x: p.x, y: p.y, label: m.city };
+    }).filter((t): t is NonNullable<typeof t> => Boolean(t));
+  }, []);
+
   const onMuseumTap = (id: string) => {
     // Star = at least one artwork opened → straight in (no sheet)
     if (visitedSet.has(id) && onRevisit) {
@@ -167,125 +177,138 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-bg-accent) 35%, transparent), transparent 70%)",
               }}
             />
-            <svg
-              viewBox={`0 0 ${vb.w} ${vb.h}`}
-              className="absolute left-1/2 top-1/2 h-[70%] w-[92%] max-w-[360px] -translate-x-1/2 -translate-y-[42%]"
-              role="img"
-              aria-label="Карта маршруту музеями"
-            >
-              <image href="/map/map.svg" width={vb.w} height={vb.h} />
+            <div className="absolute left-1/2 top-1/2 h-[70%] w-[92%] max-w-[360px] -translate-x-1/2 -translate-y-[42%]">
+              <svg
+                viewBox={`0 0 ${vb.w} ${vb.h}`}
+                className="size-full"
+                role="img"
+                aria-label="Карта маршруту музеями"
+              >
+                <image href="/map/map.svg" width={vb.w} height={vb.h} />
 
-              {/* Faint rays: start → each visited museum */}
-              {visitedOrder.map((id) => {
-                const m = getMuseum(id);
-                if (!m) return null;
-                const end = projectToMap(m.lat, m.lng);
-                return (
+                {/* Rays: start → each visited (#E9B872 ~45%, 1.5px dots) */}
+                {visitedOrder.map((id) => {
+                  const m = getMuseum(id);
+                  if (!m) return null;
+                  const end = projectToMap(m.lat, m.lng);
+                  return (
+                    <DottedRoute
+                      key={`ray-${id}`}
+                      start={startPt}
+                      ctrl={arcControl(startPt, end)}
+                      end={end}
+                      dot={1.5}
+                      gap={5}
+                      opacity={0.45}
+                      animateDraw={false}
+                      routeKey={`ray-${id}`}
+                    />
+                  );
+                })}
+
+                {/* Active start → target (~80%) */}
+                {targetMuseum ? (
                   <DottedRoute
-                    key={`ray-${id}`}
                     start={startPt}
-                    ctrl={arcControl(startPt, end)}
-                    end={end}
-                    opacity={0.22}
-                    animateDraw={false}
-                    routeKey={`ray-${id}`}
+                    ctrl={ctrl}
+                    end={targetPt}
+                    dot={1.5}
+                    gap={5}
+                    opacity={0.8}
+                    routeKey={`sel-${selectedMuseumId}`}
                   />
-                );
-              })}
+                ) : null}
 
-              {/* Bright start → selected target */}
-              {targetMuseum ? (
-                <DottedRoute
-                  start={startPt}
-                  ctrl={ctrl}
-                  end={targetPt}
-                  opacity={0.6}
-                  routeKey={`sel-${selectedMuseumId}`}
+                <MapPin
+                  x={startPt.x}
+                  y={startPt.y}
+                  label={origin.abroad ? "Ти" : origin.city.name}
+                  variant="start"
                 />
-              ) : null}
 
-              <MapPin
-                x={startPt.x}
-                y={startPt.y}
-                label={origin.abroad ? "Ти" : origin.city.name}
-                variant="start"
+                {visitedOrder.map((id) => {
+                  if (id === selectedMuseumId) return null;
+                  const m = getMuseum(id);
+                  if (!m) return null;
+                  const p = projectToMap(m.lat, m.lng);
+                  const place = labelLayout.get(id);
+                  return (
+                    <MapStar
+                      key={`vis-${id}`}
+                      x={p.x}
+                      y={p.y}
+                      size={14}
+                      label={m.city}
+                      labelSide={place?.side ?? "right"}
+                      labelDy={place?.dy ?? 0}
+                      glow="soft"
+                      labelTone="secondary"
+                    />
+                  );
+                })}
+
+                {JOURNEY_MUSEUM_ORDER.map((id) => {
+                  if (id === selectedMuseumId || visitedSet.has(id)) return null;
+                  const m = getMuseum(id);
+                  if (!m) return null;
+                  const p = projectToMap(m.lat, m.lng);
+                  const place = labelLayout.get(id);
+                  return (
+                    <MuseumDot
+                      key={id}
+                      x={p.x}
+                      y={p.y}
+                      label={m.city}
+                      labelSide={place?.side ?? "right"}
+                      labelDy={place?.dy ?? 0}
+                      tone="dim"
+                    />
+                  );
+                })}
+
+                {targetMuseum ? (
+                  visitedSet.has(selectedMuseumId) ? (
+                    <MapStar
+                      key={`target-${selectedMuseumId}`}
+                      x={targetPt.x}
+                      y={targetPt.y}
+                      size={22}
+                      label={targetMuseum.city}
+                      labelSide={
+                        labelLayout.get(selectedMuseumId)?.side ?? "right"
+                      }
+                      labelDy={labelLayout.get(selectedMuseumId)?.dy ?? 0}
+                      glow="strong"
+                      labelTone="primary"
+                      pulsing={!reduced}
+                      appear
+                    />
+                  ) : (
+                    <MapPin
+                      key={`target-${selectedMuseumId}`}
+                      x={targetPt.x}
+                      y={targetPt.y}
+                      label={targetMuseum.city}
+                      labelSide={
+                        labelLayout.get(selectedMuseumId)?.side === "left"
+                          ? "left"
+                          : "right"
+                      }
+                      labelDy={labelLayout.get(selectedMuseumId)?.dy ?? 0}
+                      variant="target"
+                      pulsing={!reduced}
+                      appear
+                    />
+                  )
+                ) : null}
+              </svg>
+              {/* hits overlay */}
+              <MapMuseumHits
+                className="absolute inset-0 z-[1]"
+                targets={hitTargets}
+                onSelect={onMuseumTap}
               />
-
-              {visitedOrder.map((id) => {
-                if (id === selectedMuseumId) return null;
-                const m = getMuseum(id);
-                if (!m) return null;
-                const p = projectToMap(m.lat, m.lng);
-                const place = labelLayout.get(id);
-                return (
-                  <MapStar
-                    key={`vis-${id}`}
-                    x={p.x}
-                    y={p.y}
-                    size={14}
-                    label={m.city}
-                    labelSide={place?.side === "top" || place?.side === "bottom" ? place.side : place?.side ?? "right"}
-                    labelDy={place?.dy ?? 0}
-                    glow="soft"
-                    labelTone="secondary"
-                    onClick={() => onMuseumTap(id)}
-                  />
-                );
-              })}
-
-              {JOURNEY_MUSEUM_ORDER.map((id) => {
-                if (id === selectedMuseumId || visitedSet.has(id)) return null;
-                const m = getMuseum(id);
-                if (!m) return null;
-                const p = projectToMap(m.lat, m.lng);
-                const place = labelLayout.get(id);
-                return (
-                  <MuseumDot
-                    key={id}
-                    x={p.x}
-                    y={p.y}
-                    label={m.city}
-                    labelSide={place?.side ?? "right"}
-                    labelDy={place?.dy ?? 0}
-                    tone="dim"
-                    onClick={() => onMuseumTap(id)}
-                  />
-                );
-              })}
-
-              {targetMuseum ? (
-                visitedSet.has(selectedMuseumId) ? (
-                  <MapStar
-                    key={`target-${selectedMuseumId}`}
-                    x={targetPt.x}
-                    y={targetPt.y}
-                    size={22}
-                    label={targetMuseum.city}
-                    labelSide={
-                      labelLayout.get(selectedMuseumId)?.side ?? "right"
-                    }
-                    labelDy={labelLayout.get(selectedMuseumId)?.dy ?? 0}
-                    glow="strong"
-                    labelTone="primary"
-                    pulsing={!reduced}
-                    appear
-                    onClick={() => onMuseumTap(selectedMuseumId)}
-                  />
-                ) : (
-                  <MapPin
-                    key={`target-${selectedMuseumId}`}
-                    x={targetPt.x}
-                    y={targetPt.y}
-                    label={targetMuseum.city}
-                    labelSide="right"
-                    variant="target"
-                    pulsing={!reduced}
-                    appear
-                    onClick={() => onMuseumTap(selectedMuseumId)}
-                  />
-                )
-              ) : null}
-            </svg>
+            </div>
           </div>
 
           <motion.div
@@ -330,7 +353,8 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   Далі — {getMuseumShortLabel(sheetPath.museumId)}
                 </h2>
                 <p className="mt-sm text-body-md text-text-secondary">
-                  ≈ {distanceKm} км від тебе. {routeSheetBlurb(sheetPath.museumId)}
+                  ≈ {distanceKm} км від тебе.{" "}
+                  {routeSheetBlurbForPath(sheetPath)}
                 </p>
                 <div className="mt-lg">
                   <Button onClick={() => onDepart(sheetPath)}>Вирушити</Button>
@@ -344,7 +368,8 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   Далі — {getMuseumShortLabel(sheetPath.museumId)}
                 </h2>
                 <p className="mt-sm text-body-md text-text-secondary">
-                  ≈ {distanceKm} км від тебе. {routeSheetBlurb(sheetPath.museumId)}
+                  ≈ {distanceKm} км від тебе.{" "}
+                  {routeSheetBlurbForPath(sheetPath)}
                 </p>
                 <div className="mt-lg">
                   <Button

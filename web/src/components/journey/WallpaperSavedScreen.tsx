@@ -9,6 +9,8 @@ type Props = {
   open: boolean;
   previewSrc?: string | null;
   artworkTitle?: string;
+  /** Web Share on touch → «у Фото»; desktop download → short toast. */
+  sharedViaShare?: boolean;
   /** Back to passport 16. */
   onContinue: () => void;
 };
@@ -28,6 +30,7 @@ export function WallpaperSavedScreen({
   open,
   previewSrc,
   artworkTitle,
+  sharedViaShare = false,
   onContinue,
 }: Props) {
   return (
@@ -48,7 +51,9 @@ export function WallpaperSavedScreen({
               ✓
             </span>
             <p className="text-label-md text-text-primary">
-              Шпалери збережено у «Фото»
+              {sharedViaShare
+                ? "Шпалери збережено у «Фото»"
+                : "Шпалери збережено"}
             </p>
           </div>
 

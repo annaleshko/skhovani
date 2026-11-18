@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { MAP_HIT_R_SVG } from "@/lib/map-label";
 import { defaultSpring } from "@/lib/motion";
 import { motion } from "framer-motion";
 
@@ -65,14 +66,15 @@ export function MapPin({
       </>
     );
 
+  const gap = MAP_HIT_R_SVG + 6;
   const labelPos =
     labelSide === "right"
-      ? { x: 18, y: 5 + labelDy, anchor: "start" as const, size: 14 }
+      ? { x: gap, y: 5 + labelDy, anchor: "start" as const, size: 14 }
       : labelSide === "left"
-        ? { x: -18, y: 5 + labelDy, anchor: "end" as const, size: 14 }
+        ? { x: -gap, y: 5 + labelDy, anchor: "end" as const, size: 14 }
         : labelSide === "bottom"
-          ? { x: 0, y: 20 + labelDy, anchor: "middle" as const, size: 12 }
-          : { x: 0, y: -16 + labelDy, anchor: "middle" as const, size: 12 };
+          ? { x: 0, y: gap + 8 + labelDy, anchor: "middle" as const, size: 12 }
+          : { x: 0, y: -gap - 2 + labelDy, anchor: "middle" as const, size: 12 };
   const labelEl = label ? (
     <text
       x={labelPos.x}
@@ -109,18 +111,10 @@ export function MapPin({
     <g
       transform={`translate(${x} ${y})`}
       className={cn(className)}
-      role={onClick ? "button" : "img"}
-      tabIndex={onClick ? 0 : undefined}
-      aria-label={label ?? "Мітка на карті"}
-      onClick={onClick}
-      onKeyDown={
-        onClick
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") onClick();
-            }
-          : undefined
-      }
-      style={onClick ? { cursor: "pointer" } : undefined}
+      role="img"
+      aria-hidden={onClick ? true : undefined}
+      aria-label={onClick ? undefined : (label ?? "Мітка на карті")}
+      style={{ pointerEvents: "none" }}
     >
       {appear ? (
         <motion.g
