@@ -6,6 +6,7 @@ alwaysApply: true
 # Сховані — project rules
 
 ## Sources of truth
+- MVP v2 (final demo): `docs/mvp-v2.md` overrides `docs/app-spec.md` wherever they differ. Its reference renders are in `docs/figma-refs-v2/`.
 - Product behavior, copy, flow and animation spec: `docs/app-spec.md`.
 - Artwork data, tour stops, touch zones, AI chat rules, sources, museums, journey order: `data/artworks.json` (generated from `docs/artwork-passports.md`, which stays the human-readable reference). Never retype or paraphrase content from these files.
 - Visual design: Figma file `YwA6vCDB79wBlD1A8E8Nt0` («хакатон»), section «основні екрани» (node `42:1719`), components page (node `59:2`). Use Figma MCP; inspect the relevant frame before building a screen.
@@ -42,6 +43,10 @@ alwaysApply: true
 - Client state: React context + `localStorage`, seeded from the demo user. No Supabase.
 - Accessibility: semantic buttons/links, visible focus, accessible names on icon buttons, touch targets ≥ 44px, no info by color alone.
 - Secrets only in env vars (`.env.local`, never committed). Provide `.env.example`.
+
+## Visual verification (mandatory for every UI change)
+- Reference renders of the key Figma screens are in `docs/figma-refs/*.png` (390×844). Before finishing any UI task, open the screen in the browser at 390×844, take a screenshot, and compare it side by side with the matching reference: layout, sizes, colors, light, typography, copy. List the differences you see and fix them. Repeat until there are no visible differences except intentional ones (state the reason).
+- If no reference exists for a screen, get one with Figma MCP `get_screenshot` for the node and save it to `docs/figma-refs/`.
 
 ## Working style
 - Inspect relevant files and the Figma frame before editing. Make the smallest change that fulfills the stage.

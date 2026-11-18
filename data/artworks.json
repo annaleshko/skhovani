@@ -2462,7 +2462,7 @@
     }
   ],
   "journey": {
-    "note": "Each path opens exactly one artwork. Path 1 is the first-run demo. Odesa (#4, 755px photo) is placed last on purpose; Plafon (#11) has no image yet and is skipped until one is added.",
+    "note": "MVP v2 (final demo): 10 artworks in 5 museums. Path 1 starts at the user's chosen city; every next path starts at the previous museum. Consecutive paths in the same museum (6–10, Kherson) skip the map and move to the next frame in the hall. Plafon (#11) is not in the journey.",
     "paths": [
       {
         "n": 1,
@@ -2476,8 +2476,8 @@
       },
       {
         "n": 3,
-        "museumId": "kherson",
-        "artworkId": 2
+        "museumId": "kharkiv",
+        "artworkId": 8
       },
       {
         "n": 4,
@@ -2492,33 +2492,27 @@
       {
         "n": 6,
         "museumId": "kherson",
-        "artworkId": 6
+        "artworkId": 2
       },
       {
         "n": 7,
-        "museumId": "kharkiv",
-        "artworkId": 8
+        "museumId": "kherson",
+        "artworkId": 4
       },
       {
         "n": 8,
         "museumId": "kherson",
-        "artworkId": 7
+        "artworkId": 5
       },
       {
         "n": 9,
         "museumId": "kherson",
-        "artworkId": 5
+        "artworkId": 6
       },
       {
         "n": 10,
-        "museumId": "kharkiv",
-        "artworkId": 11,
-        "skipIfNoImage": true
-      },
-      {
-        "n": 11,
         "museumId": "kherson",
-        "artworkId": 4
+        "artworkId": 7
       }
     ]
   }
