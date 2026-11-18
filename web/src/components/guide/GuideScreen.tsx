@@ -67,7 +67,18 @@ export function GuideScreen({
 
   useEffect(() => {
     if (!open) return;
-    const t = window.setTimeout(() => inputRef.current?.focus(), 80);
+    const t = window.setTimeout(() => {
+      const input = inputRef.current;
+      if (!input) return;
+      input.focus({ preventScroll: true });
+      // Prefill can be long — keep the start of the question visible.
+      input.scrollLeft = 0;
+      try {
+        input.setSelectionRange(0, 0);
+      } catch {
+        /* input type may not support selection */
+      }
+    }, 80);
     return () => clearTimeout(t);
   }, [open, artwork.id]);
 
@@ -92,7 +103,12 @@ export function GuideScreen({
     if (!open) return;
     const el = listRef.current;
     if (!el) return;
-    el.scrollTop = el.scrollHeight;
+    const last = el.lastElementChild as HTMLElement | null;
+    if (last) {
+      last.scrollIntoView({ block: "end", behavior: "instant" as ScrollBehavior });
+    } else {
+      el.scrollTop = el.scrollHeight;
+    }
   }, [messages, waiting, open, error, keyboardInset]);
 
   const send = useCallback(
@@ -178,9 +194,12 @@ export function GuideScreen({
           className="absolute inset-0 z-50 flex flex-col bg-screen text-text-primary"
           style={{
             // Keep shell in the visual viewport (composer above keyboard).
-            bottom: keyboardInset > 0 ? keyboardInset : undefined,
-            height: keyboardInset > 0 ? "auto" : undefined,
-            maxHeight: "100dvh",
+            bottom: keyboardInset > 0 ? keyboardInset : 0,
+            maxHeight:
+              keyboardInset > 0
+                ? `calc(100dvh - ${keyboardInset}px)`
+                : "100dvh",
+            height: "100%",
           }}
           initial={reduced ? false : { x: "100%" }}
           animate={{ x: 0 }}

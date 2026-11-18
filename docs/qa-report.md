@@ -78,35 +78,63 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 
 ## Final polish stages (2026-11-18 night)
 
+Commits: `58eff0e` (S1) · `c9a5f48` (S2) · `c12cab1` (S3) · stage 4 below · stage 5 `final polish` + push.
+
 ### Stage 1 — Map & flight
 
 | Check | Result |
 |---|---|
-| Path 1: frame 0 = map at tap; sheet slides while flight moves | [ ] 390×844 / 360×640 |
-| Paths 2, 3, 6: same (02в handoff) | [ ] |
-| Dotted route visible whole flight; fade last 20% | [ ] |
-| Firefly travels along the route | [ ] |
-| 02в rays 50%; active 85%; labels no overlap | [ ] |
-| Unopened target = ring+dot; star only after opened | [ ] |
+| Path 1: frame 0 = map at tap; sheet slides while flight moves | [x] capture `readCam()` on depart; sheetHide ∥ flight |
+| Paths 2, 3, 6: same (02в handoff) | [x] |
+| Dotted route visible whole flight; fade last 20% | [x] `flightRouteOpacity` |
+| Firefly travels along the route | [x] along DottedRoute |
+| 02в rays 50%; active 85%; labels no overlap | [x] Херсон/Мелітополь OK @360 |
+| Unopened target = ring+dot; star only after opened | [x] end sheet = all stars |
 
 ### Stage 2 — Halls
 
 | Check | Result |
 |---|---|
-| Колядки meta = author only (no «· не встановлено») | [ ] |
+| Колядки meta = author only (no «· не встановлено») | [x] `isUnknownYear` |
 | Hint outside frame; scrolls with hall | keep |
 | Empty text fit / below for Дама+Капуцин | keep |
 | Opened Kherson lit + captions | keep |
-| Melitopol blur + hint clear of badge @667/640 | [ ] |
+| Melitopol blur + hint clear of badge @667/640 | [x] screenshots OK |
 
 ### Stage 3 — Guide
 
 | Check | Result |
 |---|---|
-| «Чи є ще скіфське золото?» → Товста Могила + кримське 2023 + sources | [ ] |
-| source chips for s… and xk_… | [ ] |
-| Composer above keyboard @360×640 | [ ] |
+| «Чи є ще скіфське золото?» → Товста Могила + кримське 2023 + sources | [x] curated + ШИРШИЙ КОНТЕКСТ |
+| source chips for s… and xk_… | [x] |
+| Composer above keyboard @360×640 | [x] visualViewport + prefill scrollLeft |
 | Trap / curated defaults unchanged | keep |
+
+### Stage 4 — Responsive (final polish)
+
+Viewports: 360×640, 390×667, 390×844, 430×932. Screenshots in `docs/verify/responsive/`.
+
+| Screen | Result |
+|---|---|
+| 01 city | OK — grid fits / scrolls |
+| 02 path sheet | OK — map under header, sheet bottom |
+| 02в route | OK — rays + next sheet |
+| 04 museum | OK — facade + «Зайти всередину» (re-captured) |
+| Halls Херсон / Мелітополь / Чернігів | OK — no badge/hint clip @640 |
+| Tour | OK |
+| 16 passport collapsed | OK — title, meta, status, tabs + ≥2 lines |
+| 08 detail | OK |
+| 09 guide | OK — composer + placeholder visible @360 |
+| 11 wallpaper | OK |
+| 17 saved | OK after download |
+| End sheet | OK — «Шлях пройдено» / «Почати знову» |
+
+| Fix this stage | Notes |
+|---|---|
+| Guide composer | `maxHeight: calc(100dvh − inset)`; prefill `scrollLeft=0`; last msg `scrollIntoView` |
+| Screenshots | Re-shot 04/end/09/17; added `02-path-*` |
+
+Lint / `tsc --noEmit` / `npm run build` — OK.
 
 ## Release candidate stages (2026-11-18 evening)
 
