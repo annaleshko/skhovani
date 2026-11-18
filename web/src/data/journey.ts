@@ -48,13 +48,28 @@ export function getLastCompletedPath(
   return getPath(n);
 }
 
-/** Same-museum consecutive paths skip the map (paths 6–10 in Kherson). */
+/**
+ * Same-museum consecutive paths skip the map (e.g. Kherson 6→7 from passport «Далі»).
+ * Never for path 1 — city picker → 02 → flight → 04 → hall.
+ */
 export function shouldSkipMapToHall(
   completedPaths: number[],
   next: ResolvedPath,
 ): boolean {
+  if (next.n === 1) return false;
   const prev = getLastCompletedPath(completedPaths);
   return Boolean(prev && prev.museumId === next.museumId);
+}
+
+/** True if this museum already has at least one opened artwork. */
+export function museumHasOpenedArtwork(
+  museumId: string,
+  openedArtworkIds: number[],
+): boolean {
+  const opened = new Set(openedArtworkIds);
+  return getPaths().some(
+    (p) => p.museumId === museumId && opened.has(p.artworkId),
+  );
 }
 
 /** Next not-yet-seen path in a museum (journey order). */

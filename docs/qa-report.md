@@ -76,6 +76,13 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
 
+## Fix hall click + first path flow (2026-11-18)
+
+| # | Fix | Check |
+|---|---|---|
+| 1 | Hall mouse: capture only after >6px drag; click opens frame | [ ] `/reset` → click Великодня |
+| 2 | Path 1: 01 → 02 sheet → flight → 04 → hall (no skip); revisit only 02в star + openedArtworkIds | [ ] |
+
 ## Polish after test 2 (2026-11-18)
 
 | # | Fix | Check |

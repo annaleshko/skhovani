@@ -15,6 +15,7 @@ import {
   getPathOrigin,
   getVisitedMuseumOrder,
   isMuseumPassed,
+  museumHasOpenedArtwork,
   type ResolvedPath,
 } from "@/data/journey";
 import {
@@ -58,7 +59,7 @@ type Props = {
 export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
-  const { completedPaths, startCityId } = useAppState();
+  const { completedPaths, openedArtworkIds, startCityId } = useAppState();
   const vb = getMapViewBox();
   const [confirmRestart, setConfirmRestart] = useState(false);
 
@@ -132,8 +133,9 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   }, []);
 
   const onMuseumTap = (id: string) => {
-    // Star = at least one artwork opened → straight in (no sheet)
-    if (visitedSet.has(id) && onRevisit) {
+    // Revisit shortcut ONLY on 02в star tap when museum already has an opened artwork.
+    // Never from city picker / path 1 sheet.
+    if (onRevisit && museumHasOpenedArtwork(id, openedArtworkIds)) {
       const nextIn = getNextPathInMuseum(id, completedPaths);
       if (nextIn) {
         onRevisit(nextIn, { reopen: false });
@@ -147,9 +149,6 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     }
     setPickedMuseumId(id);
   };
-
-  /** Selected museum is a star → sheet still shows for non-revisit path picks from journey sheet. */
-  const selectedIsStar = visitedSet.has(selectedMuseumId);
 
   return (
     <AnimatePresence>
@@ -347,7 +346,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   )}
                 </div>
               </>
-            ) : sheetPath && !selectedIsStar ? (
+            ) : sheetPath ? (
               <>
                 <h2 className="text-h2">
                   Далі — {getMuseumShortLabel(sheetPath.museumId)}
@@ -357,30 +356,8 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   {routeSheetBlurbForPath(sheetPath)}
                 </p>
                 <div className="mt-lg">
+                  {/* Sheet «Вирушити» always flies (02→flight→04). Star-tap uses onRevisit. */}
                   <Button onClick={() => onDepart(sheetPath)}>Вирушити</Button>
-                </div>
-              </>
-            ) : sheetPath && selectedIsStar ? (
-              // Star selected via default journey next — still show depart for first-time sheet path
-              // (star tap uses onRevisit; sheet CTA for journey-order next when it happens to be a star city)
-              <>
-                <h2 className="text-h2">
-                  Далі — {getMuseumShortLabel(sheetPath.museumId)}
-                </h2>
-                <p className="mt-sm text-body-md text-text-secondary">
-                  ≈ {distanceKm} км від тебе.{" "}
-                  {routeSheetBlurbForPath(sheetPath)}
-                </p>
-                <div className="mt-lg">
-                  <Button
-                    onClick={() =>
-                      onRevisit
-                        ? onRevisit(sheetPath, { reopen: false })
-                        : onDepart(sheetPath)
-                    }
-                  >
-                    Вирушити
-                  </Button>
                 </div>
               </>
             ) : (

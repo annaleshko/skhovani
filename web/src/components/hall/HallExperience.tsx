@@ -262,25 +262,42 @@ export function HallExperience({
       return best;
     };
 
+    /** Pending press — capture only after >6px so clicks reach frame buttons. */
+    let pending = false;
+    let pointerId: number | null = null;
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType === "touch") return; // native touch scroll + snap
       if (e.button !== 0) return;
       stopMomentum();
-      dragging = true;
+      pending = true;
+      dragging = false;
       moved = false;
+      pointerId = e.pointerId;
       startX = e.clientX;
       lastX = e.clientX;
       lastT = performance.now();
       startScroll = el.scrollLeft;
       velocity = 0;
-      el.setPointerCapture(e.pointerId);
-      el.style.cursor = "grabbing";
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!dragging) return;
+      if (!pending && !dragging) return;
       const dx = e.clientX - startX;
-      if (Math.abs(dx) > 3) moved = true;
+      // Threshold: simple click must not capture / swallow
+      if (pending && !dragging) {
+        if (Math.abs(dx) <= 6) return;
+        pending = false;
+        dragging = true;
+        moved = true;
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+        el.style.cursor = "grabbing";
+      }
+      if (!dragging) return;
       el.scrollLeft = startScroll - dx;
       const now = performance.now();
       const dt = Math.max(1, now - lastT);
@@ -289,16 +306,20 @@ export function HallExperience({
       lastT = now;
     };
 
-    const onPointerUp = (e: PointerEvent) => {
-      if (!dragging) return;
+    const onPointerUp = () => {
+      const wasDragging = dragging;
+      pending = false;
       dragging = false;
       el.style.cursor = "";
-      try {
-        el.releasePointerCapture(e.pointerId);
-      } catch {
-        /* ignore */
+      if (pointerId != null) {
+        try {
+          el.releasePointerCapture(pointerId);
+        } catch {
+          /* ignore */
+        }
+        pointerId = null;
       }
-      if (!moved) return;
+      if (!wasDragging || !moved) return;
       // Suppress the click that would open a frame after a drag
       const swallow = (ev: Event) => {
         ev.preventDefault();
@@ -455,15 +476,10 @@ export function HallExperience({
 
   const departNext = useCallback(
     (path: ResolvedPath) => {
-      if (shouldSkipMapToHall(completedPaths, path)) {
-        router.replace(
-          `/hall/${path.museumId}?path=${path.n}&artwork=${path.artworkId}`,
-        );
-        return;
-      }
+      // 02в «Вирушити» always flies — never skip to hall (path 1 / first visit).
       router.replace(`/journey?path=${path.n}&autostart=1`);
     },
-    [completedPaths, router],
+    [router],
   );
 
   /** Next unfinished path for passport «Далі — <місто>». */

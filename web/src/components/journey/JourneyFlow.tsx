@@ -593,8 +593,13 @@ export function JourneyFlow({
         return;
       }
 
-      // Consecutive paths in the same museum → hall directly (no map).
-      if (pathN == null && shouldSkipMapToHall(completedPaths, picked)) {
+      // Path 1 from city picker: ALWAYS 02 «Твій шлях» sheet (never skip to hall).
+      // Same-museum consecutive (6→7…) may skip map only after path 1 is done.
+      if (
+        pathN == null &&
+        picked.n !== 1 &&
+        shouldSkipMapToHall(completedPaths, picked)
+      ) {
         setCurrentPath(picked.n);
         router.replace(
           `/hall/${picked.museumId}?path=${picked.n}&artwork=${picked.artworkId}`,
@@ -608,7 +613,10 @@ export function JourneyFlow({
         return;
       }
 
-      const confirm = picked.n === 1 && !autostart;
+      // Path 1: sheet + «Вирушити» unless explicit autostart (from 02в depart).
+      // Revisit never applies to path 1 / city picker.
+      const isPath1 = picked.n === 1;
+      const confirm = isPath1 && !autostart;
       const autoFlight = !confirm;
       setShowPathConfirm(confirm);
 
@@ -667,7 +675,8 @@ export function JourneyFlow({
     setFacadeOpacity(0);
     facadeScale.set(1.05);
     const autoEnter = () => {
-      if (revisit) {
+      // Revisit auto-enter never for path 1
+      if (revisit && path && path.n !== 1) {
         facadeTimer.current = setTimeout(
           () => enterDoor(),
           reduced ? motionTokens.reducedCrossfade * 1000 : REVISIT_FACADE_MS,
@@ -689,11 +698,11 @@ export function JourneyFlow({
       else autoEnter();
     };
     requestAnimationFrame(fade);
-  }, [enterDoor, facadeScale, reduced, revisit]);
+  }, [enterDoor, facadeScale, path, reduced, revisit]);
 
   const afterZoom = useCallback(() => {
-    // Revisit: skip occupation note — straight to short facade hold
-    if (revisit) {
+    // Revisit: skip occupation note — straight to short facade hold (not path 1)
+    if (revisit && path && path.n !== 1) {
       facadeTimer.current = setTimeout(
         () => goFacade(),
         reduced ? 0 : FACADE_AUTO_MS,
