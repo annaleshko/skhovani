@@ -37,7 +37,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uk" className="bg-screen">
-      <body className={`${manrope.variable} bg-screen font-sans antialiased`}>
+      <body
+        className={`${manrope.variable} bg-screen font-sans antialiased`}
+        suppressHydrationWarning
+      >
         <Providers>
           <DesktopPreviewGate>{children}</DesktopPreviewGate>
         </Providers>

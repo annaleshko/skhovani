@@ -6,6 +6,35 @@ export function authorSurname(author: string): string {
   return parts[parts.length - 1] ?? author;
 }
 
+function statusAwareRules(artwork: Artwork): string {
+  if (artwork.status === "stolen") {
+    return `ПРАВИЛА МІСЦЯ (статус ВИКРАДЕНИЙ):
+- Можеш і маєш розповідати паспортні факти: хто вивіз, коли, скільки експонатів, що твір у Росії / на окупованій території — ЯКЩО це прямо написано в паспорті.
+- Не вигадуй конкретний склад, бункер, підвал чи адресу. Якщо точної адреси немає — кажи, що точного місця не знаєш і не вгадуєш.
+- НЕ підміняй відповідь фразою «твір в укритті» — цей твір викрадений, не евакуйований.`;
+  }
+  if (artwork.status === "shelter") {
+    return `ПРАВИЛА МІСЦЯ (статус В УКРИТТІ):
+- Кажи лише «твір в укритті». Ніколи не називай і не вгадуй, де саме зберігається евакуйований твір.
+- Можеш розповідати, як і коли музейники евакуювали твір, якщо це є в паспорті.`;
+  }
+  if (artwork.status === "saved") {
+    return `ПРАВИЛА МІСЦЯ (статус ВРЯТОВАНИЙ):
+- Не вигадуй місця зберігання. Описуй порятунок за паспортом; якщо питають «де зараз» — кажи, що точного місця не називаєш, або спирайся лише на явні факти паспорта.`;
+  }
+  return `ПРАВИЛА МІСЦЯ: не вигадуй місця зберігання.`;
+}
+
+function factsYouMayTell(artwork: Artwork): string {
+  const lines = [
+    `Статус: ${artwork.statusRaw} (${artwork.status})`,
+    `Музей: ${artwork.museum}`,
+    `Рік (як у паспорті): ${artwork.year}`,
+    ...artwork.tabs.history.slice(0, 3),
+  ];
+  return lines.join("\n");
+}
+
 export function buildGuideSystemPrompt(
   artwork: Artwork,
   detailTitle?: string | null,
@@ -43,14 +72,18 @@ export function buildGuideSystemPrompt(
 
   return `${rules}
 
+УВАГА: правило «твір в укритті» стосується лише евакуйованих (shelter) творів. Для викрадених (stolen) використовуй факти паспорта про вивезення / Росію, якщо вони є. «Немає даних» кажи ЛИШЕ якщо в паспорті справді немає факту.
+
+${statusAwareRules(artwork)}
+
 Ти — гід картини «${artwork.title}» (${artwork.author}). Відповідай українською, 2–4 речення, тепло й на «ти».
 Поверни ТІЛЬКИ валідний JSON без markdown:
 {"answer":"...","sourceIds":["s1"],"followUps":["...","..."]}
 sourceIds — лише id з переліку джерел нижче (може бути []). followUps — 2 короткі наступні питання українською.
 ${detailLine}
-СТАТУС: ${artwork.statusRaw} (${artwork.status})
-МУЗЕЙ: ${artwork.museum}
-РІК (як у паспорті): ${artwork.year}
+ФАКТИ, ЯКІ ТИ МОЖЕШ РОЗПОВІДАТИ:
+${factsYouMayTell(artwork)}
+
 AI-НОТАТКИ: ${artwork.chat.aiNotes}
 ВІДКРИТІ ПИТАННЯ: ${artwork.openQuestions}
 

@@ -195,10 +195,14 @@ export function GuideScreen({
             </div>
           </div>
 
-          {/* Messages */}
+          {/* Messages — empty state bottom-aligned (Figma 236:1619) */}
           <div
             ref={listRef}
-            className="flex min-h-0 flex-1 flex-col gap-md overflow-y-auto px-xl pb-md pt-xl"
+            className={
+              empty
+                ? "flex min-h-0 flex-1 flex-col justify-end overflow-y-auto px-xl pb-md pt-xl"
+                : "flex min-h-0 flex-1 flex-col gap-md overflow-y-auto px-xl pb-md pt-xl"
+            }
           >
             {empty ? (
               <div className="flex flex-col gap-md">

@@ -132,7 +132,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
 
-              {/* Constellation links between visited museums */}
+              {/* Constellation under active route: visited museums in visit order */}
               {visitedOrder.length >= 2
                 ? visitedOrder.slice(0, -1).map((id, i) => {
                     const nextId = visitedOrder[i + 1]!;
@@ -155,7 +155,7 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                   })
                 : null}
 
-              {/* Start city → selected target (crossfade via key) */}
+              {/* Start city → selected target (drawn above constellation) */}
               {targetMuseum ? (
                 <DottedRoute
                   start={startPt}

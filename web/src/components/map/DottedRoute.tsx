@@ -58,26 +58,33 @@ export function DottedRoute({
 
   return (
     <g key={routeKey} opacity={opacity} aria-hidden>
-      {dots.map((p, i) => (
-        <motion.circle
-          key={`${routeKey ?? "r"}-${i}`}
-          cx={p.x}
-          cy={p.y}
-          r={dot / 2}
-          fill="var(--color-bg-accent)"
-          initial={showAll ? false : { opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={
-            showAll
-              ? { duration: 0 }
-              : {
-                  duration: 0.2,
-                  delay: (i / Math.max(1, dots.length - 1)) * motionTokens.dottedDraw,
-                  ease: easings.easeOut,
-                }
-          }
-        />
-      ))}
+      {dots.map((p, i) =>
+        showAll ? (
+          <circle
+            key={`${routeKey ?? "r"}-${i}`}
+            cx={p.x}
+            cy={p.y}
+            r={dot / 2}
+            fill="var(--color-bg-accent)"
+          />
+        ) : (
+          <motion.circle
+            key={`${routeKey ?? "r"}-${i}`}
+            cx={p.x}
+            cy={p.y}
+            r={dot / 2}
+            fill="var(--color-bg-accent)"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.2,
+              delay:
+                (i / Math.max(1, dots.length - 1)) * motionTokens.dottedDraw,
+              ease: easings.easeOut,
+            }}
+          />
+        ),
+      )}
     </g>
   );
 }

@@ -70,19 +70,46 @@ Also deep-linked:
 
 ## Bugs found / not fully fixed
 
-1. **Guide flakiness on theft question** — live answer #2 was an empty “немає в джерелах” even though passport tabs cover the Oct–Nov 2022 looting. Fallback bank has a better answer; consider forcing fallback keywords or tightening the system prompt. Not changed beyond noting.
-2. **02в after path 1** — during the first automated pass Kherson looked like a dim dot rather than a visited star (likely `completedPaths` race). Added completion safety; **please re-check** constellation star on Херсон after finishing path 1.
-3. **Wallpaper 11** — phone preview is approximate vs Figma (framed art on vignette); composition not pixel-matched. Footer license note present.
-4. **Hall light intensity** for shelter vs saved — status badges correct; fine-tuning of cone brightness vs Figma refs not done.
-5. **End of journey (path 10)** — sheet «Шлях пройдено» is stub with `// TODO(copy)`; not walked in this run.
-6. **Same-museum paths 6–10** — hall scroll after «Далі — Херсон» not re-walked in this automated pass; logic is in `continueAfterWallpaper` / `shouldSkipMapToHall`.
+1. ~~Guide flakiness on theft question~~ → **fixed** (curated bank for all `defaultQuestions`; status-aware prompt + safety).
+2. **02в constellation** — line draws only when ≥2 museums visited; after path 1 alone you see Херсон star without an inter-museum line (expected). Re-check after path 2+.
+3. **Wallpaper 11** — phone preview is approximate vs Figma; footer license note present.
+4. **Hall light intensity** for shelter vs saved — fine-tuning vs Figma refs not done.
+5. **End of journey (path 10)** — sheet «Шлях пройдено» stub `// TODO(copy)`.
+6. **Same-museum paths 6–10** — not re-walked in automated pass.
 
 ## Please check manually
 
-- [ ] Full path 1 on a phone/Safari toolbar height (~740 / 667): lamp not covering sheet; passport frame width feels full (24–366).
-- [ ] After path 1 → 02в: Херсон = small visited star; Київ = start ring; Мелітополь = target star; faint constellation only after 2+ museums.
-- [ ] Detail 08 → «Спитати гіда про це» prefill, not auto-send; Back restores passport + detail context.
-- [ ] Trap question never names a storage place.
-- [ ] Path 3 shelter + path 5 saved lighting feel right.
-- [ ] Path 6+ «Далі — Херсон» stays on hall and focuses the next frame.
-- [ ] Ask guide again: «Як картину викрали з Херсона?» — expect a passport-grounded answer, not a shrug.
+- [ ] Full path 1 → passport → guide → back → Шпалери → 17 → «Далі — Мелітополь» → 02в: `startCityId` still `kyiv`, Херсон = visited star.
+- [ ] Guide 09 empty state sits at the bottom above the composer.
+- [ ] After 2+ museums: faint constellation line between visited stars under the active route.
+- [ ] Artwork 8 trap «Де зараз?» → only «Твір в укритті…», no place name.
+
+---
+
+## Follow-up — guide reliability (2026-11-18 evening)
+
+Commit: `guide reliability + fixes`.
+
+### Fixes
+- Curated answers for every `chat.defaultQuestions` across artworks 1–11 (passport-only); default taps skip the model (`curated: true`, `fallback: false`).
+- Status-aware system prompt + «ФАКТИ, ЯКІ ТИ МОЖЕШ РОЗПОВІДАТИ»; stolen may state Russia / looting from passport; shelter/saved never name storage.
+- `sanitizeGuideAnswer(text, status)` — stolen no longer rewritten to «твір в укритті» on «вивезли до…».
+- Shrug retry: if model says «немає даних» but passport keywords match → one retry with quoted paragraphs → then curated/fallback bank.
+- `startCityId` guard: cannot be wiped except `/reset`; save refuses to overwrite stored city with null; UI falls back to stored value.
+- 02в: constellation dots use plain SVG circles (no motion initial-hide); drawn under active route.
+- Guide empty state: `justify-end` above composer.
+- `<body suppressHydrationWarning>`.
+
+### Live Q&A re-check (artwork 1 + shelter trap)
+
+| # | Q | curated / fallback | Answer (short) |
+|---|---|---|---|
+| 1 | Чому існує дві «Великодні заутрені»? | curated | Дві версії 1891 (Рибінськ) і 1910 (Херсон). Sources s2,s3,s8 |
+| 2 | Як картину викрали з Херсона? | curated | 31.10–04.11.2022, >10 тис., обидві версії в Росії. Sources s1,s5 |
+| 3 | Чи є шанс, що її повернуть? | curated | Реєстр + Інтерпол. Source s4 |
+| 4 | Хто такий Микола Пимоненко? | curated | 1862–1912, киянин, академік 1904. Source s6 |
+| 5 | Що відбувається на картині? | curated | Великодня ніч, церква, кошики, свічки. Sources s2,s3 |
+| 6 | Де зараз ця картина? | fallback trap | Окупанти вивезли; за паспортом обидві версії в Росії; точного місця не знаю. s1,s8 |
+| 7 | Скільки експонатів вивезли? | model | Понад 10 тисяч… Source s5 |
+| 8 | Де Пимоненко мав майстерню? | model | Малютянка на Київщині |
+| 9 | Artwork 8: Де зараз ця картина? | fallback | Твір в укритті. Точне місце зберігання я не називаю і не вгадую. |

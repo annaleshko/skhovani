@@ -1,8 +1,13 @@
-import { findFallbackAnswer } from "@/data/fallback-answers";
+import {
+  findCuratedDefaultAnswer,
+  findFallbackAnswer,
+  passportSnippetsForQuestion,
+} from "@/data/fallback-answers";
 import { getArtwork } from "@/data";
 import { buildGuideSystemPrompt } from "@/lib/guide-prompt";
 import {
   isLocationTrapQuestion,
+  looksLikeNoDataShrug,
   sanitizeGuideAnswer,
 } from "@/lib/guide-safety";
 import OpenAI from "openai";
@@ -47,12 +52,71 @@ function validateSourceIds(artworkId: number, ids: unknown): string[] {
 }
 
 function fallbackResponse(artworkId: number, question: string) {
+  const art = getArtwork(artworkId);
   const fb = findFallbackAnswer(artworkId, question);
   return {
-    answer: sanitizeGuideAnswer(fb.answer),
+    answer: sanitizeGuideAnswer(fb.answer, art?.status ?? "stolen"),
     sourceIds: validateSourceIds(artworkId, fb.sourceIds),
-    followUps: [],
+    followUps: [] as string[],
     fallback: true as const,
+    curated: false as const,
+  };
+}
+
+function curatedResponse(artworkId: number, question: string) {
+  const art = getArtwork(artworkId);
+  const fb = findCuratedDefaultAnswer(artworkId, question);
+  if (!fb) return null;
+  return {
+    answer: sanitizeGuideAnswer(fb.answer, art?.status ?? "stolen"),
+    sourceIds: validateSourceIds(artworkId, fb.sourceIds),
+    followUps: [] as string[],
+    fallback: false as const,
+    curated: true as const,
+  };
+}
+
+async function callModel(
+  openai: OpenAI,
+  model: string,
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+): Promise<{
+  answer: string;
+  sourceIds: string[];
+  followUps: string[];
+} | null> {
+  const completion = await openai.chat.completions.create({
+    model,
+    temperature: 0.3,
+    response_format: { type: "json_object" },
+    messages,
+  });
+  const raw = completion.choices[0]?.message?.content ?? "{}";
+  let parsed: {
+    answer?: string;
+    sourceIds?: string[];
+    followUps?: string[];
+  } = {};
+  try {
+    parsed = JSON.parse(raw) as typeof parsed;
+  } catch {
+    return null;
+  }
+  const answer = typeof parsed.answer === "string" ? parsed.answer.trim() : "";
+  if (!answer) return null;
+  const followUps = Array.isArray(parsed.followUps)
+    ? parsed.followUps
+        .filter((f): f is string => typeof f === "string")
+        .map((f) => f.trim())
+        .filter(Boolean)
+        .slice(0, 2)
+    : [];
+  return {
+    answer,
+    sourceIds: Array.isArray(parsed.sourceIds)
+      ? parsed.sourceIds.filter((id): id is string => typeof id === "string")
+      : [],
+    followUps,
   };
 }
 
@@ -88,10 +152,15 @@ export async function POST(req: Request) {
 
   const detailTitle = body.detail?.zoneOrStopTitle?.trim() || null;
 
-  // Trap: answer from passport / safety, skip the model when possible
+  // Default questions → curated bank immediately (no model).
+  const curated = curatedResponse(artworkId, question);
+  if (curated) {
+    return NextResponse.json(curated);
+  }
+
+  // Trap: passport / safety, skip the model.
   if (isLocationTrapQuestion(question)) {
-    const fb = fallbackResponse(artworkId, question);
-    return NextResponse.json(fb);
+    return NextResponse.json(fallbackResponse(artworkId, question));
   }
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
@@ -104,7 +173,7 @@ export async function POST(req: Request) {
     const openai = new OpenAI({ apiKey });
     const system = buildGuideSystemPrompt(artwork, detailTitle);
     const vocative = body.userName?.trim();
-    const chatMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    const baseMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: system },
       ...(vocative
         ? [
@@ -115,52 +184,49 @@ export async function POST(req: Request) {
           ]
         : []),
       ...messages.map((m) => ({
-        role: (m.role === "guide" ? "assistant" : m.role === "assistant" ? "assistant" : "user") as
-          | "assistant"
-          | "user",
+        role: (m.role === "guide" || m.role === "assistant"
+          ? "assistant"
+          : "user") as "assistant" | "user",
         content: String(m.content ?? "").slice(0, MAX_INPUT),
       })),
     ];
 
-    const completion = await openai.chat.completions.create({
-      model,
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-      messages: chatMessages,
-    });
-
-    const raw = completion.choices[0]?.message?.content ?? "{}";
-    let parsed: {
-      answer?: string;
-      sourceIds?: string[];
-      followUps?: string[];
-    } = {};
-    try {
-      parsed = JSON.parse(raw) as typeof parsed;
-    } catch {
+    let result = await callModel(openai, model, baseMessages);
+    if (!result) {
       return NextResponse.json(fallbackResponse(artworkId, question));
     }
 
-    const answer = sanitizeGuideAnswer(
-      typeof parsed.answer === "string" ? parsed.answer : "",
-    );
+    // If model shrugs but passport has matching text — retry once with quote.
+    const snippets = passportSnippetsForQuestion(artworkId, question);
+    if (looksLikeNoDataShrug(result.answer) && snippets.length > 0) {
+      const retryMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
+        [
+          ...baseMessages,
+          {
+            role: "system",
+            content: `Користувач спитав про факт, який Є в паспорті. Ось уривки — відповідай ТІЛЬКИ з них, 2–4 речення, з sourceIds:\n\n${snippets.join("\n\n")}`,
+          },
+        ];
+      const retry = await callModel(openai, model, retryMessages);
+      if (retry && !looksLikeNoDataShrug(retry.answer)) {
+        result = retry;
+      } else {
+        // Prefer curated/fallback bank over a second shrug.
+        return NextResponse.json(fallbackResponse(artworkId, question));
+      }
+    }
+
+    const answer = sanitizeGuideAnswer(result.answer, artwork.status);
     if (!answer) {
       return NextResponse.json(fallbackResponse(artworkId, question));
     }
 
-    const followUps = Array.isArray(parsed.followUps)
-      ? parsed.followUps
-          .filter((f): f is string => typeof f === "string")
-          .map((f) => f.trim())
-          .filter(Boolean)
-          .slice(0, 2)
-      : [];
-
     return NextResponse.json({
       answer,
-      sourceIds: validateSourceIds(artworkId, parsed.sourceIds),
-      followUps,
+      sourceIds: validateSourceIds(artworkId, result.sourceIds),
+      followUps: result.followUps,
       fallback: false,
+      curated: false,
     });
   } catch {
     return NextResponse.json(fallbackResponse(artworkId, question));
