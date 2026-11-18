@@ -1,12 +1,18 @@
 "use client";
 
 import { AboutSheet } from "@/components/about/AboutSheet";
+import { RouteMapScreen } from "@/components/journey/RouteMapScreen";
+import { WallpaperSavedScreen } from "@/components/journey/WallpaperSavedScreen";
 import { StatusBadge } from "@/components/ui";
 import { TourStage } from "@/components/tour/TourStage";
 import { WallpaperScreen } from "@/components/wallpaper/WallpaperScreen";
 import { getArtwork, getMuseum } from "@/data";
 import { getHallLayout, type HallSlot } from "@/data/hall-layouts";
 import { getHallAssets } from "@/data/halls";
+import {
+  getNextPath,
+  shouldSkipMapToHall,
+} from "@/data/journey";
 import type { Artwork } from "@/data/types";
 import {
   easings,
@@ -25,7 +31,14 @@ import {
 } from "react";
 import { CoveredSheet } from "./CoveredSheet";
 
-type Phase = "hall" | "tour" | "about" | "wallpaper" | "ask-guide";
+type Phase =
+  | "hall"
+  | "tour"
+  | "about"
+  | "wallpaper"
+  | "wallpaper-saved"
+  | "route"
+  | "ask-guide";
 
 type Props = {
   museumId: string;
@@ -47,10 +60,23 @@ function shortYear(year: string): string {
 export function HallExperience({ museumId, pathN, artworkId }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
-  const { markPathComplete, markTourSeen } = useAppState();
+  const { markPathComplete, markTourSeen, completedPaths } = useAppState();
   const museum = getMuseum(museumId);
   const hallUi = getHallAssets(museumId);
   const layout = getHallLayout(museumId);
+  const completedWithCurrent = useMemo(() => {
+    if (pathN == null) return completedPaths;
+    return completedPaths.includes(pathN)
+      ? completedPaths
+      : [...completedPaths, pathN].sort((a, b) => a - b);
+  }, [completedPaths, pathN]);
+  const nextPath = useMemo(
+    () => getNextPath(completedWithCurrent),
+    [completedWithCurrent],
+  );
+  const nextSameMuseum = Boolean(
+    nextPath && shouldSkipMapToHall(completedWithCurrent, nextPath),
+  );
 
   const slots = useMemo(() => layout?.slots ?? [], [layout]);
   const focusSlotIndex = Math.max(
@@ -147,12 +173,29 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
     setPhase("about");
   }, [focus, markTourSeen]);
 
-  const finishPath = () => {
+  const completeCurrentPath = useCallback(() => {
     if (pathN != null && focus) markPathComplete(pathN, focus.id);
-    router.push(
-      `/finish?path=${pathN ?? ""}&artwork=${focus?.id ?? ""}&museum=${museumId}`,
-    );
-  };
+  }, [focus, markPathComplete, pathN]);
+
+  /** Passport × or after wallpaper-saved → 02в route map. */
+  const goToRouteMap = useCallback(() => {
+    completeCurrentPath();
+    setPhase("route");
+  }, [completeCurrentPath]);
+
+  const departNext = useCallback(() => {
+    if (!nextPath) {
+      router.replace("/");
+      return;
+    }
+    if (nextSameMuseum) {
+      router.replace(
+        `/hall/${nextPath.museumId}?path=${nextPath.n}&artwork=${nextPath.artworkId}`,
+      );
+      return;
+    }
+    router.replace(`/journey?path=${nextPath.n}`);
+  }, [nextPath, nextSameMuseum, router]);
 
   if (!focus || !museum || !layout) {
     return (
@@ -500,6 +543,7 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
         artwork={focus}
         open={phase === "about"}
         showFinish={pathN != null}
+        onClose={goToRouteMap}
         onWallpaper={() => setPhase("wallpaper")}
         onAskGuide={() => {
           setPhase("ask-guide");
@@ -510,13 +554,30 @@ export function HallExperience({ museumId, pathN, artworkId }: Props) {
           setTourKey((k) => k + 1);
           setPhase("tour");
         }}
-        onFinishPath={finishPath}
+        onFinishPath={goToRouteMap}
       />
 
       <WallpaperScreen
         artwork={focus}
         open={phase === "wallpaper"}
         onClose={() => setPhase("about")}
+        onSaved={() => {
+          completeCurrentPath();
+          setPhase("wallpaper-saved");
+        }}
+      />
+
+      <WallpaperSavedScreen
+        open={phase === "wallpaper-saved"}
+        next={nextPath ?? null}
+        sameMuseum={nextSameMuseum}
+        onContinue={() => setPhase("route")}
+      />
+
+      <RouteMapScreen
+        open={phase === "route"}
+        next={nextPath ?? null}
+        onDepart={departNext}
       />
     </div>
   );

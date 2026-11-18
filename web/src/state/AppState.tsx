@@ -22,11 +22,13 @@ import type { DemoUser } from "@/data/demo-user";
 type AppStateValue = {
   ready: boolean;
   user: DemoUser;
+  startCityId: string | null;
   completedPaths: number[];
   currentPath: number | null;
   openedArtworkIds: number[];
   chatHistory: Record<string, ChatMessage[]>;
   seenTour: Record<string, boolean>;
+  setStartCityId: (id: string) => void;
   setCurrentPath: (n: number | null) => void;
   markPathComplete: (pathN: number, artworkId: number) => void;
   setChatHistory: (artworkId: number, messages: ChatMessage[]) => void;
@@ -51,6 +53,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (!ready) return;
     savePersistedState(state);
   }, [state, ready]);
+
+  const setStartCityId = useCallback((id: string) => {
+    setState((s) => ({ ...s, startCityId: id }));
+  }, []);
 
   const setCurrentPath = useCallback((n: number | null) => {
     setState((s) => ({ ...s, currentPath: n }));
@@ -92,11 +98,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     () => ({
       ready,
       user: state.user,
+      startCityId: state.startCityId,
       completedPaths: state.completedPaths,
       currentPath: state.currentPath,
       openedArtworkIds: state.openedArtworkIds,
       chatHistory: state.chatHistory,
       seenTour: state.seenTour,
+      setStartCityId,
       setCurrentPath,
       markPathComplete,
       setChatHistory,
@@ -106,6 +114,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [
       ready,
       state,
+      setStartCityId,
       setCurrentPath,
       markPathComplete,
       setChatHistory,

@@ -1,4 +1,10 @@
+import type { City } from "./cities";
 import { getArtwork, getContent, getMuseum } from "./index";
+import {
+  ABROAD_CITY,
+  getStartCityOption,
+  isAbroadCityId,
+} from "./start-cities";
 import type { Artwork, JourneyPath, Museum } from "./types";
 
 export type ResolvedPath = JourneyPath & {
@@ -31,6 +37,67 @@ export function getNextPath(completedPaths: number[]): ResolvedPath | undefined 
   const next = getPaths().find((p) => !done.has(p.n));
   if (!next) return undefined;
   return getPath(next.n);
+}
+
+/** Last completed path in journey order, if any. */
+export function getLastCompletedPath(
+  completedPaths: number[],
+): ResolvedPath | undefined {
+  if (completedPaths.length === 0) return undefined;
+  const n = Math.max(...completedPaths);
+  return getPath(n);
+}
+
+/** Same-museum consecutive paths skip the map (paths 6–10 in Kherson). */
+export function shouldSkipMapToHall(
+  completedPaths: number[],
+  next: ResolvedPath,
+): boolean {
+  const prev = getLastCompletedPath(completedPaths);
+  return Boolean(prev && prev.museumId === next.museumId);
+}
+
+/**
+ * Map origin for a path: chosen city (path 1) or previous museum (n>1).
+ * Abroad → west of the map at the target museum's latitude; label «Ти».
+ */
+export function getPathOrigin(
+  startCityId: string | null,
+  path: ResolvedPath,
+  completedPaths: number[],
+): { city: City; abroad: boolean } {
+  const abroad = isAbroadCityId(startCityId);
+  if (path.n > 1) {
+    const prev = getLastCompletedPath(completedPaths);
+    if (prev) {
+      return {
+        city: {
+          id: prev.museumId,
+          name: prev.museum.city,
+          oblast: "",
+          lat: prev.museum.lat,
+          lng: prev.museum.lng,
+        },
+        abroad: false,
+      };
+    }
+  }
+  if (abroad) {
+    return {
+      city: {
+        ...ABROAD_CITY,
+        lat: path.museum.lat,
+        // West of Ukraine map extent — pin sits off the left edge.
+        lng: 21.0,
+      },
+      abroad: true,
+    };
+  }
+  const city = startCityId ? getStartCityOption(startCityId) : undefined;
+  return {
+    city: city ?? ABROAD_CITY,
+    abroad: false,
+  };
 }
 
 export function getOpenedArtworks(completedPaths: number[]): Artwork[] {

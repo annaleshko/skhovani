@@ -4,8 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const contentPath = path.join(__dirname, "../src/data/content.json");
+const WEB_ROOT = path.resolve(__dirname, "..");
+const REPO_ROOT = path.resolve(WEB_ROOT, "..");
+const contentPath = path.join(WEB_ROOT, "src/data/content.json");
+const artworksPath = path.join(REPO_ROOT, "data/artworks.json");
+
 const content = JSON.parse(fs.readFileSync(contentPath, "utf8"));
+const source = JSON.parse(fs.readFileSync(artworksPath, "utf8"));
 
 const errors = [];
 
@@ -41,7 +46,31 @@ for (const m of content.museums) {
   }
 }
 
-for (const p of content.journey?.paths ?? []) {
+const contentPaths = content.journey?.paths ?? [];
+const sourcePaths = source.journey?.paths ?? [];
+
+if (contentPaths.length !== sourcePaths.length) {
+  fail(
+    `journey.paths length mismatch: content.json=${contentPaths.length} artworks.json=${sourcePaths.length}`,
+  );
+}
+
+for (let i = 0; i < Math.max(contentPaths.length, sourcePaths.length); i++) {
+  const c = contentPaths[i];
+  const s = sourcePaths[i];
+  if (!c || !s) continue;
+  if (c.n !== s.n || c.museumId !== s.museumId || c.artworkId !== s.artworkId) {
+    fail(
+      `path[${i}] out of sync with artworks.json: content=${JSON.stringify(c)} source=${JSON.stringify(s)}`,
+    );
+  }
+}
+
+if (contentPaths.length !== 10) {
+  fail(`MVP v2 expects 10 journey paths, got ${contentPaths.length}`);
+}
+
+for (const p of contentPaths) {
   if (!museumById.has(p.museumId)) fail(`path ${p.n}: museum ${p.museumId} missing`);
   if (!artworkById.has(p.artworkId)) fail(`path ${p.n}: artwork ${p.artworkId} missing`);
 }
@@ -53,5 +82,5 @@ if (errors.length) {
 }
 
 console.log(
-  `content OK: ${content.artworks.length} artworks, ${content.museums.length} museums, ${content.journey.paths.length} paths`,
+  `content OK: ${content.artworks.length} artworks, ${content.museums.length} museums, ${contentPaths.length} paths (synced with data/artworks.json)`,
 );

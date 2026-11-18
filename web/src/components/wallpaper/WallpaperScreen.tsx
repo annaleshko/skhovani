@@ -14,10 +14,12 @@ type Props = {
   artwork: Artwork;
   open: boolean;
   onClose: () => void;
+  /** MVP v2: after save → screen 17. */
+  onSaved?: () => void;
 };
 
 /** Figma 21 / 21б — wallpaper preview + save. */
-export function WallpaperScreen({ artwork, open, onClose }: Props) {
+export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
   const [mode, setMode] = useState<Mode>("full");
   const [saved, setSaved] = useState(false);
   const [detailUrl, setDetailUrl] = useState<string | null>(null);
@@ -25,7 +27,6 @@ export function WallpaperScreen({ artwork, open, onClose }: Props) {
 
   const fullSrc = artwork.wallpaper ?? artwork.image;
   const stop1 = artwork.tourStops[0];
-  const detailLabel = stop1?.title ?? "Деталь";
 
   useEffect(() => {
     if (!open || mode !== "detail" || !artwork.image || !stop1) return;
@@ -87,11 +88,13 @@ export function WallpaperScreen({ artwork, open, onClose }: Props) {
         URL.revokeObjectURL(a.href);
       }
       setSaved(true);
+      onSaved?.();
     } catch {
       // user cancelled share — still show tips if download worked
       setSaved(true);
+      onSaved?.();
     }
-  }, [artwork.slug, artwork.title, detailUrl, fullSrc, mode]);
+  }, [artwork.slug, artwork.title, detailUrl, fullSrc, mode, onSaved]);
 
   return (
     <AnimatePresence>
@@ -152,12 +155,10 @@ export function WallpaperScreen({ artwork, open, onClose }: Props) {
 
           <canvas ref={canvasRef} className="hidden" aria-hidden />
 
+          {/* MVP v2: only «Уся картина» (no detail toggle). */}
           <div className="mt-lg flex justify-center gap-sm px-xl">
-            <Chip active={mode === "full"} onClick={() => setMode("full")}>
+            <Chip active onClick={() => setMode("full")}>
               Уся картина
-            </Chip>
-            <Chip active={mode === "detail"} onClick={() => setMode("detail")}>
-              Деталь: {detailLabel}
             </Chip>
           </div>
 
@@ -166,7 +167,7 @@ export function WallpaperScreen({ artwork, open, onClose }: Props) {
               <Button onClick={save} disabled={!previewSrc}>
                 Зберегти на телефон
               </Button>
-            ) : (
+            ) : onSaved ? null : (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

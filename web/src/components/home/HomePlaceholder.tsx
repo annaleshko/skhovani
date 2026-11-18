@@ -1,5 +1,7 @@
 "use client";
 
+// MVP v2: disabled — Home / Collection / Profile tabs (kept unreachable).
+
 import { Button } from "@/components/ui";
 import { getDemoStartCity } from "@/data/demo-user";
 import { getMuseumShortLabel } from "@/data/museums";

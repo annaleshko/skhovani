@@ -20,6 +20,8 @@ type Props = {
   artwork: Artwork;
   open: boolean;
   showFinish?: boolean;
+  /** MVP v2 passport «×» → route map (02в). */
+  onClose?: () => void;
   onWallpaper: () => void;
   onAskGuide: () => void;
   onReplayTour: () => void;
@@ -32,6 +34,7 @@ export function AboutSheet({
   artwork,
   open,
   showFinish: showFinishProp = true,
+  onClose,
   onWallpaper,
   onAskGuide,
   onReplayTour,
@@ -97,14 +100,26 @@ export function AboutSheet({
                   <span className="text-caption text-text-secondary">восени 2022</span>
                 </div>
               </div>
-              <button
-                type="button"
-                aria-label="Повторити тур"
-                className="flex size-11 items-center justify-center rounded-full bg-surface-raised text-text-accent"
-                onClick={onReplayTour}
-              >
-                ▶
-              </button>
+              <div className="flex shrink-0 items-center gap-2xs">
+                <button
+                  type="button"
+                  aria-label="Повторити тур"
+                  className="flex size-11 items-center justify-center rounded-full bg-surface-raised text-text-accent"
+                  onClick={onReplayTour}
+                >
+                  ▶
+                </button>
+                {onClose ? (
+                  <button
+                    type="button"
+                    aria-label="Закрити"
+                    className="flex size-11 items-center justify-center rounded-full bg-surface-raised text-text-primary"
+                    onClick={onClose}
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <div className="relative mt-lg flex gap-lg overflow-x-auto">

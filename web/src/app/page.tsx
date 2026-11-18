@@ -1,23 +1,24 @@
 "use client";
 
-import { HomePlaceholder } from "@/components/home/HomePlaceholder";
+import { CityPicker } from "@/components/journey/CityPicker";
 import { JourneyFlow } from "@/components/journey/JourneyFlow";
+// MVP v2: disabled — Home / Collection / Profile tabs
+// import { HomePlaceholder } from "@/components/home/HomePlaceholder";
 import { useAppState } from "@/state/AppState";
 
 /**
- * First visit (no completed paths) → journey E1→07…
- * Returning visit → Home placeholder with next path + «Летимо».
+ * MVP v2 entry: city picker (01) when startCityId is empty, else map journey (02…).
  */
 export default function HomePage() {
-  const { ready, completedPaths } = useAppState();
+  const { ready, startCityId } = useAppState();
 
   if (!ready) {
     return <div className="min-h-dvh bg-screen" aria-busy />;
   }
 
-  if (completedPaths.length === 0) {
-    return <JourneyFlow />;
+  if (!startCityId) {
+    return <CityPicker />;
   }
 
-  return <HomePlaceholder />;
+  return <JourneyFlow />;
 }

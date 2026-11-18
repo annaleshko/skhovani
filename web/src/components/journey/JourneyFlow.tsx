@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui";
 import { MapPin } from "@/components/map/MapPin";
 import { getMuseums } from "@/data";
-import { getDemoStartCity } from "@/data/demo-user";
 import {
   FACADE_NATIVE_H,
   FACADE_NATIVE_W,
@@ -11,7 +10,12 @@ import {
   getMuseumShortLabel,
   getMuseumUi,
 } from "@/data/museums";
-import { getPath, type ResolvedPath } from "@/data/journey";
+import {
+  getPath,
+  getPathOrigin,
+  shouldSkipMapToHall,
+  type ResolvedPath,
+} from "@/data/journey";
 import {
   camera07,
   cameraPlaceAt,
@@ -52,7 +56,8 @@ import { pickPath } from "./pickPath";
 
 type Phase =
   | "boot"
-  | "e1"
+  // MVP v2: disabled — onboarding / «Привіт, Анно»
+  // | "e1"
   | "map"
   | "flight"
   | "zoom"
@@ -64,8 +69,6 @@ type Props = {
   pathN?: number;
 };
 
-const E1_THRESHOLD_MS = 400;
-/** Only wait when a real async pick is slow — no artificial delay that always triggers E1 */
 const PICK_DELAY_MS = 0;
 const FACADE_AUTO_MS = 600;
 const OCCUPATION_HOLD_MS = 2500;
@@ -136,11 +139,18 @@ function fitFacadeLayout(
 export function JourneyFlow({ pathN }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
-  const { user, completedPaths, setCurrentPath } = useAppState();
-  const startCity = getDemoStartCity();
+  const { startCityId, completedPaths, setCurrentPath } = useAppState();
 
   const [phase, setPhase] = useState<Phase>("boot");
   const [path, setPath] = useState<ResolvedPath | null>(null);
+  const [originAbroad, setOriginAbroad] = useState(false);
+  const [startCity, setStartCity] = useState(() => ({
+    id: "kyiv",
+    name: "Київ",
+    oblast: "Київ",
+    lat: 50.4501,
+    lng: 30.5234,
+  }));
   const [sheetVisible, setSheetVisible] = useState(false);
   const [showStartPin, setShowStartPin] = useState(false);
   const [arcDrawn, setArcDrawn] = useState(false);
@@ -213,7 +223,6 @@ export function JourneyFlow({ pathN }: Props) {
   }, [path, startCity]);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
-  const artworkCount = path?.museum.artworkIds.length ?? 0;
 
   const facadeLayout = useMemo(() => {
     if (!museumUi) {
@@ -371,7 +380,7 @@ export function JourneyFlow({ pathN }: Props) {
       const h = el.clientHeight || FRAME.h;
       setStageSize({ w, h });
       const p = phaseRef.current;
-      if (p === "map" || p === "boot" || p === "e1") {
+      if (p === "map" || p === "boot") {
         const cam = toStageCam07(camera07(), w, h);
         setCam(cam);
         writeOverlay(cam, 0, false);
@@ -504,7 +513,6 @@ export function JourneyFlow({ pathN }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    const started = performance.now();
     (async () => {
       const delay = reduced ? 0 : PICK_DELAY_MS;
       const picked =
@@ -516,22 +524,26 @@ export function JourneyFlow({ pathN }: Props) {
           : await pickPath(completedPaths, delay);
 
       if (cancelled) return;
-      const elapsed = performance.now() - started;
       if (!picked) {
         router.replace("/");
         return;
       }
+
+      // Consecutive paths in the same museum → hall directly (no map).
+      if (pathN == null && shouldSkipMapToHall(completedPaths, picked)) {
+        setCurrentPath(picked.n);
+        router.replace(
+          `/hall/${picked.museumId}?path=${picked.n}&artwork=${picked.artworkId}`,
+        );
+        return;
+      }
+
+      const origin = getPathOrigin(startCityId, picked, completedPaths);
+      setStartCity(origin.city);
+      setOriginAbroad(origin.abroad);
       setPath(picked);
       setCurrentPath(picked.n);
-
-      if (elapsed > E1_THRESHOLD_MS && !reduced) {
-        setPhase("e1");
-        setTimeout(() => {
-          if (!cancelled) enterMap();
-        }, 900);
-      } else {
-        enterMap();
-      }
+      enterMap();
     })();
     return () => {
       cancelled = true;
@@ -706,27 +718,7 @@ export function JourneyFlow({ pathN }: Props) {
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-screen text-text-primary">
-      <AnimatePresence>
-        {phase === "e1" && (
-          <motion.div
-            className="absolute inset-0 z-30 flex flex-col items-center justify-center px-xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="relative mb-2xl h-40 w-full max-w-[280px]">
-              <svg viewBox={`0 0 ${vb.w} ${vb.h}`} className="h-full w-full opacity-40">
-                <image href="/map/map.svg" width={vb.w} height={vb.h} />
-                <MapPin x={startPt.x} y={startPt.y} label={startCity.name} pulsing />
-              </svg>
-            </div>
-            <p className="text-h3 text-text-primary">Будуємо шлях…</p>
-            <p className="mt-sm text-center text-body-md text-text-secondary">
-              Шукаємо, куди сьогодні веде твій шлях
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* MVP v2: disabled — E1 «Будуємо шлях» / «Привіт, Анно» */}
 
       {showMapTrail ? <RouteTrail items={trailItems} /> : null}
 
@@ -883,12 +875,13 @@ export function JourneyFlow({ pathN }: Props) {
         </div>
       )}
 
-      {/* Header — above map, does not affect map layout */}
+      {/* Header — MVP v2 screen 02 «Твій шлях» (full map polish in V2-2) */}
       {phase === "map" && (
         <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-xl pb-md pt-[calc(56px+var(--safe-top))]">
-          <h1 className="text-h1">Привіт, {user.nameVocative}</h1>
+          <h1 className="text-h1">Твій шлях</h1>
           <p className="mt-sm text-body-md text-text-secondary">
-            Карта поки темна. Кожен твір, якому ти повернеш світло, засвітиться на ній зіркою.
+            10 творів у 5 музеях. Сьогодні шлях веде до{" "}
+            {getMuseumShortLabel(path.museumId)}.
           </p>
         </header>
       )}
@@ -921,11 +914,22 @@ export function JourneyFlow({ pathN }: Props) {
               Твій шлях — {getMuseumShortLabel(path.museumId)}
             </h2>
             <p className="mt-sm text-body-md text-text-secondary">
-              ≈ {distanceKm} км від тебе. У {shortMuseumPhrase(path.museumId)}{" "}
-              {artworkCount} {worksWord(artworkCount)} чекають на тебе.
+              {originAbroad ? (
+                <>
+                  Звідти, де ти зараз.{" "}
+                  {/* TODO(copy): Kherson passport line for V2-2 sheet */}
+                  Музей пограбували у 2022 році, але ми пам&apos;ятаємо, що тут
+                  висіло.
+                </>
+              ) : (
+                <>
+                  ≈ {distanceKm} км від тебе. Музей пограбували у 2022 році, але
+                  ми пам&apos;ятаємо, що тут висіло.
+                </>
+              )}
             </p>
             <div className="mt-lg">
-              <Button onClick={runFlight}>Летимо</Button>
+              <Button onClick={runFlight}>Вирушити</Button>
             </div>
           </motion.div>
         )}
@@ -1046,20 +1050,3 @@ export function JourneyFlow({ pathN }: Props) {
   );
 }
 
-function worksWord(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return "твір";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "твори";
-  return "творів";
-}
-
-function shortMuseumPhrase(museumId: string): string {
-  // TODO(copy): proper locative forms
-  if (museumId === "kherson") return "Херсонському художньому музеї";
-  if (museumId === "melitopol") return "Мелітопольському музеї";
-  if (museumId === "kharkiv") return "Харківському художньому музеї";
-  if (museumId === "lviv") return "Національному музеї у Львові";
-  if (museumId === "chernihiv") return "Чернігівському художньому музеї";
-  return getMuseumDisplayName(museumId);
-}
