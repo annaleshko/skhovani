@@ -12,7 +12,7 @@ import { useCallback, useState } from "react";
 
 /**
  * Standalone 02в — `/journey?mode=route` (also used from /finish).
- * «Вирушити» flies in-place from the 02в map cam (no camera jump).
+ * «Вирушити» flies in-place from the 02в map cam (sheet slides under overlay).
  * Star revisit: `/journey?path=N&autostart=1&revisit=1`.
  */
 export function JourneyRouteMap() {
@@ -38,19 +38,6 @@ export function JourneyRouteMap() {
     [router],
   );
 
-  if (routeFlight) {
-    return (
-      <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-screen">
-        <JourneyFlow
-          pathN={routeFlight.pathN}
-          autostart
-          fromRouteMap
-          initialCam={routeFlight.mapCam}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-screen">
       <RouteMapScreen
@@ -59,6 +46,16 @@ export function JourneyRouteMap() {
         onDepart={onDepart}
         onRevisit={onRevisit}
       />
+      {routeFlight ? (
+        <div className="absolute inset-0 z-[60]">
+          <JourneyFlow
+            pathN={routeFlight.pathN}
+            autostart
+            fromRouteMap
+            initialCam={routeFlight.mapCam}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

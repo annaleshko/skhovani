@@ -189,6 +189,8 @@ export function JourneyFlow({
   const [showStartPin, setShowStartPin] = useState(false);
   const [arcDrawn, setArcDrawn] = useState(false);
   const [showTargetPin, setShowTargetPin] = useState(false);
+  /** Active route opacity during flight (1 → fade in last 20%). */
+  const [flightRouteOpacity, setFlightRouteOpacity] = useState(0.85);
   const [occupationNote, setOccupationNote] = useState(false);
   const [facadeOpacity, setFacadeOpacity] = useState(0);
   const [blackout, setBlackout] = useState(0);
@@ -383,7 +385,8 @@ export function JourneyFlow({
         );
       }
       if (flightDotRef.current) {
-        if (showDot && tFlight > 0 && tFlight < 1) {
+        // Firefly travels along the dotted route (start → target).
+        if (showDot && tFlight >= 0 && tFlight < 1) {
           const dot = pointOnQuad(startPt, ctrl, targetPt, tFlight);
           const s = cameraProjectPoint(dot, cam);
           flightDotRef.current.setAttribute("transform", `translate(${s.x} ${s.y})`);
@@ -865,53 +868,57 @@ export function JourneyFlow({
     journeyLockedRef.current = true;
     setStageSize({ w, h });
 
-    const hadSheet = sheetVisible;
+    // Frame 0 = exact on-screen map at tap (path 1 sheet / any map phase).
+    if (!fromRouteMap) {
+      flightStartCamRef.current = readCam();
+    }
+
+    // Sheet slides down while the camera already moves (no wait).
     setSheetVisible(false);
     setPhase("flight");
+    setFlightRouteOpacity(0.85);
     flightT.set(0);
     mapOpacity.set(1);
 
     const cam09 = lockedCam09Ref.current;
+    const startCam = flightStartCamRef.current;
+    if (startCam) setCam(startCam);
 
-    const startFlight = () => {
-      const flightSec = revisit ? REVISIT_FLIGHT_SEC : motionTokens.flight;
-      if (reduced) {
+    const flightSec = revisit ? REVISIT_FLIGHT_SEC : motionTokens.flight;
+    if (reduced) {
+      setCam(cam09);
+      flightT.set(1);
+      setFlightRouteOpacity(0);
+      writeOverlay(cam09, 1, false);
+      setTimeout(() => runZoom(), motionTokens.reducedCrossfade * 1000);
+      return;
+    }
+    animate(flightT, 1, {
+      duration: flightSec,
+      ease: easings.easeInOut,
+      onUpdate: (t) => {
+        const cam = camForFlightT(t, w, h, cam09);
+        setCam(cam);
+        // Route stays visible; fade only in the last 20%.
+        setFlightRouteOpacity(t < 0.8 ? 0.85 : 0.85 * (1 - (t - 0.8) / 0.2));
+      },
+      onComplete: () => {
         setCam(cam09);
-        flightT.set(1);
+        setFlightRouteOpacity(0);
         writeOverlay(cam09, 1, false);
-        setTimeout(() => runZoom(), motionTokens.reducedCrossfade * 1000);
-        return;
-      }
-      animate(flightT, 1, {
-        duration: flightSec,
-        ease: easings.easeInOut,
-        onUpdate: (t) => {
-          const cam = camForFlightT(t, w, h, cam09);
-          setCam(cam);
-        },
-        onComplete: () => {
-          // Same transform as the last flight frame — no snap.
-          setCam(cam09);
-          writeOverlay(cam09, 1, false);
-          runZoom();
-        },
-      });
-    };
-
-    // Wait for sheet hide only when the path-1 sheet was visible
-    setTimeout(
-      startFlight,
-      reduced || !hadSheet ? 0 : motionTokens.sheetHide * 1000,
-    );
+        runZoom();
+      },
+    });
   }, [
     camForFlightT,
     flightT,
+    fromRouteMap,
     mapOpacity,
+    readCam,
     reduced,
     revisit,
     runZoom,
     setCam,
-    sheetVisible,
     stageSize.h,
     stageSize.w,
     targetPt,
@@ -1000,7 +1007,8 @@ export function JourneyFlow({
                     );
                   })
                 : null}
-              {phase === "map" && arcDrawn ? (
+              {/* Active route: visible on map + whole flight (fade last 20%). */}
+              {(phase === "map" && arcDrawn) || phase === "flight" ? (
                 <DottedRoute
                   start={startPt}
                   ctrl={ctrl}
@@ -1008,7 +1016,10 @@ export function JourneyFlow({
                   dot={2}
                   gap={6}
                   routeKey={`path-${path?.n ?? 0}-${path?.museumId ?? ""}`}
-                  opacity={0.85}
+                  opacity={
+                    phase === "flight" ? flightRouteOpacity : 0.85
+                  }
+                  animateDraw={phase === "map"}
                 />
               ) : null}
               {phase === "map" && !hideFarLabels
@@ -1204,8 +1215,17 @@ export function JourneyFlow({
             className="absolute inset-x-0 bottom-0 z-20 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
             initial={reduced ? false : { y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ duration: motionTokens.sheetSlide, ease: easings.easeOut }}
+            exit={{
+              y: "100%",
+              transition: {
+                duration: motionTokens.sheetHide,
+                ease: easings.easeIn,
+              },
+            }}
+            transition={{
+              duration: motionTokens.sheetSlide,
+              ease: easings.easeOut,
+            }}
           >
             <h2 className="text-h2">
               Твій шлях — {getMuseumShortLabel(path.museumId)}

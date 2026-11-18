@@ -166,13 +166,11 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     (path: ResolvedPath) => {
       if (sheetExit) return;
       const mapCam = measureMapCam();
+      // Sheet slides down while flight starts (same frame as tap cam).
       setSheetExit(true);
-      const delay = reduced ? 0 : motionTokens.sheetHide * 1000;
-      window.setTimeout(() => {
-        onDepart(path, { mapCam });
-      }, delay);
+      onDepart(path, { mapCam });
     },
-    [measureMapCam, onDepart, reduced, sheetExit],
+    [measureMapCam, onDepart, sheetExit],
   );
 
   const onMuseumTap = (id: string) => {

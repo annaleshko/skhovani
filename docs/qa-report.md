@@ -76,6 +76,19 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 - [ ] After path 10: «Шлях пройдено» + «Почати знову»
 - [x] `docs/guide-knowledge-extra.md` imported → `node web/scripts/import-guide-knowledge.mjs` (61 bullets, validate OK)
 
+## Final polish stages (2026-11-18 night)
+
+### Stage 1 — Map & flight
+
+| Check | Result |
+|---|---|
+| Path 1: frame 0 = map at tap; sheet slides while flight moves | [ ] 390×844 / 360×640 |
+| Paths 2, 3, 6: same (02в handoff) | [ ] |
+| Dotted route visible whole flight; fade last 20% | [ ] |
+| Firefly travels along the route | [ ] |
+| 02в rays 50%; active 85%; labels no overlap | [ ] |
+| Unopened target = ring+dot; star only after opened | [ ] |
+
 ## Release candidate stages (2026-11-18 evening)
 
 ### Stage 1 — Revisit stuck (root cause)
