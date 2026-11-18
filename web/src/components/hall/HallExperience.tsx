@@ -521,18 +521,45 @@ export function HallExperience({
   }, [continueTarget]);
 
   const goContinueFromPassport = useCallback(() => {
-    completeCurrentPath();
-    setViewArtworkId(artworkId);
     setDetailZone(null);
     const target = continueTarget;
+
+    // Reopened passport (tapped an already-opened frame): never mark the
+    // in-progress path done and never jump to another passport. Same museum →
+    // hall blur→reveal→tour; other museum → 02в.
+    if (isReplayPassport) {
+      if (!target) {
+        setViewArtworkId(artworkId);
+        setPhase("route");
+        return;
+      }
+      if (target.museumId === museumId) {
+        if (target.n === pathN && target.artworkId === artworkId) {
+          // Same URL soft-nav would no-op and leave phase "about" — enter hall.
+          setViewArtworkId(artworkId);
+          setStolenPhase("empty");
+          setNeighborId(null);
+          setIntroStep(reduced ? "done" : "black");
+          setPhase("hall");
+          return;
+        }
+        router.replace(
+          `/hall/${target.museumId}?path=${target.n}&artwork=${target.artworkId}`,
+        );
+        return;
+      }
+      setViewArtworkId(artworkId);
+      setPhase("route");
+      return;
+    }
+
+    completeCurrentPath();
+    setViewArtworkId(artworkId);
     if (!target) {
       setPhase("route");
       return;
     }
-    const skipMap = shouldSkipMapToHall(
-      isReplayPassport ? completedPaths : completedWithCurrent,
-      target,
-    );
+    const skipMap = shouldSkipMapToHall(completedWithCurrent, target);
     if (skipMap) {
       router.replace(
         `/hall/${target.museumId}?path=${target.n}&artwork=${target.artworkId}`,
@@ -543,10 +570,12 @@ export function HallExperience({
   }, [
     artworkId,
     completeCurrentPath,
-    completedPaths,
     completedWithCurrent,
     continueTarget,
     isReplayPassport,
+    museumId,
+    pathN,
+    reduced,
     router,
   ]);
 

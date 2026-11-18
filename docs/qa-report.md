@@ -90,6 +90,17 @@ Arts 4–10: grid TODOs replaced with on-detail placements (see `data/artworks.j
 | 02в revisit Харків | [ ] |
 | 02в revisit Херсон (next unopened) | [ ] |
 
+### Stage 2 — Reopened passport «Далі»
+
+**Cause:** From a neighbor/reopened passport, `continueTarget` was the current unfinished path; `completeCurrentPath()` marked it done and `router.replace` to the same URL left phase `"about"` → next passport without hall/reveal/tour.
+
+**Fix:** Replay passport never completes the in-progress path. Same museum → reset to hall (`stolenPhase` empty) or navigate to that path’s hall URL; other museum → 02в (`phase "route"`).
+
+| Check | Result |
+|---|---|
+| Opened frame → passport → «Далі» same museum → hall blur/reveal/tour | [ ] |
+| Opened frame → passport → «Далі» other museum → 02в | [ ] |
+
 ## Revisit + Melitopol + Figma wallpapers (2026-11-18)
 
 | # | Fix | Check |
