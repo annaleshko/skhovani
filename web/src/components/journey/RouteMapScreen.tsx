@@ -1,14 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui";
+import { DottedRoute } from "@/components/map/DottedRoute";
 import { MapPin } from "@/components/map/MapPin";
+import { MapStar } from "@/components/map/MapStar";
 import { MuseumDot } from "@/components/map/MuseumDot";
 import { getMuseum } from "@/data";
 import {
-  getLastCompletedPath,
+  getPath,
   getNextPathInMuseum,
   getPathOrigin,
-  isMuseumPassed,
+  getVisitedMuseumOrder,
   type ResolvedPath,
 } from "@/data/journey";
 import {
@@ -16,13 +18,11 @@ import {
   routeSheetBlurb,
 } from "@/data/museum-copy";
 import { getMuseumShortLabel } from "@/data/museums";
-import { getStartCityOption, isAbroadCityId } from "@/data/start-cities";
 import {
   arcControl,
   getMapViewBox,
-  pointOnQuad,
+  haversineKm,
   projectToMap,
-  quadPath,
 } from "@/lib/geo";
 import {
   defaultSpring,
@@ -42,6 +42,7 @@ type Props = {
 
 /**
  * MVP v2 screen 02в — Figma `238:1557`, ref `docs/figma-refs-v2/02v-route-map.png`.
+ * Origin = start city; visited museums = constellation stars; target = sparkle.
  */
 export function RouteMapScreen({ open, next, onDepart }: Props) {
   const reduced = useReducedMotionSafe();
@@ -58,36 +59,20 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
     [completedPaths, selectedMuseumId],
   );
 
+  const journeyDone =
+    completedPaths.length > 0 &&
+    !next &&
+    JOURNEY_MUSEUM_ORDER.every(
+      (id) => !getNextPathInMuseum(id, completedPaths),
+    );
+
   const origin = useMemo(() => {
-    if (sheetPath) {
-      return getPathOrigin(startCityId, sheetPath, completedPaths);
+    const pathForOrigin = sheetPath ?? next ?? getPath(1);
+    if (!pathForOrigin) {
+      return getPathOrigin(startCityId, getPath(1)!);
     }
-    const prev = getLastCompletedPath(completedPaths);
-    if (prev) {
-      return {
-        city: {
-          id: prev.museumId,
-          name: prev.museum.city,
-          oblast: "",
-          lat: prev.museum.lat,
-          lng: prev.museum.lng,
-        },
-        abroad: false,
-      };
-    }
-    const abroad = isAbroadCityId(startCityId);
-    const city = startCityId ? getStartCityOption(startCityId) : undefined;
-    return {
-      city: city ?? {
-        id: "kyiv",
-        name: "Київ",
-        oblast: "",
-        lat: 50.45,
-        lng: 30.52,
-      },
-      abroad,
-    };
-  }, [completedPaths, sheetPath, startCityId]);
+    return getPathOrigin(startCityId, pathForOrigin);
+  }, [next, sheetPath, startCityId]);
 
   const startPt = useMemo(
     () => projectToMap(origin.city.lat, origin.city.lng),
@@ -101,28 +86,17 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
   }, [startPt, targetMuseum]);
 
   const ctrl = useMemo(() => arcControl(startPt, targetPt), [startPt, targetPt]);
-  const arcD = useMemo(() => quadPath(startPt, ctrl, targetPt), [startPt, ctrl, targetPt]);
-  const midPt = useMemo(() => pointOnQuad(startPt, ctrl, targetPt, 0.5), [
-    startPt,
-    ctrl,
-    targetPt,
-  ]);
 
-  const dashedD = useMemo(() => {
-    const pts = JOURNEY_MUSEUM_ORDER.map((id) => {
-      const m = getMuseum(id);
-      return m ? projectToMap(m.lat, m.lng) : null;
-    }).filter((p): p is NonNullable<typeof p> => Boolean(p));
-    if (pts.length < 2) return "";
-    return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
-  }, []);
+  const visitedOrder = useMemo(
+    () => getVisitedMuseumOrder(completedPaths),
+    [completedPaths],
+  );
+  const visitedSet = useMemo(() => new Set(visitedOrder), [visitedOrder]);
 
-  const nextMuseumId = next?.museumId ?? null;
-  const originMuseumId = JOURNEY_MUSEUM_ORDER.includes(
-    origin.city.id as (typeof JOURNEY_MUSEUM_ORDER)[number],
-  )
-    ? origin.city.id
-    : null;
+  const distanceKm = useMemo(() => {
+    if (!targetMuseum) return 0;
+    return haversineKm(origin.city, targetMuseum);
+  }, [origin.city, targetMuseum]);
 
   return (
     <AnimatePresence>
@@ -142,7 +116,6 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
           </header>
 
           <div className="relative min-h-0 flex-1">
-            {/* Soft southern glow under the map */}
             <div
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-[42%] h-[55%] w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
@@ -159,102 +132,72 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
 
-              {/* Dashed full route Херсон → … → Чернігів */}
-              {dashedD ? (
-                <path
-                  d={dashedD}
-                  fill="none"
-                  stroke="var(--color-bg-accent)"
-                  strokeOpacity={0.6}
-                  strokeWidth={1}
-                  strokeDasharray="4 4"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
+              {/* Constellation links between visited museums */}
+              {visitedOrder.length >= 2
+                ? visitedOrder.slice(0, -1).map((id, i) => {
+                    const nextId = visitedOrder[i + 1]!;
+                    const aM = getMuseum(id);
+                    const bM = getMuseum(nextId);
+                    if (!aM || !bM) return null;
+                    const a = projectToMap(aM.lat, aM.lng);
+                    const b = projectToMap(bM.lat, bM.lng);
+                    return (
+                      <DottedRoute
+                        key={`const-${id}-${nextId}`}
+                        start={a}
+                        ctrl={arcControl(a, b)}
+                        end={b}
+                        opacity={0.25}
+                        animateDraw={false}
+                        routeKey={`const-${id}-${nextId}`}
+                      />
+                    );
+                  })
+                : null}
+
+              {/* Start city → selected target (crossfade via key) */}
+              {targetMuseum ? (
+                <DottedRoute
+                  start={startPt}
+                  ctrl={ctrl}
+                  end={targetPt}
+                  opacity={0.6}
+                  routeKey={`sel-${selectedMuseumId}`}
                 />
               ) : null}
 
-              {/* Solid arc previous → selected */}
-              <path
-                d={arcD}
-                fill="none"
-                stroke="var(--color-bg-accent)"
-                strokeWidth={2}
-                strokeLinecap="round"
-              />
-              <circle
-                cx={midPt.x}
-                cy={midPt.y}
-                r={3}
-                fill="var(--color-bg-accent)"
-                style={{ filter: "drop-shadow(0 0 4px var(--color-bg-accent))" }}
+              <MapPin
+                x={startPt.x}
+                y={startPt.y}
+                label={origin.abroad ? "Ти" : origin.city.name}
+                variant="start"
               />
 
-              {/* Start city pin only when origin is not already a journey museum */}
-              {!originMuseumId ? (
-                <MapPin
-                  x={startPt.x}
-                  y={startPt.y}
-                  label={origin.abroad ? "Ти" : origin.city.name}
-                  variant="start"
-                />
-              ) : null}
-
-              {JOURNEY_MUSEUM_ORDER.map((id) => {
+              {visitedOrder.map((id) => {
+                if (id === selectedMuseumId) return null;
                 const m = getMuseum(id);
                 if (!m) return null;
                 const p = projectToMap(m.lat, m.lng);
-                const isSelected = id === selectedMuseumId;
-                const passed = isMuseumPassed(id, completedPaths);
-                const isNext = id === nextMuseumId;
-                const isOrigin = id === originMuseumId;
+                return (
+                  <MapStar
+                    key={`vis-${id}`}
+                    x={p.x}
+                    y={p.y}
+                    size={14}
+                    label={m.city}
+                    labelSide={id === "lviv" ? "left" : "right"}
+                    glow="soft"
+                    labelTone="secondary"
+                    onClick={() => setPickedMuseumId(id)}
+                  />
+                );
+              })}
 
-                if (isSelected) {
-                  return (
-                    <g key={id}>
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r={28}
-                        fill="var(--color-bg-accent)"
-                        opacity={reduced ? 0.18 : 0.22}
-                      >
-                        {!reduced ? (
-                          <animate
-                            attributeName="opacity"
-                            values="0.12;0.28;0.12"
-                            dur="2.4s"
-                            repeatCount="indefinite"
-                          />
-                        ) : null}
-                      </circle>
-                      <MapPin
-                        x={p.x}
-                        y={p.y}
-                        label={m.city}
-                        labelSide="right"
-                        variant="target"
-                        pulsing={!reduced}
-                        onClick={() => setPickedMuseumId(id)}
-                      />
-                    </g>
-                  );
-                }
-
-                // Arc origin museum: single passed marker (one label, no duplicate pin)
-                if (isOrigin) {
-                  return (
-                    <MuseumDot
-                      key={id}
-                      x={p.x}
-                      y={p.y}
-                      label={m.city}
-                      labelSide={id === "lviv" ? "left" : "right"}
-                      tone="passed"
-                      onClick={() => setPickedMuseumId(id)}
-                    />
-                  );
-                }
-
+              {JOURNEY_MUSEUM_ORDER.map((id) => {
+                if (id === selectedMuseumId || visitedSet.has(id)) return null;
+                const m = getMuseum(id);
+                if (!m) return null;
+                const p = projectToMap(m.lat, m.lng);
                 return (
                   <MuseumDot
                     key={id}
@@ -262,12 +205,27 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
                     y={p.y}
                     label={m.city}
                     labelSide={id === "lviv" ? "left" : "right"}
-                    tone={passed ? "passed" : isNext ? "next" : "dim"}
-                    pulsing={!reduced && isNext && !isSelected}
+                    tone="dim"
                     onClick={() => setPickedMuseumId(id)}
                   />
                 );
               })}
+
+              {targetMuseum ? (
+                <MapStar
+                  key={`target-${selectedMuseumId}`}
+                  x={targetPt.x}
+                  y={targetPt.y}
+                  size={22}
+                  label={targetMuseum.city}
+                  labelSide="right"
+                  glow="strong"
+                  labelTone="primary"
+                  pulsing={!reduced}
+                  appear
+                  onClick={() => setPickedMuseumId(selectedMuseumId)}
+                />
+              ) : null}
             </svg>
           </div>
 
@@ -277,13 +235,21 @@ export function RouteMapScreen({ open, next, onDepart }: Props) {
             animate={{ y: 0 }}
             transition={defaultSpring}
           >
-            {sheetPath ? (
+            {journeyDone ? (
+              <>
+                <h2 className="text-h2">Шлях пройдено</h2>
+                {/* TODO(copy): end-of-journey sheet body */}
+                <p className="mt-sm text-body-md text-text-secondary">
+                  Ти пройшов 10 творів у 5 музеях.
+                </p>
+              </>
+            ) : sheetPath ? (
               <>
                 <h2 className="text-h2">
                   Далі — {getMuseumShortLabel(sheetPath.museumId)}
                 </h2>
                 <p className="mt-sm text-body-md text-text-secondary">
-                  {routeSheetBlurb(sheetPath.museumId)}
+                  ≈ {distanceKm} км від тебе. {routeSheetBlurb(sheetPath.museumId)}
                 </p>
                 <div className="mt-lg">
                   <Button onClick={() => onDepart(sheetPath)}>Вирушити</Button>

@@ -11,6 +11,8 @@ export const motionTokens = {
   pinPulse: { duration: 1.6 },
   mapFadeIn: 0.6,
   arcDraw: 1.2,
+  /** Dotted start→target route draw-in (Stage 2 constellation). */
+  dottedDraw: 0.8,
   sheetSlide: 0.3,
   sheetHide: 0.25,
   flight: 1.6,

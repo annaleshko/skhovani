@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui";
+import { DottedRoute } from "@/components/map/DottedRoute";
 import { MapPin } from "@/components/map/MapPin";
+import { MapStar } from "@/components/map/MapStar";
 import { MuseumDot } from "@/components/map/MuseumDot";
 import { getMuseum, getMuseums } from "@/data";
 import {
@@ -19,6 +21,7 @@ import {
 import {
   getPath,
   getPathOrigin,
+  getVisitedMuseumOrder,
   shouldSkipMapToHall,
   type ResolvedPath,
 } from "@/data/journey";
@@ -38,7 +41,6 @@ import {
   haversineKm,
   pointOnQuad,
   projectToMap,
-  quadPath,
   type MapPoint,
 } from "@/lib/geo";
 import {
@@ -53,7 +55,6 @@ import {
   motion,
   useMotionValue,
   useMotionValueEvent,
-  useTransform,
 } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -84,7 +85,7 @@ const TRAIL_LEN = 18;
 /** Spec 07 entry timeline (ms from enterMap start) */
 const ENTRY_FADE_MS = motionTokens.mapFadeIn * 1000; // 600
 const ENTRY_PIN_MS = 400;
-const ENTRY_ARC_MS = motionTokens.arcDraw * 1000; // 1200
+const ENTRY_ARC_MS = motionTokens.dottedDraw * 1000; // 800
 const ENTRY_TARGET_MS = 300;
 const ENTRY_T_PIN = ENTRY_FADE_MS;
 const ENTRY_T_ARC = ENTRY_T_PIN + ENTRY_PIN_MS;
@@ -200,8 +201,6 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
   const glowOpacity = useMotionValue(0);
   const facadeScale = useMotionValue(1.05);
   const doorCamScale = useMotionValue(1);
-  /** Keep arc ~2px on screen under CSS transform scale */
-  const arcStrokeWidth = useTransform(camScale, (s) => 2 / Math.max(s, 0.001));
 
   const facadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -225,12 +224,6 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
     return projectToMap(path.museum.lat, path.museum.lng);
   }, [path, startPt]);
   const ctrl = useMemo(() => arcControl(startPt, targetPt), [startPt, targetPt]);
-  const arcD = useMemo(() => quadPath(startPt, ctrl, targetPt), [startPt, ctrl, targetPt]);
-  const midPt = useMemo(() => pointOnQuad(startPt, ctrl, targetPt, 0.5), [
-    startPt,
-    ctrl,
-    targetPt,
-  ]);
 
   const distanceKm = useMemo(() => {
     if (!path) return 0;
@@ -238,17 +231,24 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
   }, [path, startCity]);
 
   /**
-   * Other journey museums (not the target) — dim 14px markers on screen 02.
-   * When origin is a museum, skip it so the start pin is the only label there.
+   * Other journey museums (not the target / not visited) — dim markers on screen 02.
    */
+  const visitedOrder = useMemo(
+    () => getVisitedMuseumOrder(completedPaths),
+    [completedPaths],
+  );
   const dimMuseums = useMemo(() => {
     if (!path) return [];
+    const visited = new Set(visitedOrder);
     return JOURNEY_MUSEUM_ORDER.filter(
-      (id) => id !== path.museumId && id !== startCity.id,
+      (id) =>
+        id !== path.museumId &&
+        id !== startCity.id &&
+        !visited.has(id),
     )
       .map((id) => getMuseum(id))
       .filter((m): m is NonNullable<typeof m> => Boolean(m));
-  }, [path, startCity.id]);
+  }, [path, startCity.id, visitedOrder]);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
 
@@ -589,7 +589,7 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
       const autoFlight = !confirm;
       setShowPathConfirm(confirm);
 
-      const origin = getPathOrigin(startCityId, picked, completedPaths);
+      const origin = getPathOrigin(startCityId, picked);
       setStartCity(origin.city);
       setOriginAbroad(origin.abroad);
       setPath(picked);
@@ -812,34 +812,59 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
               aria-label="Карта України"
             >
               <image href="/map/map.svg" width={vb.w} height={vb.h} />
-              <motion.path
-                d={arcD}
-                fill="none"
-                stroke="var(--color-bg-accent)"
-                strokeLinecap="round"
-                pathLength={1}
-                strokeDasharray={1}
-                strokeDashoffset={arcDrawn || phase !== "map" ? 0 : 1}
-                style={{
-                  strokeWidth: arcStrokeWidth,
-                  transition: reduced
-                    ? "none"
-                    : `stroke-dashoffset ${motionTokens.arcDraw}s ease-in-out`,
-                }}
-              />
-              {/* Midpoint spark on the arc (Figma «Світлячок») */}
+              {/* Dotted start → target (map phase); flight keeps trail overlay */}
               {phase === "map" && arcDrawn ? (
-                <circle
-                  cx={midPt.x}
-                  cy={midPt.y}
-                  r={3}
-                  fill="var(--color-bg-accent)"
-                  style={{
-                    filter: "drop-shadow(0 0 4px var(--color-bg-accent))",
-                  }}
+                <DottedRoute
+                  start={startPt}
+                  ctrl={ctrl}
+                  end={targetPt}
+                  routeKey={`path-${path?.n ?? 0}-${path?.museumId ?? ""}`}
+                  opacity={0.6}
                 />
               ) : null}
-              {/* Dim journey museums — screen 02; hide when zoomed */}
+              {/* Constellation: visited museums in journey order */}
+              {phase === "map" && !hideFarLabels && visitedOrder.length >= 2
+                ? visitedOrder.slice(0, -1).map((id, i) => {
+                    const nextId = visitedOrder[i + 1]!;
+                    const aM = getMuseum(id);
+                    const bM = getMuseum(nextId);
+                    if (!aM || !bM) return null;
+                    const a = projectToMap(aM.lat, aM.lng);
+                    const b = projectToMap(bM.lat, bM.lng);
+                    return (
+                      <DottedRoute
+                        key={`const-${id}-${nextId}`}
+                        start={a}
+                        ctrl={arcControl(a, b)}
+                        end={b}
+                        opacity={0.25}
+                        animateDraw={false}
+                        routeKey={`const-${id}-${nextId}`}
+                      />
+                    );
+                  })
+                : null}
+              {phase === "map" && !hideFarLabels
+                ? visitedOrder.map((id) => {
+                    if (id === path?.museumId) return null;
+                    const m = getMuseum(id);
+                    if (!m) return null;
+                    const p = projectToMap(m.lat, m.lng);
+                    return (
+                      <MapStar
+                        key={`vis-${id}`}
+                        x={p.x}
+                        y={p.y}
+                        size={14}
+                        label={m.city}
+                        labelSide={id === "lviv" ? "left" : "right"}
+                        glow="soft"
+                        labelTone="secondary"
+                      />
+                    );
+                  })
+                : null}
+              {/* Dim unvisited journey museums — screen 02 */}
               {phase === "map" && !hideFarLabels
                 ? dimMuseums.map((m) => {
                     const p = projectToMap(m.lat, m.lng);
@@ -940,12 +965,14 @@ export function JourneyFlow({ pathN, autostart = false }: Props) {
             </g>
 
             <g ref={targetPinRef} opacity={showTargetPin ? 1 : 0}>
-              <MapPin
+              <MapStar
                 x={0}
                 y={0}
+                size={22}
                 label={path.museum.city}
                 labelSide="right"
-                variant="target"
+                glow="strong"
+                labelTone="primary"
                 pulsing={!reduced && phase === "map"}
               />
             </g>

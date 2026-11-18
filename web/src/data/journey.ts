@@ -78,30 +78,14 @@ export function isMuseumPassed(
 }
 
 /**
- * Map origin for a path: chosen city (path 1) or previous museum (n>1).
- * Abroad → west of the map at the target museum's latitude; label «Ти».
+ * Map / flight origin: ALWAYS the user's start city (or abroad west edge).
+ * Visited museums form a constellation separately — they are not the arc origin.
  */
 export function getPathOrigin(
   startCityId: string | null,
   path: ResolvedPath,
-  completedPaths: number[],
 ): { city: City; abroad: boolean } {
   const abroad = isAbroadCityId(startCityId);
-  if (path.n > 1) {
-    const prev = getLastCompletedPath(completedPaths);
-    if (prev) {
-      return {
-        city: {
-          id: prev.museumId,
-          name: prev.museum.city,
-          oblast: "",
-          lat: prev.museum.lat,
-          lng: prev.museum.lng,
-        },
-        abroad: false,
-      };
-    }
-  }
   if (abroad) {
     return {
       city: {
@@ -118,6 +102,19 @@ export function getPathOrigin(
     city: city ?? ABROAD_CITY,
     abroad: false,
   };
+}
+
+/** Unique museums in journey-completion order (one star each). */
+export function getVisitedMuseumOrder(completedPaths: number[]): string[] {
+  const done = new Set(completedPaths);
+  const order: string[] = [];
+  const seen = new Set<string>();
+  for (const p of getPaths()) {
+    if (!done.has(p.n) || seen.has(p.museumId)) continue;
+    seen.add(p.museumId);
+    order.push(p.museumId);
+  }
+  return order;
 }
 
 export function getOpenedArtworks(completedPaths: number[]): Artwork[] {
