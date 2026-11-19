@@ -10,6 +10,14 @@
 
 Next.js 16 (App Router), TypeScript, Tailwind CSS, Framer Motion. AI-гід — OpenAI `gpt-4o-mini` через серверний маршрут `/api/guide`. Деплой на Vercel (корінь проєкту — `web/`).
 
+## Структура репозиторію
+
+- `web/` — застосунок (Next.js);
+- `data/` — паспорти творів і база фактів для гіда;
+- `docs/` — специфікація, паспорти, база знань гіда, референси з Figma, а також робочі матеріали процесу: промти для Cursor, QA-звіт і скріншоти перевірок;
+- `.cursor/` — правила проєкту для Cursor;
+- `art/`, `hidden art/`, `wallpapers/`, `museums/`, `backgrounds/`, `map/`, `figma-export/`, `icon/` — дизайн-матеріали.
+
 ## Як працює AI-гід
 
 - Відповідає лише з перевірених фактів паспорта твору та додаткових знань (`extendedKnowledge`) із посиланнями.
