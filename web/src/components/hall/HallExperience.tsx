@@ -70,11 +70,6 @@ function stolenBlurFor(artworkId: number): string {
   return artworkId === 3 ? VITRINE_BLUR_FILTER : STOLEN_BLUR_FILTER;
 }
 
-function memoryLineCopy(artworkId: number): string {
-  if (artworkId === 3) return "Але ми пам'ятаємо, яким воно було.";
-  return "Але ми пам'ятаємо, який він.";
-}
-
 type Props = {
   museumId: string;
   pathN: number | null;
@@ -236,11 +231,10 @@ export function HallExperience({
 
   const designH = layout?.designHeight ?? 844;
   const designW = layout?.designWidth ?? 390;
-  // Uniform scale vs 390×844 phone frame; floor/lamp sit on the bottom edge.
-  const px = Math.min(viewW / 390, viewH / 844);
+  // Cover scale: fill the viewport (no letterbox). Crop overflow; centre the stage.
+  const px = Math.max(viewW / 390, viewH / 844);
   const stageH = designH * px;
-  const stageOffsetY = Math.max(0, viewH - stageH);
-  // Never narrower than the viewport — short phones used to letterbox a black strip.
+  const stageOffsetY = (viewH - stageH) / 2;
   const hallWidthPx = Math.max(designW * px, viewW);
 
   const isStolen = focus?.status === "stolen";
@@ -722,7 +716,7 @@ export function HallExperience({
     }
     const half = 28.5;
     const gap = 8;
-    const hintW = 140;
+    let hintW = 140;
     const hintH = hintPassport || hintTour ? 40 : 22;
     const margin = 12 / px;
     const scrollDes = scrollLeftPx / px;
@@ -732,18 +726,20 @@ export function HallExperience({
     let hintLeft: number;
     let hintTop: number;
     if (museumId === "melitopol") {
-      // Inside the glass: under top edge, left of the ring — clear of title/meta/badge
-      // and of the empty-state copy in the glass centre.
-      hintLeft = Math.max(glass.x + 8, cx - half - gap - hintW);
-      hintTop = frameTop + 10;
-      const badgeBottom = (layout.captions.badgeY ?? 254) + 28;
-      if (hintTop < badgeBottom) {
-        hintTop = Math.max(frameTop + 10, badgeBottom + 4);
-      }
-      // Keep above the empty-label block (~centre of glass).
-      const emptyBand = glass.y + glass.h * 0.35;
+      // Ring on glass top-right; label INSIDE glass under top edge, left of ring.
+      // Title/meta/badge stay above the vitrine (≥16px) — never overlap.
+      const badgeBottom = (layout.captions.badgeY ?? 208) + 28;
+      hintW = 130;
+      hintLeft = cx - half - gap - hintW;
+      hintTop = Math.max(frameTop + 14, badgeBottom + 16);
+      // Keep clear of the empty-state copy in the glass centre.
+      const emptyBand = glass.y + glass.h * 0.28;
       if (hintTop + hintH > emptyBand) {
-        hintTop = Math.max(frameTop + 8, emptyBand - hintH - 4);
+        hintTop = Math.max(frameTop + 14, emptyBand - hintH - 4);
+      }
+      // Never sit on the badge band.
+      if (hintTop < badgeBottom + 16) {
+        hintTop = badgeBottom + 16;
       }
     } else {
       // Above the ring, right-aligned; never overlap the ring.
@@ -762,11 +758,6 @@ export function HallExperience({
   })();
   const markerCx = markerPos.cx;
   const markerCy = markerPos.cy;
-  const showMemoryLine =
-    isStolen &&
-    !reopenHall &&
-    (stolenPhase === "revealing" || stolenPhase === "remembered") &&
-    showUi;
 
   const shelterFilter = isShelter
     ? "brightness(0.85) sepia(0.1)"
@@ -814,18 +805,12 @@ export function HallExperience({
                   width: hallWidthPx,
                 }}
               >
-              {/* 1. Wall — always cover the full stage (no side letterbox gaps). */}
+              {/* 1. Wall — covers the full cover-scaled stage. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={layout.wallSrc}
                 alt=""
-                className="pointer-events-none absolute z-0 max-w-none select-none object-cover object-left"
-                style={{
-                  left: 0,
-                  top: -stageOffsetY,
-                  width: Math.max(hallWidthPx, viewW),
-                  height: viewH,
-                }}
+                className="pointer-events-none absolute inset-0 z-0 size-full max-w-none select-none object-cover object-left"
                 draggable={false}
               />
 
@@ -904,7 +889,7 @@ export function HallExperience({
                 );
               })}
 
-              {/* 3. Darkness */}
+              {/* 3. Darkness (stage covers viewport via cover scale) */}
               <div
                 data-hall-darkness
                 className="pointer-events-none absolute inset-0 z-[5]"
@@ -1272,7 +1257,7 @@ export function HallExperience({
                             {!(
                               museumId === "melitopol" &&
                               isActiveCap &&
-                              (showMemoryLine || hintPassport)
+                              hintPassport
                             ) ? (
                               <div
                                 className="flex w-full flex-wrap items-center justify-center gap-sm"
@@ -1290,63 +1275,6 @@ export function HallExperience({
                           </motion.div>
                         );
                       })
-                  : null}
-              </AnimatePresence>
-
-              {/* Memory line (06): Melitopol between badge & vitrine (≥12px);
-                  hide badge while the line is up if space is tight. */}
-              <AnimatePresence>
-                {showMemoryLine
-                  ? (() => {
-                      const r = hallFocusSlot.frameRect;
-                      const glassTop = r.y + r.h * emptyInset.top;
-                      const lineH = museumId === "melitopol" ? 36 : 20;
-                      const gap = 12;
-                      // Melitopol: badge hidden while line shows — occupy badge Y
-                      // with ≥12px clearance above the glass.
-                      const topDes =
-                        museumId === "melitopol"
-                          ? Math.min(
-                              layout.captions.badgeY,
-                              glassTop - lineH - gap,
-                            )
-                          : glassTop - 16 - lineH;
-                      const lampBottom = layout.lamp.y + layout.lamp.h + 8;
-                      const titleTop = layout.captions.titleY;
-                      const overlapsTitle =
-                        museumId !== "melitopol" &&
-                        titleTop < glassTop &&
-                        topDes < titleTop + 48 &&
-                        topDes + lineH > titleTop;
-                      const fits =
-                        topDes * px >= 16 &&
-                        topDes >= lampBottom &&
-                        !overlapsTitle;
-                      if (!fits) return null;
-                      return (
-                        <motion.p
-                          key="memory-line"
-                          className="pointer-events-none absolute z-[11] text-center text-body-md text-text-primary"
-                          style={{
-                            left: (r.x + r.w / 2) * px,
-                            top: topDes * px,
-                            width: Math.max(280, r.w) * px,
-                            x: "-50%",
-                          }}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{
-                            duration: reduced
-                              ? motionTokens.reducedCrossfade
-                              : 0.6,
-                            delay: reduced ? 0 : 0.8,
-                          }}
-                        >
-                          {memoryLineCopy(artworkId)}
-                        </motion.p>
-                      );
-                    })()
                   : null}
               </AnimatePresence>
 

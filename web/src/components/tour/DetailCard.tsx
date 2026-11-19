@@ -1,6 +1,5 @@
 "use client";
 
-import { PASSPORT_LAYOUT } from "@/components/tour/FramedArtwork";
 import type { TouchZone } from "@/data/types";
 import { easings, motionTokens } from "@/lib/motion";
 import { motion } from "framer-motion";
@@ -12,20 +11,14 @@ type Props = {
   onAskGuide: () => void;
 };
 
-/** Figma 08 floating detail card — x24 y500 w342. */
+/** Figma 08 detail card — slides up from the bottom over the passport. */
 export function DetailCard({ zone, sourceUrl, onClose, onAskGuide }: Props) {
-  const L = PASSPORT_LAYOUT;
   return (
     <motion.div
-      className="absolute z-[40] flex flex-col gap-lg rounded-lg border border-border-subtle bg-surface px-xl pb-xl pt-lg"
-      style={{
-        left: `calc(${L.card.x / 390} * 100%)`,
-        top: `calc(${L.card.y / 844} * 100dvh)`,
-        width: `calc(${L.card.w / 390} * 100%)`,
-      }}
-      initial={{ opacity: 0, y: 16 }}
+      className="absolute inset-x-0 bottom-0 z-[40] mx-auto flex w-full max-w-[430px] flex-col gap-lg rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-lg"
+      initial={{ opacity: 0, y: "100%" }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 12 }}
+      exit={{ opacity: 0, y: "100%" }}
       transition={{ duration: motionTokens.sheetSlide, ease: easings.easeOut }}
       role="dialog"
       aria-label={zone.title}

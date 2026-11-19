@@ -102,7 +102,9 @@ export const hallLayouts: Record<string, HallLayout> = {
     wallSrc: "/halls/melitopol/wall.webp",
     lamp: { w: 98, h: 72, y: 45 },
     cone: { w: 353, h: 745, y: 99 },
-    captions: { titleY: 170, metaY: 198, badgeY: 254 },
+    // Title/meta/badge above the vitrine with ≥16px gap to the glass (top ≈324).
+    // Kept compact so Safari ~660–740 still shows title above the badge.
+    captions: { titleY: 132, metaY: 158, badgeY: 208 },
     slots: [
       {
         artworkId: 3,

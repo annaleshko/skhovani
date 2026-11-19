@@ -182,6 +182,19 @@ Automated @ 390×844 (`reducedMotion`) + `/api/guide`. Guide chat UI / detail / 
 | «Почати спочатку → Так, почати» → city picker | OK |
 | Mobile `/reset` → city picker | OK |
 
+## iPhone Safari fixes (2026-11-19)
+
+| Fix | Notes |
+|---|---|
+| Detail 08 zoom | Explore tap → lens 2.0 + ring (same as tour); × zooms out; glide between points |
+| Hall cover scale | `px = max(vw/390, vh/844)`; wall bleed + darkness cover viewport |
+| Facade 04 | Full-bleed: 178% width crop of baked letterbox; ground above sheet; top fade |
+| Memory line | Removed «Але ми пам'ятаємо…» (hall reveal = blur→sharp only) |
+| Melitopol | Captions above glass ≥16px; hint inside glass left of ring |
+| Safari bars | `100dvh` + `env(safe-area-inset-bottom)` on passport/tour/detail |
+
+Screenshots: `docs/verify/iphone/` (360×640, 390×844, 430×932, 390×740 Safari).
+
 ## Restore flight + hall copy + light (2026-11-19)
 
 | Fix | Notes |

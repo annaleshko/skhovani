@@ -64,6 +64,8 @@ type Props = {
 
 const FRAME = { w: 390, h: 844 };
 const SHEET_RESERVE = 340;
+/** Passport detail 08 — same lens as tour, fixed 2× into the tapped point. */
+const DETAIL_ZOOM = 2;
 
 /**
  * Tour 07 + passport/detail stage (16 / 08).
@@ -358,12 +360,53 @@ export function TourStage({
 
   const wasDetailOpen = useRef(detailOpen);
   useEffect(() => {
-    if (wasDetailOpen.current && !detailOpen) {
+    if (wasDetailOpen.current && !detailOpen && mode === "explore") {
       setZoneIdx(null);
       setRingVisible(false);
+      setZoomedIn(false);
+      const dur = reduced
+        ? motionTokens.reducedCrossfade
+        : motionTokens.lens;
+      goFull(dur);
     }
     wasDetailOpen.current = detailOpen;
-  }, [detailOpen]);
+  }, [detailOpen, goFull, mode, reduced]);
+
+  // Keep explore detail lens snapped when the fitted layout changes.
+  useEffect(() => {
+    if (mode !== "explore" || !zoomedInRef.current || zoneIdx == null) return;
+    const z = zones[zoneIdx];
+    if (!z) return;
+    const p = getZonePoint(z, zoneGrid);
+    const cam = lensCamera(
+      p.x,
+      p.y,
+      DETAIL_ZOOM,
+      imgLayout,
+      focusX,
+      focusY,
+      stage.w,
+      viewH,
+    );
+    camAnims.current.forEach((a) => a.stop());
+    camAnims.current = [];
+    camX.set(cam.tx);
+    camY.set(cam.ty);
+    camScale.set(cam.scale);
+  }, [
+    camScale,
+    camX,
+    camY,
+    focusX,
+    focusY,
+    imgLayout,
+    mode,
+    stage.w,
+    viewH,
+    zoneGrid,
+    zoneIdx,
+    zones,
+  ]);
 
   useEffect(() => {
     if (!loaded || !hasNatural || startExplore) return;
@@ -447,22 +490,45 @@ export function TourStage({
   };
 
   const selectZone = (idx: number | null) => {
+    const glideSec = reduced
+      ? motionTokens.reducedCrossfade
+      : motionTokens.lens;
+    if (idx == null) {
+      setZoneIdx(null);
+      setRingVisible(false);
+      setZoomedIn(false);
+      zoomedInRef.current = false;
+      goFull(glideSec);
+      onZoneChange?.(null);
+      return;
+    }
+    const z = zones[idx];
+    if (!z) return;
+    const p = getZonePoint(z, zoneGrid);
     setZoneIdx(idx);
-    setRingVisible(idx != null);
-    setZoomedIn(false);
-    goFull(0);
-    onZoneChange?.(idx != null ? zones[idx] ?? null : null);
+    setZoomedIn(true);
+    zoomedInRef.current = true;
+    setRingVisible(false);
+    onZoneChange?.(z);
+    flyTo(p.x, p.y, DETAIL_ZOOM, glideSec, () => {
+      setRingVisible(true);
+    });
   };
 
   const onImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
     if (mode !== "explore") return;
     const rect = e.currentTarget.getBoundingClientRect();
+    // Hit-test in image local space (pre-transform); getBoundingClientRect
+    // already includes the camera scale/translate.
     const nx = (e.clientX - rect.left) / rect.width;
     const ny = (e.clientY - rect.top) / rect.height;
     const hit = hitTestZonePoint(nx, ny, zones, zoneGrid, 0.1);
     if (hit < 0) {
-      selectZone(null);
-      pulseHint();
+      if (zoomedIn) {
+        selectZone(null);
+      } else {
+        pulseHint();
+      }
       return;
     }
     selectZone(hit);
@@ -472,6 +538,15 @@ export function TourStage({
   const ringPoint = zone
     ? (() => {
         const p = getZonePoint(zone, zoneGrid);
+        if (zoomedIn) {
+          const cam = {
+            tx: camX.get(),
+            ty: camY.get(),
+            scale: camScale.get(),
+          };
+          const scr = stopScreenPoint(p.x, p.y, cam, imgLayout);
+          return { cx: scr.x, cy: scr.y };
+        }
         return {
           cx: imgLayout.x + p.x * imgLayout.w,
           cy: imgLayout.y + p.y * imgLayout.h,
@@ -739,11 +814,12 @@ export function TourStage({
             </div>
           </div>
 
-          {/* Credit + hint under the actual frame box (shrinks with frame on short phones) */}
+          {/* Credit + hint under the frame — hide while detail-zoomed */}
           <div
             className="pointer-events-none absolute inset-x-0 z-[5] flex flex-col gap-sm px-xl"
             style={{
               top: frameSlot.y + frameSlot.h + 8,
+              opacity: zoomedIn ? 0 : 1,
             }}
           >
             {photoLine ? (
@@ -770,7 +846,7 @@ export function TourStage({
 
       {/* Tour bottom sheet */}
       {mode === "tour" && stop ? (
-        <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 flex flex-col gap-[45px] rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(40px+var(--safe-bottom))] pt-xl">
+        <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 flex flex-col gap-[45px] rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+env(safe-area-inset-bottom,0px))] pt-xl">
           <div className="flex flex-col gap-lg">
             <ProgressStepper total={stops.length} current={stopIdx + 1} />
             <motion.div

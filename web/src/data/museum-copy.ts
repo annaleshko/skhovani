@@ -32,7 +32,7 @@ export type JourneyMuseumId = (typeof JOURNEY_MUSEUM_ORDER)[number];
  * From passports — one line per museum.
  */
 export const MUSEUM_PATH_SHEET_BLURB: Record<string, string> = {
-  kherson: "Музей пограбували у 2022 році, але ми пам'ятаємо, що тут висіло.",
+  kherson: "Музей пограбували у 2022 році.",
   // stolen — passport: April 2022, occupiers removed the Scythian gold
   melitopol: "У квітні 2022 року окупанти вивезли скіфське золото з музею.",
   // shelter
@@ -46,7 +46,7 @@ export const MUSEUM_PATH_SHEET_BLURB: Record<string, string> = {
 /** @deprecated Prefer routeSheetBlurbForPath — kept for museum-only callers. */
 export const MUSEUM_ROUTE_SHEET_BLURB: Record<string, string> = {
   kherson:
-    "Великодня заутреня. Музей пограбували у 2022 році, але ми пам'ятаємо, що тут висіло.",
+    "Великодня заутреня. Музей пограбували у 2022 році.",
   melitopol: "Скіфське золото. У квітні 2022 року окупанти вивезли його з музею.",
   kharkiv: "Запорожці пишуть листа турецькому султанові. Твір в укритті.",
   lviv: "Богородчанський іконостас. Твір в укритті.",
@@ -61,7 +61,7 @@ export function pathSheetBlurb(museumId: string): string {
   return (
     MUSEUM_PATH_SHEET_BLURB[museumId] ??
     // TODO(copy)
-    "Музей пограбували у 2022 році, але ми пам'ятаємо, що тут висіло."
+    "Музей пограбували у 2022 році."
   );
 }
 

@@ -96,8 +96,8 @@ export function AboutSheet({
               dimmed && "pointer-events-none",
             )}
             style={{
-              // Sit above the pinned action bar (+ safe area)
-              bottom: "calc(72px + var(--safe-bottom))",
+              // Sit above the pinned action bar (+ iOS Safari home/toolbar inset)
+              bottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
             }}
             initial={{
               y: 48,
@@ -263,7 +263,7 @@ export function AboutSheet({
               dimmed && "pointer-events-none",
             )}
             style={{
-              paddingBottom: "calc(12px + var(--safe-bottom))",
+              paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
             }}
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

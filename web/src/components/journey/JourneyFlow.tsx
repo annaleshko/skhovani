@@ -13,8 +13,6 @@ import {
   pathSheetBlurb,
 } from "@/data/museum-copy";
 import {
-  FACADE_NATIVE_H,
-  FACADE_NATIVE_W,
   getMuseumDisplayName,
   getMuseumShortLabel,
   getMuseumUi,
@@ -133,33 +131,6 @@ function stageCam09(pt: MapPoint): CameraTransform {
   return cameraPlaceAt(pt, ZOOM_SCALE, ZOOM_FOCUS.x, ZOOM_FOCUS.y);
 }
 
-/**
- * Fit facade into [availTop, availBottom]; scale down if needed (min 0.75).
- * `y` may only move up (≤ 0) — never leave a gap below the top of the screen.
- */
-function fitFacadeLayout(
-  screenW: number,
-  availTop: number,
-  availBottom: number,
-  buildingTopY: number,
-  groundY: number,
-): { width: number; height: number; x: number; y: number; scale: number } {
-  const fullH = screenW * (FACADE_NATIVE_H / FACADE_NATIVE_W);
-  const buildingFrac = Math.max(0.01, groundY - buildingTopY);
-  const buildingAtFull = buildingFrac * fullH;
-  const availH = Math.max(1, availBottom - availTop);
-  let scale = 1;
-  if (buildingAtFull > availH) {
-    scale = Math.max(0.75, availH / buildingAtFull);
-  }
-  const width = screenW * scale;
-  const height = fullH * scale;
-  // Align ground to availBottom, but never shift the image down (Figma y=0 at 390×844).
-  const y = Math.min(0, availBottom - groundY * height);
-  const x = (screenW - width) / 2;
-  return { width, height, x, y, scale };
-}
-
 export function JourneyFlow({
   pathN,
   autostart = false,
@@ -238,9 +209,6 @@ export function JourneyFlow({
   const facadeRootRef = useRef<HTMLDivElement>(null);
   const facadeCardRef = useRef<HTMLDivElement>(null);
   const facadeTrailRef = useRef<HTMLElement>(null);
-  const [facadeCardTop, setFacadeCardTop] = useState<number>(FRAME.h);
-  const [facadeTrailBottom, setFacadeTrailBottom] = useState(96);
-  const [facadeWidth, setFacadeWidth] = useState<number>(FRAME.w);
   const phaseRef = useRef<Phase>(phase);
   const glowRef = useRef<SVGGElement>(null);
   const startPinRef = useRef<SVGGElement>(null);
@@ -291,54 +259,6 @@ export function JourneyFlow({
   }, []);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
-
-  const facadeLayout = useMemo(() => {
-    if (!museumUi) {
-      return { width: facadeWidth, height: facadeWidth * (FACADE_NATIVE_H / FACADE_NATIVE_W), x: 0, y: 0, scale: 1 };
-    }
-    const availTop = facadeTrailBottom + 16;
-    const availBottom = facadeCardTop - 24;
-    return fitFacadeLayout(
-      facadeWidth,
-      availTop,
-      availBottom,
-      museumUi.buildingTopY,
-      museumUi.groundY,
-    );
-  }, [facadeCardTop, facadeTrailBottom, facadeWidth, museumUi]);
-
-  useEffect(() => {
-    if (phase !== "facade" && phase !== "entering") return;
-    const root = facadeRootRef.current;
-    if (!root) return;
-    const measure = () => {
-      const card = facadeCardRef.current;
-      const trail = facadeTrailRef.current;
-      const rootRect = root.getBoundingClientRect();
-      setFacadeWidth(rootRect.width || FRAME.w);
-      if (trail) {
-        setFacadeTrailBottom(trail.getBoundingClientRect().bottom - rootRect.top);
-      } else if (revisit) {
-        // No trail on revisit — keep facade below safe status area
-        setFacadeTrailBottom(56);
-      }
-      if (!card) return;
-      const cardRect = card.getBoundingClientRect();
-      setFacadeCardTop(cardRect.top - rootRect.top);
-    };
-    measure();
-    const raf = requestAnimationFrame(measure);
-    const ro = new ResizeObserver(measure);
-    ro.observe(root);
-    const card = facadeCardRef.current;
-    if (card) ro.observe(card);
-    const trail = facadeTrailRef.current;
-    if (trail) ro.observe(trail);
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-    };
-  }, [phase, path?.museumId, revisit]);
 
   const trailItems: TrailItem[] | null = useMemo(() => {
     if (!path) return null;
@@ -1340,31 +1260,33 @@ export function JourneyFlow({
           }}
         >
           <motion.div
-            className="absolute inset-0"
+            className="absolute inset-0 overflow-hidden"
             style={{
               scale: phase === "entering" ? doorCamScale : facadeScale,
               transformOrigin: `${museumUi.doorX}% ${museumUi.doorY}%`,
               backgroundColor: museumUi.facadeFill,
             }}
           >
+            {/* Full-bleed facade: exports include ~15% side letterbox — scale
+                width past the viewport and clip; anchor near ground above sheet. */}
             {phase === "facade" && !revisit ? (
               <button
                 type="button"
                 aria-label="Зайти в музей"
                 onClick={enterDoor}
-                className="absolute z-[1] cursor-pointer border-0 bg-transparent p-0"
-                style={{
-                  left: facadeLayout.x,
-                  top: facadeLayout.y,
-                  width: facadeLayout.width,
-                  height: facadeLayout.height,
-                }}
+                className="absolute inset-0 z-[1] cursor-pointer overflow-hidden border-0 bg-transparent p-0"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={museumUi.facadeSrc}
                   alt=""
-                  className="block size-full max-w-none"
+                  className="pointer-events-none absolute left-1/2 max-w-none -translate-x-1/2 select-none"
+                  style={{
+                    width: "178%",
+                    height: "auto",
+                    // Pull the building band into the upper viewport (export is a tall 390×844 frame).
+                    top: "-38%",
+                  }}
                   draggable={false}
                 />
               </button>
@@ -1373,16 +1295,22 @@ export function JourneyFlow({
               <img
                 src={museumUi.facadeSrc}
                 alt=""
-                className="absolute block max-w-none"
+                className="pointer-events-none absolute left-1/2 z-[1] max-w-none -translate-x-1/2 select-none"
                 style={{
-                  left: facadeLayout.x,
-                  top: facadeLayout.y,
-                  width: facadeLayout.width,
-                  height: facadeLayout.height,
+                  width: "178%",
+                  height: "auto",
+                  top: "-38%",
                 }}
                 draggable={false}
               />
             )}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-40"
+              style={{
+                background: `linear-gradient(to bottom, ${museumUi.facadeFill} 0%, transparent 100%)`,
+              }}
+            />
           </motion.div>
 
           {phase === "facade" && trailItems && !revisit ? (
@@ -1400,14 +1328,6 @@ export function JourneyFlow({
               initial={reduced ? false : { y: "100%" }}
               animate={{ y: 0 }}
               transition={{ duration: motionTokens.sheetSlide, ease: easings.easeOut }}
-              onAnimationComplete={() => {
-                const root = facadeRootRef.current;
-                const card = facadeCardRef.current;
-                if (!root || !card) return;
-                const rootRect = root.getBoundingClientRect();
-                const cardRect = card.getBoundingClientRect();
-                setFacadeCardTop(cardRect.top - rootRect.top);
-              }}
             >
               <p className="text-overline uppercase text-text-accent">Ласкаво просимо</p>
               <h2 className="mt-md text-h2 break-words">
