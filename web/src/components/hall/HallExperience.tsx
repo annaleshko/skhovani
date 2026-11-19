@@ -517,6 +517,9 @@ export function HallExperience({
         setPhase("about");
         return;
       }
+      // Back to the hall so reveal / lamp / captions can run.
+      setPhase("hall");
+      setIntroStep("done");
       if (art.status === "stolen") {
         setStolenPhase("empty");
         clearRevealTimers();
