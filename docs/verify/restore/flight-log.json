@@ -1,0 +1,172 @@
+[
+  {
+    "path": 1,
+    "museum": "kherson",
+    "cam07": {
+      "tx": -9,
+      "ty": 239,
+      "scale": 1
+    },
+    "cam09": {
+      "tx": -1228.6,
+      "ty": -764.7,
+      "scale": 6.22
+    },
+    "frame0": {
+      "t": 8,
+      "tx": -9,
+      "ty": 239,
+      "scale": 1
+    },
+    "final": {
+      "t": 1687,
+      "tx": -1228.6,
+      "ty": -764.7,
+      "scale": 6.22,
+      "targetScreen": {
+        "x": 208,
+        "y": 356
+      }
+    },
+    "maxJumpPx": 25.6,
+    "monoZoom": true,
+    "finalCentreErrPx": 0,
+    "samples": 33
+  },
+  {
+    "path": 2,
+    "museum": "melitopol",
+    "cam07": {
+      "tx": -9,
+      "ty": 239,
+      "scale": 1
+    },
+    "cam09": {
+      "tx": -1545.9,
+      "ty": -726.4,
+      "scale": 6.22
+    },
+    "frame0": {
+      "t": 13,
+      "tx": -9.1,
+      "ty": 239,
+      "scale": 1
+    },
+    "final": {
+      "t": 1682,
+      "tx": -1545.9,
+      "ty": -726.4,
+      "scale": 6.22,
+      "targetScreen": {
+        "x": 208,
+        "y": 356
+      }
+    },
+    "maxJumpPx": 25.2,
+    "monoZoom": true,
+    "finalCentreErrPx": 0,
+    "samples": 40
+  },
+  {
+    "path": 3,
+    "museum": "kharkiv",
+    "cam07": {
+      "tx": -9,
+      "ty": 239,
+      "scale": 1
+    },
+    "cam09": {
+      "tx": -1645.8,
+      "ty": -161.8,
+      "scale": 6.22
+    },
+    "frame0": {
+      "t": 24,
+      "tx": -9.3,
+      "ty": 238.9,
+      "scale": 1.002
+    },
+    "final": {
+      "t": 1680,
+      "tx": -1645.8,
+      "ty": -161.8,
+      "scale": 6.22,
+      "targetScreen": {
+        "x": 208,
+        "y": 356
+      }
+    },
+    "maxJumpPx": 30.8,
+    "monoZoom": true,
+    "finalCentreErrPx": 0,
+    "samples": 54
+  },
+  {
+    "path": 4,
+    "museum": "lviv",
+    "cam07": {
+      "tx": -9,
+      "ty": 239,
+      "scale": 1
+    },
+    "cam09": {
+      "tx": -237.2,
+      "ty": -189.4,
+      "scale": 6.22
+    },
+    "frame0": {
+      "t": 12,
+      "tx": -9.1,
+      "ty": 239,
+      "scale": 1
+    },
+    "final": {
+      "t": 1684,
+      "tx": -237.2,
+      "ty": -189.4,
+      "scale": 6.22,
+      "targetScreen": {
+        "x": 208,
+        "y": 356
+      }
+    },
+    "maxJumpPx": 8.8,
+    "monoZoom": true,
+    "finalCentreErrPx": 0,
+    "samples": 60
+  },
+  {
+    "path": 5,
+    "museum": "chernihiv",
+    "cam07": {
+      "tx": -9,
+      "ty": 239,
+      "scale": 1
+    },
+    "cam09": {
+      "tx": -1075.4,
+      "ty": 108.3,
+      "scale": 6.22
+    },
+    "frame0": {
+      "t": 12,
+      "tx": -9.1,
+      "ty": 239,
+      "scale": 1
+    },
+    "final": {
+      "t": 1707,
+      "tx": -1075.4,
+      "ty": 108.3,
+      "scale": 6.22,
+      "targetScreen": {
+        "x": 208,
+        "y": 356
+      }
+    },
+    "maxJumpPx": 19.8,
+    "monoZoom": true,
+    "finalCentreErrPx": 0,
+    "samples": 41
+  }
+]

@@ -1,10 +1,7 @@
 "use client";
 
 import { JourneyFlow } from "@/components/journey/JourneyFlow";
-import {
-  RouteMapScreen,
-  type DepartOpts,
-} from "@/components/journey/RouteMapScreen";
+import { RouteMapScreen } from "@/components/journey/RouteMapScreen";
 import { getNextPath, type ResolvedPath } from "@/data/journey";
 import { useAppState } from "@/state/AppState";
 import { useRouter } from "next/navigation";
@@ -12,20 +9,17 @@ import { useCallback, useState } from "react";
 
 /**
  * Standalone 02в — `/journey?mode=route` (also used from /finish).
- * «Вирушити» flies in-place from the 02в map cam (sheet slides under overlay).
- * Star revisit: `/journey?path=N&autostart=1&revisit=1`.
+ * «Вирушити» overlays JourneyFlow which flies cam07 → cam09 (same 07 framing
+ * as this screen, so there is no camera jump at the tap).
  */
 export function JourneyRouteMap() {
   const router = useRouter();
   const { completedPaths } = useAppState();
   const next = getNextPath(completedPaths) ?? null;
-  const [routeFlight, setRouteFlight] = useState<{
-    pathN: number;
-    mapCam: DepartOpts["mapCam"];
-  } | null>(null);
+  const [routeFlight, setRouteFlight] = useState<number | null>(null);
 
-  const onDepart = useCallback((path: ResolvedPath, opts: DepartOpts) => {
-    setRouteFlight({ pathN: path.n, mapCam: opts.mapCam });
+  const onDepart = useCallback((path: ResolvedPath) => {
+    setRouteFlight(path.n);
   }, []);
 
   const onRevisit = useCallback(
@@ -46,14 +40,9 @@ export function JourneyRouteMap() {
         onDepart={onDepart}
         onRevisit={onRevisit}
       />
-      {routeFlight ? (
+      {routeFlight != null ? (
         <div className="absolute inset-0 z-[60]">
-          <JourneyFlow
-            pathN={routeFlight.pathN}
-            autostart
-            fromRouteMap
-            initialCam={routeFlight.mapCam}
-          />
+          <JourneyFlow pathN={routeFlight} autostart fromRouteMap />
         </div>
       ) : null}
     </div>

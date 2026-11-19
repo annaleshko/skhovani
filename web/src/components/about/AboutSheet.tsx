@@ -102,16 +102,16 @@ export function AboutSheet({
             initial={{
               y: 48,
               opacity: 0,
-              // Collapsed: title/meta/status/tabs(1 row) + ≥2 lines. Short
-              // phones raise the sheet (frame box shrinks first in TourStage).
-              top: `min(48dvh, max(34dvh, ${(L.sheetCollapsed.y / 844) * 100}dvh))`,
+              // Collapsed: leave room above for credit+hint. Frame shrinks first
+              // (TourStage ≥150px); sheet sits lower on short phones (≤58dvh).
+              top: `min(58dvh, max(42dvh, ${(L.sheetCollapsed.y / 844) * 100}dvh))`,
             }}
             animate={{
               y: 0,
               opacity: 1,
               top: expanded
                 ? `max(12dvh, ${(L.sheetExpanded.y / 844) * 100}dvh)`
-                : `min(48dvh, max(34dvh, ${(sheetTop / 844) * 100}dvh))`,
+                : `min(58dvh, max(42dvh, ${(sheetTop / 844) * 100}dvh))`,
             }}
             exit={{ y: 48, opacity: 0 }}
             transition={defaultSpring}

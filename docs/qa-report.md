@@ -182,49 +182,36 @@ Automated @ 390×844 (`reducedMotion`) + `/api/guide`. Guide chat UI / detail / 
 | «Почати спочатку → Так, почати» → city picker | OK |
 | Mobile `/reset` → city picker | OK |
 
-## Light + layout polish (2026-11-19)
+## Restore flight + hall copy + light (2026-11-19)
 
 | Fix | Notes |
 |---|---|
-| Passport / tour lamp+cone | Full 346×324 cone (≥80% design); lamp z above art; tour screen-blend + radial glow; magnifier dim 0.18 |
-| Melitopol memory / reopen hint | Badge hidden while memory or reopen hint; hint left of ring, above glass |
-| Hint ring | Measured object-contain rect, clamped onto chrome (Харків inset); Melitopol = glass corner |
-| 360 passport | Tabs `nowrap` + horizontal scroll; sheet top raised; frame box shrinks first |
-| Flight logger | `NEXT_PUBLIC_FLIGHT_LOG=1` / dev: samples map layer 600ms after «Вирушити» |
+| Flight math | Always cam07 → cam09; `pathRef` geometry (autostart no longer locks onto Київ); 02/02в share cam07 framing |
+| Soft glow | Cone image + radial mask; no CSS box; lamp/cone z below art, fade when zoomed |
+| Hall badge | Status badge only (no «квітень 2022» meta); passport keeps status meta |
+| Melitopol hint | Ring on glass top-right; label inside glass under top edge, left of ring |
+| Hall meta | `line-clamp-2` (Іконостас full author·year) |
+| Passport 16 | Frame min 150px; credit+hint under real frameSlot; sheet ≤58dvh |
+| 360 hall wall | Full-viewport wall bleed + stage `object-cover` |
 
-### Flight handoff samples (`next start`, map layer rect)
+### Flight logs (`next start`, `NEXT_PUBLIC_FLIGHT_LOG=1`, 390×844)
 
-**Path 1 · 390×844**
+| Path | Museum | cam07 | cam09 | maxJumpPx† | monoZoom | finalCentreErrPx |
+|---:|---|---|---|---:|---|---:|
+| 1 | kherson | −9 / 239 / 1 | −1228.6 / −764.7 / 6.22 | 25.6 | yes | 0 |
+| 2 | melitopol | −9 / 239 / 1 | −1545.9 / −726.4 / 6.22 | 25.2 | yes | 0 |
+| 3 | kharkiv | −9 / 239 / 1 | −1645.8 / −161.8 / 6.22 | 30.8 | yes | 0 |
+| 4 | lviv | −9 / 239 / 1 | −237.2 / −189.4 / 6.22 | 8.8 | yes | 0 |
+| 5 | chernihiv | −9 / 239 / 1 | −1075.4 / 108.3 / 6.22 | 19.8 | yes | 0 |
 
-| | x | y | w | h |
-|---|---:|---:|---:|---:|
-| preTap | −9 | 239 | 408 | 296 |
-| frame0 (t=34ms) | −9.8 | 238.7 | 409.6 | 297.2 |
-| Δ frame0−preTap | 0.8 | 0.3 | 0.4% | — |
+† Peak screen-space velocity of continuous easeInOut zoom (normalized to 16ms). No discontinuous snaps; final museum centre = ZOOM_FOCUS ±0px. JSON: `docs/verify/restore/flight-log.json`. Screenshots: `docs/verify/restore/`.
 
-**Path 1 · 360×640**
+## Light + layout polish (2026-11-19 earlier)
 
-| | x | y | w | h |
-|---|---:|---:|---:|---:|
-| preTap | −8.6 | 181.5 | 376.6 | 273.2 |
-| frame0 (t=37ms) | −9.2 | 181 | 378.5 | 274.6 |
-| Δ | 0.6 | 0.5 | 0.5% | — |
-
-**Path 2 · 390×844** (02в → flight; early samples)
-
-| t ms | x | y | w | h |
-|---:|---:|---:|---:|---:|
-| 17 (frame0) | 15.6 | 206 | 358.8 | 260.3 |
-| 32 | 15.4 | 205.9 | 359.2 | 260.6 |
-
-**Path 2 · 360×640**
-
-| t ms | x | y | w | h |
-|---:|---:|---:|---:|---:|
-| 8 (frame0) | 14.4 | 164.4 | 331.2 | 240.3 |
-| 22 | 14.4 | 164.4 | 331.3 | 240.4 |
-
-Frame 0 vs pre-tap: Δ &lt; 8px and width step &lt; 5% on path 1. Path 2 consecutive early frames &lt; 1px. Full JSON: `docs/verify/light/flight-log.json`. Screenshots: `docs/verify/light/`.
+| Fix | Notes |
+|---|---|
+| Passport / tour lamp+cone | (superseded by restore pass above) |
+| Flight logger | `NEXT_PUBLIC_FLIGHT_LOG=1` / dev samples |
 
 ## Release candidate stages (2026-11-18 evening)
 

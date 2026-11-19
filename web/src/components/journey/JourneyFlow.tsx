@@ -84,12 +84,10 @@ type Props = {
   /** Hall shows last opened artwork already revealed. */
   reopenHall?: boolean;
   /**
-   * Flight starts from the 02в map camera (no navigation jump).
-   * When set with autostart, frame 0 equals the last 02в map frame.
+   * From 02в «Вирушить» — skip path-1 sheet; flight still uses cam07 → cam09
+   * (02в map is framed with the same 07 camera so there is no jump).
    */
   fromRouteMap?: boolean;
-  /** Stage-pixel camera matching the 02в SVG rect (tx/ty/scale). */
-  initialCam?: CameraTransform;
 };
 
 const PICK_DELAY_MS = 0;
@@ -166,8 +164,6 @@ export function JourneyFlow({
   pathN,
   autostart = false,
   revisit = false,
-  fromRouteMap = false,
-  initialCam,
   reopenHall = false,
 }: Props) {
   const router = useRouter();
@@ -239,10 +235,6 @@ export function JourneyFlow({
   const mapStageRef = useRef<HTMLDivElement>(null);
   const mapLayerRef = useRef<HTMLDivElement>(null);
   const flightLogRaf = useRef<number | null>(null);
-  /** Flight lerp start — 02в map cam when fromRouteMap, else stage cam07. */
-  const flightStartCamRef = useRef<CameraTransform | null>(
-    fromRouteMap && initialCam ? initialCam : null,
-  );
   const facadeRootRef = useRef<HTMLDivElement>(null);
   const facadeCardRef = useRef<HTMLDivElement>(null);
   const facadeTrailRef = useRef<HTMLElement>(null);
@@ -436,20 +428,30 @@ export function JourneyFlow({
     [camScale, camX, camY],
   );
 
-  /** Flight camera: follow the dot while easing start cam → locked 09. */
+  /**
+   * Flight camera: follow the firefly; focus eases start → museum (cam07 → cam09).
+   * Geometry is passed in (not closed over React state) so autostart / 02в
+   * flights that run before `setPath` commits still target the right museum.
+   */
   const camForFlightT = useCallback(
-    (t: number, stageW: number, stageH: number, cam09: CameraTransform): CameraTransform => {
-      const c0 =
-        flightStartCamRef.current ??
-        toStageCam07(cam07Design, stageW, stageH);
-      const startFocus = cameraProjectPoint(startPt, c0);
+    (
+      t: number,
+      stageW: number,
+      stageH: number,
+      cam09: CameraTransform,
+      start: MapPoint,
+      ctrlPt: MapPoint,
+      target: MapPoint,
+    ): CameraTransform => {
+      const c0 = toStageCam07(cam07Design, stageW, stageH);
+      const startFocus = cameraProjectPoint(start, c0);
       const focusX = startFocus.x + (ZOOM_FOCUS.x - startFocus.x) * t;
       const focusY = startFocus.y + (ZOOM_FOCUS.y - startFocus.y) * t;
       const scale = c0.scale + (cam09.scale - c0.scale) * t;
-      const dot = pointOnQuad(startPt, ctrl, targetPt, t);
+      const dot = pointOnQuad(start, ctrlPt, target, t);
       return cameraPlaceAt(dot, scale, focusX, focusY);
     },
-    [cam07Design, ctrl, startPt, targetPt],
+    [cam07Design],
   );
 
   useEffect(() => {
@@ -463,8 +465,7 @@ export function JourneyFlow({
       setStageSize({ w, h });
       const p = phaseRef.current;
       if (p === "map" || p === "boot") {
-        const cam =
-          flightStartCamRef.current ?? toStageCam07(camera07(), w, h);
+        const cam = toStageCam07(camera07(), w, h);
         setCam(cam);
         writeOverlay(cam, 0, false);
       }
@@ -564,19 +565,13 @@ export function JourneyFlow({
     journeyLockedRef.current = false;
     lockedCam09Ref.current = null;
     setPhase("map");
-    // 02в handoff: start from the measured map cam so frame 0 matches 02в.
-    const cam =
-      fromRouteMap && initialCam
-        ? initialCam
-        : toStageCam07(camera07(), stageSize.w, stageSize.h);
-    flightStartCamRef.current =
-      fromRouteMap && initialCam ? initialCam : null;
+    // Always the same 07 framing as 02 / 02в — flight frame 0 = this cam.
+    const cam = toStageCam07(camera07(), stageSize.w, stageSize.h);
     setCam(cam);
     flightT.set(0);
     writeOverlay(cam, 0, false);
 
-    // «Вирушити» / autostart: skip route draw-in + sheet — fly from ready map state.
-    // fromRouteMap: sheet already slid on 02в; fly immediately from that cam.
+    // «Вирушити» / autostart / 02в: skip draw-in — fly from cam07 immediately.
     if (autoFlight) {
       mapOpacity.set(1);
       glowOpacity.set(1);
@@ -619,9 +614,7 @@ export function JourneyFlow({
   }, [
     clearEntryTimers,
     flightT,
-    fromRouteMap,
     glowOpacity,
-    initialCam,
     mapOpacity,
     reduced,
     scheduleEntry,
@@ -861,84 +854,110 @@ export function JourneyFlow({
   }, [afterZoom, flightT, glowOpacity, reduced, setCam, writeOverlay]);
 
   const runFlight = useCallback(() => {
+    // Resolve geometry from pathRef — autostart/02в may fire before setPath commits.
+    const active = pathRef.current;
+    if (!active) {
+      console.warn("[journey] runFlight skipped: pathRef empty");
+      return;
+    }
+    const origin = getPathOrigin(startCityId, active);
+    const start = projectToMap(origin.city.lat, origin.city.lng);
+    const target = projectToMap(active.museum.lat, active.museum.lng);
+    const ctrlPt = arcControl(start, target);
+
     // Lock full-screen stage + 09 camera once (header/sheet are overlays — no reflow).
     const el = mapStageRef.current;
     const w = el?.clientWidth || stageSize.w || FRAME.w;
     const h = el?.clientHeight || stageSize.h || FRAME.h;
     lockedStageRef.current = { w, h };
-    lockedCam09Ref.current = stageCam09(targetPt);
+    lockedCam09Ref.current = stageCam09(target);
     journeyLockedRef.current = true;
     setStageSize({ w, h });
 
-    // Frame 0 = exact on-screen map at tap (path 1 sheet / any map phase).
-    if (!fromRouteMap) {
-      flightStartCamRef.current = readCam();
-    }
+    const cam07 = toStageCam07(cam07Design, w, h);
+    const cam09 = lockedCam09Ref.current;
+    // Frame 0 = cam07 (same framing as 02 / 02в).
+    setCam(cam07);
 
-    // Dev-only: sample map layer rect for 600ms after «Вирушити».
-    if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_FLIGHT_LOG === "1") {
+    // Dev / prod-with-flag: log camera each frame for QA.
+    if (
+      process.env.NODE_ENV === "development" ||
+      process.env.NEXT_PUBLIC_FLIGHT_LOG === "1"
+    ) {
       if (flightLogRaf.current) cancelAnimationFrame(flightLogRaf.current);
       const samples: {
         t: number;
-        x: number;
-        y: number;
-        w: number;
-        h: number;
+        tx: number;
+        ty: number;
+        scale: number;
+        targetScreen: { x: number; y: number };
       }[] = [];
       const t0 = performance.now();
-      const pre = mapLayerRef.current?.getBoundingClientRect();
+      const flightMs = (revisit ? REVISIT_FLIGHT_SEC : motionTokens.flight) * 1000;
       const tick = () => {
         const now = performance.now();
-        const layer = mapLayerRef.current;
-        if (layer) {
-          const r = layer.getBoundingClientRect();
-          samples.push({
-            t: Math.round(now - t0),
-            x: Math.round(r.x * 10) / 10,
-            y: Math.round(r.y * 10) / 10,
-            w: Math.round(r.width * 10) / 10,
-            h: Math.round(r.height * 10) / 10,
-          });
-        }
-        if (now - t0 < 600) {
+        const cam = readCam();
+        const scr = cameraProjectPoint(target, cam);
+        samples.push({
+          t: Math.round(now - t0),
+          tx: Math.round(cam.tx * 10) / 10,
+          ty: Math.round(cam.ty * 10) / 10,
+          scale: Math.round(cam.scale * 1000) / 1000,
+          targetScreen: {
+            x: Math.round(scr.x * 10) / 10,
+            y: Math.round(scr.y * 10) / 10,
+          },
+        });
+        if (now - t0 < flightMs + 80) {
           flightLogRaf.current = requestAnimationFrame(tick);
-        } else {
-          flightLogRaf.current = null;
-          const f0 = samples[0];
-          const jumps = samples.slice(1).map((s, i) => {
-            const p = samples[i]!;
-            return {
-              t: s.t,
-              dX: Math.round((s.x - p.x) * 10) / 10,
-              dY: Math.round((s.y - p.y) * 10) / 10,
-              dWpct:
-                p.w > 0
-                  ? Math.round((Math.abs(s.w - p.w) / p.w) * 1000) / 10
-                  : 0,
-            };
-          });
-          const maxJump = jumps.reduce(
-            (m, j) => Math.max(m, Math.abs(j.dX), Math.abs(j.dY)),
-            0,
-          );
-          const maxW = jumps.reduce((m, j) => Math.max(m, j.dWpct), 0);
-          console.info("[shovani:flight-log]", {
-            path: path?.n,
-            viewport: { w, h },
-            preTap: pre
-              ? {
-                  x: Math.round(pre.x * 10) / 10,
-                  y: Math.round(pre.y * 10) / 10,
-                  w: Math.round(pre.width * 10) / 10,
-                  h: Math.round(pre.height * 10) / 10,
-                }
-              : null,
-            frame0: f0 ?? null,
-            maxJumpPx: maxJump,
-            maxWidthStepPct: maxW,
-            samples,
-          });
+          return;
         }
+        flightLogRaf.current = null;
+        const f0 = samples[0];
+        const last = samples[samples.length - 1];
+        let maxJump = 0;
+        let monoZoom = true;
+        for (let i = 1; i < samples.length; i++) {
+          const a = samples[i - 1]!;
+          const b = samples[i]!;
+          const dt = Math.max(1, b.t - a.t);
+          // Normalize to ~16ms frame so sparse RAF gaps don't inflate the jump.
+          const frameJump = Math.max(
+            Math.abs(b.tx - a.tx),
+            Math.abs(b.ty - a.ty),
+          ) * (16 / dt);
+          maxJump = Math.max(maxJump, frameJump);
+          if (b.scale + 0.0005 < a.scale) monoZoom = false;
+        }
+        const centreErr = last
+          ? Math.hypot(
+              last.targetScreen.x - ZOOM_FOCUS.x,
+              last.targetScreen.y - ZOOM_FOCUS.y,
+            )
+          : null;
+        console.info("[shovani:flight-log]", {
+          path: active.n,
+          museum: active.museumId,
+          viewport: { w, h },
+          cam07: {
+            tx: Math.round(cam07.tx * 10) / 10,
+            ty: Math.round(cam07.ty * 10) / 10,
+            scale: Math.round(cam07.scale * 1000) / 1000,
+          },
+          cam09: {
+            tx: Math.round(cam09.tx * 10) / 10,
+            ty: Math.round(cam09.ty * 10) / 10,
+            scale: Math.round(cam09.scale * 1000) / 1000,
+          },
+          frame0: f0 ?? null,
+          final: last ?? null,
+          focusTarget: ZOOM_FOCUS,
+          maxJumpPx: Math.round(maxJump * 10) / 10,
+          monoZoom,
+          finalCentreErrPx:
+            centreErr == null ? null : Math.round(centreErr * 10) / 10,
+          samples,
+        });
       };
       flightLogRaf.current = requestAnimationFrame(tick);
     }
@@ -949,10 +968,6 @@ export function JourneyFlow({
     setFlightRouteOpacity(0.85);
     flightT.set(0);
     mapOpacity.set(1);
-
-    const cam09 = lockedCam09Ref.current;
-    const startCam = flightStartCamRef.current;
-    if (startCam) setCam(startCam);
 
     const flightSec = revisit ? REVISIT_FLIGHT_SEC : motionTokens.flight;
     if (reduced) {
@@ -967,7 +982,7 @@ export function JourneyFlow({
       duration: flightSec,
       ease: easings.easeInOut,
       onUpdate: (t) => {
-        const cam = camForFlightT(t, w, h, cam09);
+        const cam = camForFlightT(t, w, h, cam09, start, ctrlPt, target);
         setCam(cam);
         // Route stays visible; fade only in the last 20%.
         setFlightRouteOpacity(t < 0.8 ? 0.85 : 0.85 * (1 - (t - 0.8) / 0.2));
@@ -980,11 +995,10 @@ export function JourneyFlow({
       },
     });
   }, [
+    cam07Design,
     camForFlightT,
     flightT,
-    fromRouteMap,
     mapOpacity,
-    path?.n,
     readCam,
     reduced,
     revisit,
@@ -992,7 +1006,7 @@ export function JourneyFlow({
     setCam,
     stageSize.h,
     stageSize.w,
-    targetPt,
+    startCityId,
     writeOverlay,
   ]);
 

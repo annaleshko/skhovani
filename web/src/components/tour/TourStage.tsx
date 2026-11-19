@@ -118,15 +118,19 @@ export function TourStage({
 
   const frameSlot = useMemo(() => {
     if (mode === "explore") {
-      // Short phones: shrink the frame box first (sheet needs room); keep ≥55% design.
+      // Short phones: shrink the frame first so credit+hint stay above the sheet.
+      // Never go below 150px high.
       const designH = P.frame.h * sy;
-      const shortCap = Math.max(160, stage.h * 0.3);
-      const h = Math.min(designH, Math.max(designH * 0.55, shortCap));
+      const shortCap = Math.max(150, stage.h * 0.3);
+      const h =
+        stage.h < 780
+          ? Math.max(150, Math.min(designH, shortCap))
+          : designH;
       const scale = h / (P.frame.h * sy || 1);
       const w = P.frame.w * sx * Math.min(1, scale);
       const x = (stage.w - w) / 2;
       // Keep lamp room above; never push frame under the header icons.
-      const y = Math.max(88 * sy, Math.min(P.frame.y * sy, stage.h * 0.18));
+      const y = Math.max(88 * sy, Math.min(P.frame.y * sy, stage.h * 0.16));
       return { x, y, w, h };
     }
     return {
@@ -475,9 +479,8 @@ export function TourStage({
       })()
     : null;
 
-  // Keep a readable glow while zoomed (was 0 → dark tour). Screen-blend
-  // layer sits above the art so margins + dark paint still catch light.
-  const coneOpacity = zoomedIn ? 0.7 : 1;
+  // Cone/lamp always behind the artwork; fade out while zoomed (tour 07).
+  const coneOpacity = zoomedIn ? 0 : 1;
   /** Ring at the stop point after edge clamp — not always stage center. */
   const tourRingPos = (() => {
     if (mode !== "tour" || !stop) return { x: focusX, y: focusY };
@@ -498,21 +501,16 @@ export function TourStage({
   const tourRingCy = tourRingPos.y;
   const photoLine = photographerCreditLine(artwork.photoCredit);
 
-  // Figma 16 lamp y−42 / cone 346×380; tour 07 lamp + cone 346×324 behind art.
-  // Scale cone with the frame box; never shrink below 80% of design size.
-  const designCone = mode === "explore"
-    ? { w: P.cone.w, h: P.cone.h, top: 58 }
-    : { w: TOUR_LAYOUT.cone.w, h: TOUR_LAYOUT.cone.h, top: 100 };
-  const designFrameW = mode === "explore" ? P.frame.w : TOUR_LAYOUT.frame.w;
-  const frameScale = frameSlot.w / designFrameW;
-  const coneScale = Math.max(frameScale, 0.8);
-  const coneW = designCone.w * coneScale;
-  const coneH = designCone.h * coneScale;
-  // Passport: cone from y≈58 (under lamp at −42). Tour: y≈100.
-  const coneTop = designCone.top * sy;
+  // Soft radial glow (no hard rectangle) — same approach as pre-d9ed697.
   const lampTop = mode === "explore" ? P.lamp.y * sy : 8 * sy;
-  const lampW = P.lamp.w * Math.max(sx, coneScale * 0.9);
-  const lampH = P.lamp.h * Math.max(sy, coneScale * 0.9);
+  const coneTop = mode === "explore" ? 58 * sy : 100 * sy;
+  const coneW = P.cone.w * sx;
+  const coneH =
+    mode === "explore"
+      ? Math.min(P.cone.h * sy, Math.max(0, imgLayout.y - coneTop + 12))
+      : Math.min(TOUR_LAYOUT.cone.h * sy, Math.max(0, imgLayout.y - coneTop + 8));
+  const lampW = P.lamp.w * sx;
+  const lampH = P.lamp.h * sy;
 
   return (
     <div
@@ -523,25 +521,19 @@ export function TourStage({
         <div className="absolute inset-0 animate-pulse bg-surface" aria-busy />
       ) : null}
 
-      {/* Warm cone 346×324 (Figma 100:1660): behind art in passport; above art
-          with screen blend in tour so zoom + dim-mask never kill the glow. */}
+      {/* Soft cone behind art — image only (no CSS box), fades when zoomed. */}
       <motion.div
-        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 z-[1] -translate-x-1/2"
         style={{
           top: coneTop,
           height: coneH,
           width: coneW,
-          zIndex: mode === "tour" ? 5 : 1,
-          background:
-            "radial-gradient(ellipse 70% 55% at 50% 18%, rgba(233,184,114,0.55) 0%, rgba(233,184,114,0.2) 42%, transparent 72%)",
         }}
         initial={false}
         animate={
-          reduced
+          reduced || zoomedIn
             ? { opacity: coneOpacity }
-            : zoomedIn
-              ? { opacity: coneOpacity }
-              : { opacity: [0.9, 1, 0.9] }
+            : { opacity: [0.85, 1, 0.85] }
         }
         transition={
           reduced
@@ -555,18 +547,31 @@ export function TourStage({
         <img
           src={hallUi.tourCone}
           alt=""
-          className="size-full object-fill object-top mix-blend-screen"
+          className="size-full object-contain object-top mix-blend-screen"
           draggable={false}
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 90% 85% at 50% 15%, #000 45%, transparent 78%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 90% 85% at 50% 15%, #000 45%, transparent 78%)",
+          }}
         />
       </motion.div>
 
-      {/* Lamp above the artwork so zoom never swallows it (Figma 07/16). */}
-      <div
-        className="pointer-events-none absolute left-1/2 z-[6] -translate-x-1/2"
+      {/* Lamp behind artwork; fades with cone while zoomed. */}
+      <motion.div
+        className="pointer-events-none absolute left-1/2 z-[1] -translate-x-1/2"
         style={{
           top: lampTop,
           width: lampW,
           height: lampH,
+          maxHeight: Math.max(0, imgLayout.y - lampTop),
+        }}
+        initial={false}
+        animate={{ opacity: coneOpacity }}
+        transition={{
+          duration: reduced ? 0 : motionTokens.tourLamp,
+          ease: easings.easeOut,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -582,7 +587,7 @@ export function TourStage({
           }}
           draggable={false}
         />
-      </div>
+      </motion.div>
 
       {/* Artwork above lamp/cone — always wins when zoomed */}
       <motion.div
@@ -734,11 +739,11 @@ export function TourStage({
             </div>
           </div>
 
-          {/* Credit + hint in normal flow under the frame (stage 3 also) */}
+          {/* Credit + hint under the actual frame box (shrinks with frame on short phones) */}
           <div
             className="pointer-events-none absolute inset-x-0 z-[5] flex flex-col gap-sm px-xl"
             style={{
-              top: (P.frame.y + P.frame.h + 10) * sy,
+              top: frameSlot.y + frameSlot.h + 8,
             }}
           >
             {photoLine ? (

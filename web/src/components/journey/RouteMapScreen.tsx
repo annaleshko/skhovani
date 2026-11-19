@@ -24,7 +24,7 @@ import {
   routeSheetBlurbForPath,
 } from "@/data/museum-copy";
 import { getMuseumShortLabel } from "@/data/museums";
-import type { CameraTransform } from "@/lib/camera";
+import { camera07 } from "@/lib/camera";
 import {
   arcControl,
   getMapViewBox,
@@ -42,24 +42,29 @@ import { useAppState } from "@/state/AppState";
 import { resetHomeHref } from "@/state/storage";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-export type DepartOpts = {
-  /** 02в map SVG rect as JourneyFlow camera (tx/ty/scale) — frame 0 of flight. */
-  mapCam: CameraTransform;
-};
+const FRAME = { w: 390, h: 844 };
 
 type Props = {
   open: boolean;
   /** Journey-order next path when the screen opens. */
   next: ResolvedPath | null;
-  onDepart: (path: ResolvedPath, opts: DepartOpts) => void;
+  onDepart: (path: ResolvedPath) => void;
   /**
    * Star museum tap (already opened) — flight without sheet.
    * `reopen` when all museum paths are done (hall shows last opened, revealed).
    */
   onRevisit?: (path: ResolvedPath, opts: { reopen: boolean }) => void;
 };
+
+/** Same 07 framing as JourneyFlow flight frame 0. */
+function toStageCam07(stageW: number, stageH: number) {
+  const cam = camera07();
+  const sx = stageW / FRAME.w;
+  const sy = stageH / FRAME.h;
+  return { tx: cam.tx * sx, ty: cam.ty * sy, scale: cam.scale * sx };
+}
 
 /**
  * MVP v2 screen 02в — Figma `238:1557`, ref `docs/figma-refs-v2/02v-route-map.png`.
@@ -74,7 +79,8 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [sheetExit, setSheetExit] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const mapSvgRef = useRef<SVGSVGElement>(null);
+  const mapStageRef = useRef<HTMLDivElement>(null);
+  const [stageSize, setStageSize] = useState({ w: FRAME.w, h: FRAME.h });
 
   const defaultMuseumId = next?.museumId ?? JOURNEY_MUSEUM_ORDER[0];
   /** null = follow journey-order next; set when the user taps a museum. */
@@ -148,32 +154,32 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
     }).filter((t): t is NonNullable<typeof t> => Boolean(t));
   }, []);
 
-  const measureMapCam = useCallback((): CameraTransform => {
-    const svg = mapSvgRef.current;
-    const root = rootRef.current;
-    if (!svg || !root) {
-      return { tx: -9, ty: 239, scale: 1 };
-    }
-    const sr = svg.getBoundingClientRect();
-    const rr = root.getBoundingClientRect();
-    const scale = sr.width / vb.w;
-    return {
-      tx: sr.left - rr.left,
-      ty: sr.top - rr.top,
-      scale,
+  useEffect(() => {
+    const el = mapStageRef.current;
+    if (!el) return;
+    const measure = () => {
+      setStageSize({
+        w: el.clientWidth || FRAME.w,
+        h: el.clientHeight || FRAME.h,
+      });
     };
-  }, [vb.w]);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [open]);
 
-  const handleDepart = useCallback(
-    (path: ResolvedPath) => {
-      if (sheetExit) return;
-      const mapCam = measureMapCam();
-      // Sheet slides down while flight starts (same frame as tap cam).
-      setSheetExit(true);
-      onDepart(path, { mapCam });
-    },
-    [measureMapCam, onDepart, sheetExit],
+  const mapCam = useMemo(
+    () => toStageCam07(stageSize.w, stageSize.h),
+    [stageSize.h, stageSize.w],
   );
+
+  const handleDepart = (path: ResolvedPath) => {
+    if (sheetExit) return;
+    // Sheet slides down while JourneyFlow mounts with the same cam07.
+    setSheetExit(true);
+    onDepart(path);
+  };
 
   const onMuseumTap = (id: string) => {
     if (sheetExit) return;
@@ -203,14 +209,15 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
           exit={{ opacity: 0 }}
           transition={{ duration: motionTokens.mapFadeIn }}
         >
-          <header className="shrink-0 px-xl pt-[calc(56px+var(--safe-top))]">
+          <header className="relative z-50 shrink-0 px-xl pt-[calc(56px+var(--safe-top))]">
             <h1 className="text-h1">Твій маршрут</h1>
             <p className="mt-sm text-body-md text-text-secondary">
               10 творів у 5 музеях. Тапни на будь-який музей.
             </p>
           </header>
 
-          <div className="relative min-h-0 flex-1">
+          {/* Full-screen map stage — identical 07 camera as JourneyFlow frame 0. */}
+          <div ref={mapStageRef} className="pointer-events-none absolute inset-0">
             <div
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-[42%] h-[55%] w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
@@ -219,11 +226,20 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                   "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-bg-accent) 35%, transparent), transparent 70%)",
               }}
             />
-            <div className="absolute left-1/2 top-1/2 h-[70%] w-[92%] max-w-[360px] -translate-x-1/2 -translate-y-[42%]">
+            <div
+              className="absolute left-0 top-0"
+              style={{
+                width: vb.w,
+                height: vb.h,
+                transform: `translate(${mapCam.tx}px, ${mapCam.ty}px) scale(${mapCam.scale})`,
+                transformOrigin: "0 0",
+              }}
+            >
               <svg
-                ref={mapSvgRef}
                 viewBox={`0 0 ${vb.w} ${vb.h}`}
-                className="size-full"
+                width={vb.w}
+                height={vb.h}
+                className="block"
                 role="img"
                 aria-label="Карта маршруту музеями"
               >
@@ -344,7 +360,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                 ) : null}
               </svg>
               <MapMuseumHits
-                className="absolute inset-0 z-[1]"
+                className="pointer-events-auto absolute inset-0 z-[1]"
                 targets={hitTargets}
                 onSelect={onMuseumTap}
               />
@@ -352,7 +368,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
           </div>
 
           <motion.div
-            className="shrink-0 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
+            className="relative z-50 mt-auto shrink-0 rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+var(--safe-bottom))] pt-xl"
             initial={{ y: "100%" }}
             animate={{ y: sheetExit ? "100%" : 0 }}
             transition={

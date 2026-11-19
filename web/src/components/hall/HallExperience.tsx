@@ -2,10 +2,7 @@
 
 import { AboutSheet } from "@/components/about/AboutSheet";
 import { JourneyFlow } from "@/components/journey/JourneyFlow";
-import {
-  RouteMapScreen,
-  type DepartOpts,
-} from "@/components/journey/RouteMapScreen";
+import { RouteMapScreen } from "@/components/journey/RouteMapScreen";
 import { WallpaperSavedScreen } from "@/components/journey/WallpaperSavedScreen";
 import { StatusBadge } from "@/components/ui";
 import { GuideScreen } from "@/components/guide/GuideScreen";
@@ -34,7 +31,6 @@ import { getMuseumShortLabel } from "@/data/museums";
 import {
   displayAuthorMeta,
   displayHeadline,
-  displayStatusMeta,
 } from "@/lib/artwork-display";
 import {
   easings,
@@ -183,11 +179,8 @@ export function HallExperience({
     reopenHall ? "remembered" : "empty",
   );
   const [wallpaperShared, setWallpaperShared] = useState(false);
-  /** 02в → flight without /journey navigation (same map cam). */
-  const [routeFlight, setRouteFlight] = useState<{
-    pathN: number;
-    mapCam: DepartOpts["mapCam"];
-  } | null>(null);
+  /** 02в → flight without /journey navigation (same cam07 framing). */
+  const [routeFlight, setRouteFlight] = useState<number | null>(null);
   const [focusKey, setFocusKey] = useState(artworkId);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -247,7 +240,8 @@ export function HallExperience({
   const px = Math.min(viewW / 390, viewH / 844);
   const stageH = designH * px;
   const stageOffsetY = Math.max(0, viewH - stageH);
-  const hallWidthPx = designW * px;
+  // Never narrower than the viewport — short phones used to letterbox a black strip.
+  const hallWidthPx = Math.max(designW * px, viewW);
 
   const isStolen = focus?.status === "stolen";
   const isShelter = focus?.status === "shelter";
@@ -577,13 +571,10 @@ export function HallExperience({
     setPhase("route");
   }, [artworkId, completeCurrentPath, isReplayPassport]);
 
-  const departNext = useCallback(
-    (path: ResolvedPath, opts: DepartOpts) => {
-      // Fly inside this tree from the measured 02в map cam (no /journey jump).
-      setRouteFlight({ pathN: path.n, mapCam: opts.mapCam });
-    },
-    [],
-  );
+  const departNext = useCallback((path: ResolvedPath) => {
+    // Fly inside this tree — JourneyFlow starts at cam07 (same as 02в map).
+    setRouteFlight(path.n);
+  }, []);
 
   /** Next unfinished path for passport «Далі — <місто>». */
   const continueTarget = useMemo(() => {
@@ -698,7 +689,8 @@ export function HallExperience({
   const hintPassport = reopenHall && showUi;
 
   // Figma 05: ring ON the frame's top-right after scale (design rect × px).
-  // Melitopol: glass corner (not pedestal). Label above, never over the edge.
+  // Label above the ring, right-aligned, max-width 140px — never overlaps ring.
+  // Melitopol: ring on glass top-right; label INSIDE glass under top edge, left of ring.
   const markerPos = (() => {
     const box = hallFocusSlot.frameRect;
     const inset = emptyInset;
@@ -708,54 +700,57 @@ export function HallExperience({
       w: box.w * (1 - inset.left - inset.right),
       h: box.h * (1 - inset.top - inset.bottom),
     };
-    // Melitopol: always the glass corner (pedestal PNG measure is wrong).
-    // Others: measured object-contain rect, clamped to the layout box so the
-    // ring sits on the chrome — not floating past the gold edge (Харків).
     let cx: number;
     let cy: number;
     let frameTop: number;
     if (museumId === "melitopol") {
-      cx = glass.x + glass.w - 4;
-      cy = glass.y + 10;
+      cx = glass.x + glass.w - 8;
+      cy = glass.y + 14;
       frameTop = glass.y;
     } else {
       const measured = focusFrameDes;
       const rawR = measured && measured.w > 8 ? measured : box;
-      // Clamp into layout box; bias to the outer chrome top-right.
       const r = {
         x: Math.max(box.x, Math.min(rawR.x, box.x + box.w * 0.15)),
         y: Math.max(box.y, Math.min(rawR.y, box.y + box.h * 0.15)),
         w: Math.min(rawR.w, box.w),
         h: Math.min(rawR.h, box.h),
       };
-      // Sit on the gold chrome (~12–20px inset from PNG bounds / shadow pad).
       cx = Math.min(r.x + r.w - 22, box.x + box.w - 26);
       cy = Math.max(r.y + 12, box.y + 12);
       frameTop = Math.max(r.y, box.y);
     }
     const half = 28.5;
     const gap = 8;
-    const hintW = hintPassport ? 172 : 150;
+    const hintW = 140;
     const hintH = hintPassport || hintTour ? 40 : 22;
     const margin = 12 / px;
     const scrollDes = scrollLeftPx / px;
     const visL = scrollDes;
     const visR = scrollDes + viewW / px;
     const visT = 0;
-    let hintLeft = cx - hintW / 2;
-    let hintTop = Math.min(cy - half - gap - hintH, frameTop - gap - hintH);
+    let hintLeft: number;
+    let hintTop: number;
     if (museumId === "melitopol") {
-      // Badge hidden while reopened hint shows — park label left of ring,
-      // fully above the glass (never on the vitrine top edge).
-      const metaBottom = (layout.captions.metaY ?? 198) + 24;
-      hintLeft = cx - half - gap - hintW;
-      hintTop = frameTop - gap - hintH;
-      if (hintTop < metaBottom + gap) {
-        hintLeft = Math.max(visL + margin, glass.x + 4);
-        hintTop = metaBottom + gap;
+      // Inside the glass: under top edge, left of the ring — clear of title/meta/badge
+      // and of the empty-state copy in the glass centre.
+      hintLeft = Math.max(glass.x + 8, cx - half - gap - hintW);
+      hintTop = frameTop + 10;
+      const badgeBottom = (layout.captions.badgeY ?? 254) + 28;
+      if (hintTop < badgeBottom) {
+        hintTop = Math.max(frameTop + 10, badgeBottom + 4);
       }
-      if (hintTop + hintH > frameTop - gap) {
-        hintTop = frameTop - gap - hintH;
+      // Keep above the empty-label block (~centre of glass).
+      const emptyBand = glass.y + glass.h * 0.35;
+      if (hintTop + hintH > emptyBand) {
+        hintTop = Math.max(frameTop + 8, emptyBand - hintH - 4);
+      }
+    } else {
+      // Above the ring, right-aligned; never overlap the ring.
+      hintLeft = cx - hintW;
+      hintTop = cy - half - gap - hintH;
+      if (hintTop + hintH > cy - half - 2) {
+        hintTop = cy - half - gap - hintH;
       }
     }
     hintLeft = Math.min(
@@ -763,9 +758,6 @@ export function HallExperience({
       visR - margin - hintW,
     );
     hintTop = Math.max(hintTop, visT + margin);
-    if (hintTop + hintH > frameTop - 4) {
-      hintTop = Math.max(visT + margin, frameTop - 4 - hintH);
-    }
     return { cx, cy, hintLeft, hintTop, hintW, hintH };
   })();
   const markerCx = markerPos.cx;
@@ -791,9 +783,19 @@ export function HallExperience({
     >
       {showHall ? (
         <div className="absolute inset-0 z-0">
+          {/* Full-viewport wall bleed — covers letterbox / short-phone gaps. */}
+          {layout?.wallSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={layout.wallSrc}
+              alt=""
+              className="pointer-events-none absolute inset-0 z-0 size-full select-none object-cover object-center"
+              draggable={false}
+            />
+          ) : null}
           <div
             ref={scrollerRef}
-            className="absolute inset-0 cursor-grab overflow-x-auto overflow-y-hidden snap-x snap-mandatory select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="absolute inset-0 z-[1] cursor-grab overflow-x-auto overflow-y-hidden snap-x snap-mandatory select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ userSelect: "none", WebkitUserSelect: "none" }}
           >
             <div
@@ -812,12 +814,18 @@ export function HallExperience({
                   width: hallWidthPx,
                 }}
               >
-              {/* 1. Wall */}
+              {/* 1. Wall — always cover the full stage (no side letterbox gaps). */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={layout.wallSrc}
                 alt=""
-                className="pointer-events-none absolute left-0 top-0 z-0 h-full w-auto max-w-none select-none"
+                className="pointer-events-none absolute z-0 max-w-none select-none object-cover object-left"
+                style={{
+                  left: 0,
+                  top: -stageOffsetY,
+                  width: Math.max(hallWidthPx, viewW),
+                  height: viewH,
+                }}
                 draggable={false}
               />
 
@@ -965,8 +973,15 @@ export function HallExperience({
                               <img
                                 src={hallUi.cone}
                                 alt=""
-                                className="size-full origin-center rotate-180 object-fill mix-blend-screen"
+                                className="size-full origin-center rotate-180 object-contain mix-blend-screen"
                                 draggable={false}
+                                style={{
+                                  // Soft feather — no hard rectangular edge under the lamp.
+                                  maskImage:
+                                    "radial-gradient(ellipse 75% 70% at 50% 0%, #000 35%, transparent 78%)",
+                                  WebkitMaskImage:
+                                    "radial-gradient(ellipse 75% 70% at 50% 0%, #000 35%, transparent 78%)",
+                                }}
                               />
                             </motion.div>
                           ) : null}
@@ -1238,13 +1253,17 @@ export function HallExperience({
                               {displayHeadline(art)}
                             </p>
                             <p
-                              className="w-full truncate text-body-md text-text-caption"
+                              className="w-full text-body-md text-text-caption"
                               style={{
                                 marginTop:
                                   (layout.captions.metaY -
                                     layout.captions.titleY -
                                     24) *
                                   px,
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                               title={displayAuthorMeta(art)}
                             >
@@ -1266,11 +1285,6 @@ export function HallExperience({
                                 }}
                               >
                                 <StatusBadge status={art.status} />
-                                {displayStatusMeta(art) ? (
-                                  <span className="text-caption text-text-secondary">
-                                    {displayStatusMeta(art)}
-                                  </span>
-                                ) : null}
                               </div>
                             ) : null}
                           </motion.div>
@@ -1379,7 +1393,7 @@ export function HallExperience({
                         left: markerPos.hintLeft * px,
                         top: markerPos.hintTop * px,
                         width: markerPos.hintW * px,
-                        // Never ellipsize — wrap to 2 lines on narrow halls.
+                        maxWidth: 140 * px,
                         whiteSpace: "normal",
                         overflow: "visible",
                       }}
@@ -1580,14 +1594,9 @@ export function HallExperience({
         }}
       />
 
-      {routeFlight ? (
+      {routeFlight != null ? (
         <div className="absolute inset-0 z-[60]">
-          <JourneyFlow
-            pathN={routeFlight.pathN}
-            autostart
-            fromRouteMap
-            initialCam={routeFlight.mapCam}
-          />
+          <JourneyFlow pathN={routeFlight} autostart fromRouteMap />
         </div>
       ) : null}
     </div>
