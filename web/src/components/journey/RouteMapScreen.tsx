@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui";
 import { DottedRoute } from "@/components/map/DottedRoute";
+import { MapLandArt } from "@/components/map/MapLandArt";
 import { MapMuseumHits } from "@/components/map/MapMuseumHits";
 import { MapPin } from "@/components/map/MapPin";
 import { MapStar } from "@/components/map/MapStar";
@@ -243,7 +244,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
                 role="img"
                 aria-label="Карта маршруту музеями"
               >
-                <image href="/map/map.svg" width={vb.w} height={vb.h} />
+                <MapLandArt />
 
                 {visitedOrder.map((id) => {
                   const m = getMuseum(id);

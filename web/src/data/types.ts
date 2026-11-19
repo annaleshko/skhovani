@@ -57,8 +57,9 @@ export type ExtendedKnowledgeFact = {
   /**
    * `context` — topic-level facts from «# Ширший контекст»
    * (say «Якщо говорити ширше…» and cite the source).
+   * `story` — living stories from «# Раунд 2» (prefer for «розкажи щось цікаве»).
    */
-  scope?: "context";
+  scope?: "context" | "story";
 };
 
 export type ArtworkTabs = {

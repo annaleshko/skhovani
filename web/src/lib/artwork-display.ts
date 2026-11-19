@@ -48,17 +48,18 @@ export function displayYear(year: string): string {
  * Status date next to the badge — per-artwork from the passport.
  * Omit when unknown (never a shared default).
  */
+/** Year only — never month/season (passport status line). */
 const STATUS_META_BY_ID: Record<number, string> = {
-  1: "восени 2022", // Великодня
-  2: "восени 2022", // Колядки
-  3: "квітень 2022", // Скіфське золото
-  4: "восени 2022", // Одеса
-  5: "восени 2022", // Дама
-  6: "восени 2022", // Околиці
-  7: "восени 2022", // Капуцин
-  8: "з 2022 року", // Запорожці
-  9: "з 2022 року", // Іконостас
-  10: "2022, облога Чернігова", // Козак-бандурист
+  1: "2022",
+  2: "2022",
+  3: "2022",
+  4: "2022",
+  5: "2022",
+  6: "2022",
+  7: "2022",
+  8: "2022",
+  9: "2022",
+  10: "2022",
 };
 
 export function displayStatusMeta(artwork: Artwork): string {

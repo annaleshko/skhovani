@@ -195,6 +195,27 @@ Automated @ 390×844 (`reducedMotion`) + `/api/guide`. Guide chat UI / detail / 
 
 Screenshots: `docs/verify/iphone/` (360×640, 390×844, 430×932, 390×740 Safari).
 
+## Pin + warm guide + round2 + date + Melitopol hint (2026-11-19)
+
+| Fix | Notes |
+|---|---|
+| Target pin in zoom | `useLayoutEffect` re-applies overlay after zoom/occupation re-render (imperative transform was wiped) |
+| Round 2 knowledge | 121 bullets (42 `scope:"story"`); prefer for «розкажи щось цікаве» |
+| Warm guide | Persona + no-repeat; history last 6; curated once; temperature 0.6 |
+| Status date | Passport meta year only (`2022`) |
+| Melitopol hint | Empty-glass copy hidden while «Торкнись, щоб згадати» shows |
+
+## iPhone: vector map + facade + tour/guide chrome (2026-11-19)
+
+| Fix | Notes |
+|---|---|
+| Vector map | Inline `MapLandArt` (no `<image href>`); shadow off during flight/zoom |
+| Facade | Restore ground fit + 1.18× letterbox crop (not 178%) |
+| Tour / passport bars | Sheet to bottom; `padding-bottom: max(24px, safe-area+12px)` |
+| Guide iOS | Header `safe-area-inset-top`; composer lifts by keyboard only; input ≥16px |
+
+Manual check: pin+label above map during flight/zoom/occupation (Lviv, Kharkiv, Melitopol, Kherson); map sharp at Melitopol zoom; whole building on facade; no empty band under tour; guide header below status bar / no jump on keyboard.
+
 ## Restore flight + hall copy + light (2026-11-19)
 
 | Fix | Notes |
@@ -359,7 +380,7 @@ Automated smoke @ 390×844 + `/api/guide` traps (2026-11-18). Guide chat / detai
 **Q.** Чи є ще скіфське золото, крім мелітопольського?  
 **Expected.** Guide answers with general-context framing («Якщо говорити ширше…»), mentions the pectoral from Товста Могила (Мозолевський, 1971) and Crimean gold returned in 2023, with `xk_*` sourceIds (e.g. пектораль / Кабмін / Zaxid).
 
-Import: `node scripts/import-guide-knowledge.mjs` → 79 bullets (18 context) across 11 artworks.
+Import: `node scripts/import-guide-knowledge.mjs` → 121 bullets (18 context, 42 story / Раунд 2) across 11 artworks. `scope:"story"` preferred for «розкажи щось цікаве»; ⚠ verify → «за даними…» / «можливо».
 
 ## Fix hall click + first path flow (2026-11-18)
 

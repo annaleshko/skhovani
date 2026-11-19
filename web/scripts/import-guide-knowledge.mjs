@@ -9,7 +9,8 @@
  *   ## Спільне для всіх творів · …  → all artworks, scope "context" under # Ширший контекст
  *   - <fact> ⚠ verify [src: <label> | <url>]
  *
- * Section `# Ширший контекст` marks following ## blocks as scope: "context".
+ * Section `# Ширший контекст` → scope: "context".
+ * Section `# Раунд 2 · Живі історії…` → scope: "story" (prefer for «розкажи щось цікаве»).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -65,8 +66,8 @@ function parseBullet(line) {
 }
 
 /**
- * Split markdown into ## sections; track H1 for scope (context vs extra).
- * @returns {{ title: string, bullets: string[], scope: "extra" | "context" }[]}
+ * Split markdown into ## sections; track H1 for scope (extra / context / story).
+ * @returns {{ title: string, bullets: string[], scope: "extra" | "context" | "story" }[]}
  */
 function parseSections(text) {
   const lines = text.split(/\r?\n/);
@@ -76,7 +77,10 @@ function parseSections(text) {
   for (const line of lines) {
     const h1 = line.match(/^#\s+(.+)\s*$/);
     if (h1 && !line.startsWith("##")) {
-      scope = /ширший\s+контекст/i.test(h1[1]) ? "context" : "extra";
+      const t = h1[1];
+      if (/ширший\s+контекст/i.test(t)) scope = "context";
+      else if (/раунд\s*2|живі\s+істор/i.test(t)) scope = "story";
+      else scope = "extra";
       continue;
     }
     const head = line.match(/^##\s+(.+)\s*$/);
@@ -121,6 +125,7 @@ function ensureArt(id) {
 
 let bulletCount = 0;
 let contextCount = 0;
+let storyCount = 0;
 for (const sec of sections) {
   const ids = sectionArtworkIds(sec.title);
   if (!ids.length) {
@@ -135,6 +140,7 @@ for (const sec of sections) {
     }
     bulletCount += 1;
     if (sec.scope === "context") contextCount += 1;
+    if (sec.scope === "story") storyCount += 1;
     const sid = sourceIdFor(parsed.label, parsed.url);
     for (const id of ids) {
       const bucket = ensureArt(id);
@@ -176,7 +182,7 @@ function apply(file) {
         sourceLabel: f.sourceLabel,
       };
       if (f.verify) entry.verify = true;
-      if (f.scope === "context") entry.scope = "context";
+      if (f.scope === "context" || f.scope === "story") entry.scope = f.scope;
       return entry;
     });
   }
@@ -186,7 +192,7 @@ function apply(file) {
 apply(ARTWORKS);
 apply(CONTENT);
 console.log(
-  `imported ${bulletCount} bullets (${contextCount} context) → ${byArt.size} artworks with extendedKnowledge`,
+  `imported ${bulletCount} bullets (${contextCount} context, ${storyCount} story) → ${byArt.size} artworks with extendedKnowledge`,
 );
 
 const v = spawnSync(

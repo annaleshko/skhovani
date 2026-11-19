@@ -13,6 +13,8 @@ import {
   pathSheetBlurb,
 } from "@/data/museum-copy";
 import {
+  FACADE_NATIVE_H,
+  FACADE_NATIVE_W,
   getMuseumDisplayName,
   getMuseumShortLabel,
   getMuseumUi,
@@ -57,7 +59,15 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { MapLandArt } from "@/components/map/MapLandArt";
 import { RestartJourneyLink } from "./RestartJourneyLink";
 import { RouteTrail, type TrailItem } from "./RouteTrail";
 import { pickPath } from "./pickPath";
@@ -131,6 +141,36 @@ function stageCam09(pt: MapPoint): CameraTransform {
   return cameraPlaceAt(pt, ZOOM_SCALE, ZOOM_FOCUS.x, ZOOM_FOCUS.y);
 }
 
+/** Baked side letterbox in facade WebP exports (~15% each side). */
+const FACADE_LETTERBOX_CROP = 1.18;
+
+/**
+ * Fit facade into [availTop, availBottom]; scale down if needed (min 0.75).
+ * Width is then multiplied by FACADE_LETTERBOX_CROP so side bars are clipped.
+ * `y` may only move up (≤ 0) — never leave a gap below the top of the screen.
+ */
+function fitFacadeLayout(
+  screenW: number,
+  availTop: number,
+  availBottom: number,
+  buildingTopY: number,
+  groundY: number,
+): { width: number; height: number; x: number; y: number; scale: number } {
+  const fullH = screenW * (FACADE_NATIVE_H / FACADE_NATIVE_W);
+  const buildingFrac = Math.max(0.01, groundY - buildingTopY);
+  const buildingAtFull = buildingFrac * fullH;
+  const availH = Math.max(1, availBottom - availTop);
+  let scale = 1;
+  if (buildingAtFull > availH) {
+    scale = Math.max(0.75, availH / buildingAtFull);
+  }
+  const width = screenW * scale * FACADE_LETTERBOX_CROP;
+  const height = fullH * scale * FACADE_LETTERBOX_CROP;
+  const y = Math.min(0, availBottom - groundY * height);
+  const x = (screenW - width) / 2;
+  return { width, height, x, y, scale };
+}
+
 export function JourneyFlow({
   pathN,
   autostart = false,
@@ -160,6 +200,9 @@ export function JourneyFlow({
   const [flightRouteOpacity, setFlightRouteOpacity] = useState(0.85);
   const [occupationNote, setOccupationNote] = useState(false);
   const [facadeOpacity, setFacadeOpacity] = useState(0);
+  const [facadeCardTop, setFacadeCardTop] = useState<number>(FRAME.h);
+  const [facadeTrailBottom, setFacadeTrailBottom] = useState(96);
+  const [facadeWidth, setFacadeWidth] = useState<number>(FRAME.w);
   const [blackout, setBlackout] = useState(0);
   const [debugMap] = useState(
     () =>
@@ -259,6 +302,64 @@ export function JourneyFlow({
   }, []);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
+
+  const facadeLayout = useMemo(() => {
+    if (!museumUi) {
+      return {
+        width: facadeWidth * FACADE_LETTERBOX_CROP,
+        height:
+          facadeWidth *
+          FACADE_LETTERBOX_CROP *
+          (FACADE_NATIVE_H / FACADE_NATIVE_W),
+        x: (facadeWidth - facadeWidth * FACADE_LETTERBOX_CROP) / 2,
+        y: 0,
+        scale: 1,
+      };
+    }
+    const availTop = facadeTrailBottom + 16;
+    const availBottom = facadeCardTop - 24;
+    return fitFacadeLayout(
+      facadeWidth,
+      availTop,
+      availBottom,
+      museumUi.buildingTopY,
+      museumUi.groundY,
+    );
+  }, [facadeCardTop, facadeTrailBottom, facadeWidth, museumUi]);
+
+  useEffect(() => {
+    if (phase !== "facade" && phase !== "entering") return;
+    const root = facadeRootRef.current;
+    if (!root) return;
+    const measure = () => {
+      const card = facadeCardRef.current;
+      const trail = facadeTrailRef.current;
+      const rootRect = root.getBoundingClientRect();
+      setFacadeWidth(rootRect.width || FRAME.w);
+      if (trail) {
+        setFacadeTrailBottom(
+          trail.getBoundingClientRect().bottom - rootRect.top,
+        );
+      } else if (revisit) {
+        setFacadeTrailBottom(56);
+      }
+      if (!card) return;
+      const cardRect = card.getBoundingClientRect();
+      setFacadeCardTop(cardRect.top - rootRect.top);
+    };
+    measure();
+    const raf = requestAnimationFrame(measure);
+    const ro = new ResizeObserver(measure);
+    ro.observe(root);
+    const card = facadeCardRef.current;
+    if (card) ro.observe(card);
+    const trail = facadeTrailRef.current;
+    if (trail) ro.observe(trail);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [phase, path?.museumId, revisit]);
 
   const trailItems: TrailItem[] | null = useMemo(() => {
     if (!path) return null;
@@ -445,11 +546,12 @@ export function JourneyFlow({
     if (path) pathRef.current = path;
   }, [path]);
 
-  // Place overlay pins once they mount
-  useEffect(() => {
+  // Re-apply pin transforms after every React commit that may wipe setAttribute
+  // (phase → zoom/occupation re-renders the overlay while the camera is static).
+  useLayoutEffect(() => {
     if (!showStartPin && !showTargetPin) return;
     writeOverlay(readCam(), flightT.get(), phaseRef.current === "flight");
-  }, [flightT, readCam, showStartPin, showTargetPin, writeOverlay]);
+  }, [phase, flightT, readCam, showStartPin, showTargetPin, writeOverlay]);
 
   useMotionValueEvent(camX, "change", () => {
     writeOverlay(readCam(), flightT.get(), phaseRef.current === "flight");
@@ -991,7 +1093,7 @@ export function JourneyFlow({
               role="img"
               aria-label="Карта України"
             >
-              <image href="/map/map.svg" width={vb.w} height={vb.h} />
+              <MapLandArt shadow={phase === "map"} />
               {/* Rays start → visited (50%, 2px/6px); active start → target (85%) */}
               {phase === "map" && !hideFarLabels
                 ? visitedOrder.map((id) => {
@@ -1152,7 +1254,12 @@ export function JourneyFlow({
               />
             </g>
 
-            <g ref={targetPinRef} opacity={showTargetPin ? 1 : 0}>
+            {/* Target pin stays visible in flight/zoom/occupation (start pin hides). */}
+            <g
+              ref={targetPinRef}
+              opacity={showTargetPin ? 1 : 0}
+              style={{ pointerEvents: "none" }}
+            >
               {/* Star only after museum opened; otherwise ring+dot target pin */}
               {visitedOrder.includes(path.museumId) ? (
                 <MapStar
@@ -1267,26 +1374,25 @@ export function JourneyFlow({
               backgroundColor: museumUi.facadeFill,
             }}
           >
-            {/* Full-bleed facade: exports include ~15% side letterbox — scale
-                width past the viewport and clip; anchor near ground above sheet. */}
+            {/* Facade: d91708a ground fit + ~18% width crop of baked side letterbox. */}
             {phase === "facade" && !revisit ? (
               <button
                 type="button"
                 aria-label="Зайти в музей"
                 onClick={enterDoor}
-                className="absolute inset-0 z-[1] cursor-pointer overflow-hidden border-0 bg-transparent p-0"
+                className="absolute z-[1] cursor-pointer overflow-hidden border-0 bg-transparent p-0"
+                style={{
+                  left: facadeLayout.x,
+                  top: facadeLayout.y,
+                  width: facadeLayout.width,
+                  height: facadeLayout.height,
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={museumUi.facadeSrc}
                   alt=""
-                  className="pointer-events-none absolute left-1/2 max-w-none -translate-x-1/2 select-none"
-                  style={{
-                    width: "178%",
-                    height: "auto",
-                    // Pull the building band into the upper viewport (export is a tall 390×844 frame).
-                    top: "-38%",
-                  }}
+                  className="pointer-events-none block size-full max-w-none select-none object-cover object-bottom"
                   draggable={false}
                 />
               </button>
@@ -1295,11 +1401,12 @@ export function JourneyFlow({
               <img
                 src={museumUi.facadeSrc}
                 alt=""
-                className="pointer-events-none absolute left-1/2 z-[1] max-w-none -translate-x-1/2 select-none"
+                className="pointer-events-none absolute z-[1] max-w-none select-none object-cover object-bottom"
                 style={{
-                  width: "178%",
-                  height: "auto",
-                  top: "-38%",
+                  left: facadeLayout.x,
+                  top: facadeLayout.y,
+                  width: facadeLayout.width,
+                  height: facadeLayout.height,
                 }}
                 draggable={false}
               />

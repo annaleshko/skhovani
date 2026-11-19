@@ -726,20 +726,18 @@ export function HallExperience({
     let hintLeft: number;
     let hintTop: number;
     if (museumId === "melitopol") {
-      // Ring on glass top-right; label INSIDE glass under top edge, left of ring.
-      // Title/meta/badge stay above the vitrine (≥16px) — never overlap.
+      // Ring on glass top-right; hint INSIDE glass under top edge, left of ring.
+      // Empty-state copy is hidden while this hint is visible (see empty label).
       const badgeBottom = (layout.captions.badgeY ?? 208) + 28;
       hintW = 130;
       hintLeft = cx - half - gap - hintW;
-      hintTop = Math.max(frameTop + 14, badgeBottom + 16);
-      // Keep clear of the empty-state copy in the glass centre.
-      const emptyBand = glass.y + glass.h * 0.28;
-      if (hintTop + hintH > emptyBand) {
-        hintTop = Math.max(frameTop + 14, emptyBand - hintH - 4);
-      }
-      // Never sit on the badge band.
+      hintTop = Math.max(frameTop + 12, badgeBottom + 16);
+      // Keep under the glass top edge, never on the badge row.
       if (hintTop < badgeBottom + 16) {
         hintTop = badgeBottom + 16;
+      }
+      if (hintTop + hintH > glass.y + glass.h * 0.35) {
+        hintTop = Math.max(badgeBottom + 16, glass.y + 10);
       }
     } else {
       // Above the ring, right-aligned; never overlap the ring.
@@ -1078,7 +1076,9 @@ export function HallExperience({
                               {isActive &&
                               isStolen &&
                               !reopenHall &&
-                              stolenPhase === "empty" ? (
+                              stolenPhase === "empty" &&
+                              // Melitopol: hint replaces this copy so they never overlap.
+                              !(museumId === "melitopol" && hintStolen) ? (
                                 (() => {
                                   // Narrow openings (Капуцин, Дама): label below the frame.
                                   const openW =

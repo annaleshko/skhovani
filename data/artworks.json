@@ -297,6 +297,30 @@
           "label": "УП Життя: забуті звичаї Пасхи від етнографів",
           "url": "https://life.pravda.com.ua/culture/2019/04/22/236629/",
           "note": null
+        },
+        {
+          "id": "xk_47fea1db",
+          "label": "Азбука: «Пасхальная заутреня в Малороссии»",
+          "url": "https://azbyka.ru/art/pashalnaya-zautrenya-v-malorossii/",
+          "note": "⚠ verify"
+        },
+        {
+          "id": "xk_59a999f2",
+          "label": "Kyiv Post: «Ранок Христового Воскресіння»",
+          "url": "https://www.kyivpost.com/uk/post/51120",
+          "note": null
+        },
+        {
+          "id": "xk_18676692",
+          "label": "Укрінформ: «Микола Пимоненко. Відтворювач України»",
+          "url": "https://www.ukrinform.ua/rubric-culture/2906693-mikola-pimonenko-1-vidtvoruvac-ukraini.html",
+          "note": null
+        },
+        {
+          "id": "xk_041f95f0",
+          "label": "LB.ua: «21 березня. Микола Пимоненко»",
+          "url": "https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html",
+          "note": null
         }
       ],
       "chat": {
@@ -468,6 +492,37 @@
           "sourceId": "xk_85c8a94d",
           "sourceLabel": "Радіо Свобода: Великдень",
           "scope": "context"
+        },
+        {
+          "fact": "За першу «Великодню заутреню» (1891) і картину «Весілля в Київській губернії» Пимоненко того ж року отримав звання почесного вільного слухача Академії мистецтв.",
+          "sourceId": "xk_47fea1db",
+          "sourceLabel": "Азбука: «Пасхальная заутреня в Малороссии»",
+          "verify": true,
+          "scope": "story"
+        },
+        {
+          "fact": "Пимоненка називають майстром світлових ефектів: у «заутрені» саме світло — з церкви і від свічок — тримає всю картину.",
+          "sourceId": "xk_59a999f2",
+          "sourceLabel": "Kyiv Post: «Ранок Христового Воскресіння»",
+          "scope": "story"
+        },
+        {
+          "fact": "Щоб точно передати нічне й місячне світло, Пимоненко ходив на етюди літніми вечорами, а вдень уважно розглядав учорашній етюд, щоб увечері виправити побачене.",
+          "sourceId": "xk_18676692",
+          "sourceLabel": "Укрінформ: «Микола Пимоненко. Відтворювач України»",
+          "scope": "story"
+        },
+        {
+          "fact": "Тесть, художник Володимир Орловський, жартома називав Пимоненка «комплексом», бо той однаково добре писав людей, пейзажі, квіти й тварин.",
+          "sourceId": "xk_041f95f0",
+          "sourceLabel": "LB.ua: «21 березня. Микола Пимоненко»",
+          "scope": "story"
+        },
+        {
+          "fact": "У селі Малютянка, де Пимоненко щоліта працював у своїй майстерні, з 1997 року діє його музей.",
+          "sourceId": "xk_041f95f0",
+          "sourceLabel": "LB.ua: «21 березня. Микола Пимоненко»",
+          "scope": "story"
         }
       ]
     },
@@ -730,6 +785,18 @@
           "label": "Kyiv Post: традиції Різдва",
           "url": "https://www.kyivpost.com/uk/post/66648",
           "note": null
+        },
+        {
+          "id": "xk_18676692",
+          "label": "Укрінформ: «Микола Пимоненко. Відтворювач України»",
+          "url": "https://www.ukrinform.ua/rubric-culture/2906693-mikola-pimonenko-1-vidtvoruvac-ukraini.html",
+          "note": null
+        },
+        {
+          "id": "xk_041f95f0",
+          "label": "LB.ua: «21 березня. Микола Пимоненко»",
+          "url": "https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html",
+          "note": null
         }
       ],
       "chat": {
@@ -871,6 +938,30 @@
           "sourceId": "xk_2cc9df25",
           "sourceLabel": "Kyiv Post: традиції Різдва",
           "scope": "context"
+        },
+        {
+          "fact": "Пимоненко ілюстрував поеми Шевченка — «Причинну», «Утоплену», «Русалку», «Черницю Мар'яну».",
+          "sourceId": "xk_18676692",
+          "sourceLabel": "Укрінформ: «Микола Пимоненко. Відтворювач України»",
+          "scope": "story"
+        },
+        {
+          "fact": "Пимоненко багато працював на пленері разом із тестем Орловським — звідси жива природа і світло в його сільських сценах.",
+          "sourceId": "xk_041f95f0",
+          "sourceLabel": "LB.ua: «21 березня. Микола Пимоненко»",
+          "scope": "story"
+        },
+        {
+          "fact": "Для Володимирського собору в Києві Пимоненко написав образи святої Анни та Миколая Мирлікійського.",
+          "sourceId": "xk_041f95f0",
+          "sourceLabel": "LB.ua: «21 березня. Микола Пимоненко»",
+          "scope": "story"
+        },
+        {
+          "fact": "Батько Пимоненка був іконописцем, і малий Микола змалку їздив із ним на роботи в Васильків, Боярку, Малютянку — ці села потім з'являлися на його картинах.",
+          "sourceId": "xk_18676692",
+          "sourceLabel": "Укрінформ: «Микола Пимоненко. Відтворювач України»",
+          "scope": "story"
         }
       ]
     },
@@ -1139,6 +1230,12 @@
           "label": "Zaxid.net, 27.11.2023",
           "url": "https://zaxid.net/skifske_zoloto_povernuli_z_niderlandiv_v_ukrayinu_n1575250/amp",
           "note": null
+        },
+        {
+          "id": "xk_a54b5d3c",
+          "label": "Еспресо, 30.04.2022",
+          "url": "https://espreso.tv/iz-muzeyu-v-okupovanomu-melitopoli-rashisti-vivozyat-skifske-zoloto",
+          "note": "⚠ verify"
         }
       ],
       "chat": {
@@ -1303,6 +1400,25 @@
           "sourceId": "xk_7337d793",
           "sourceLabel": "Zaxid.net, 27.11.2023",
           "scope": "context"
+        },
+        {
+          "fact": "Після захоплення музею проросійські пабліки показали відео, де призначений окупантами «директор» хвалився, що його люди довго шукали сховане працівниками музею золото.",
+          "sourceId": "xk_ea3f33b7",
+          "sourceLabel": "УП Життя: окупанти захопили музей зі скіфським золотом",
+          "scope": "story"
+        },
+        {
+          "fact": "30 квітня 2022 року золото мав оцінити «експерт», якого окупанти привезли з Криму.",
+          "sourceId": "xk_a54b5d3c",
+          "sourceLabel": "Еспресо, 30.04.2022",
+          "verify": true,
+          "scope": "story"
+        },
+        {
+          "fact": "Мелітопольське золото — не єдина втрата: у квітні 2022 року окупанти пограбували й три музеї Маріуполя, зокрема Художній музей Куїнджі.",
+          "sourceId": "xk_b23707e1",
+          "sourceLabel": "Human Rights Watch, 20.12.2022",
+          "scope": "story"
         }
       ]
     },
@@ -1545,6 +1661,24 @@
           "label": "Hyperallergic, 02.05.2022",
           "url": "https://hyperallergic.com/729290/ukraine-accuses-russia-looting-mariupol-melitopol-artworks/",
           "note": null
+        },
+        {
+          "id": "xk_05ef9cae",
+          "label": "LB.ua: «2 травня. Іван Айвазовський»",
+          "url": "https://lb.ua/blog/art_calendar/303745_2_travnya_ivan_ayvazovskiy.html",
+          "note": null
+        },
+        {
+          "id": "xk_a96473ee",
+          "label": "Культура.РФ: Иван Айвазовский",
+          "url": "https://www.culture.ru/persons/8258/ivan-aivazovskii",
+          "note": null
+        },
+        {
+          "id": "xk_2aa06fb4",
+          "label": "Van Abbemuseum: Ivan Aivazovsky",
+          "url": "https://ls.vanabbemuseum.nl/A/aivazovskii/text/aivazovskii.htm",
+          "note": null
         }
       ],
       "chat": {
@@ -1674,6 +1808,30 @@
           "sourceId": "xk_ad7a7c34",
           "sourceLabel": "Hyperallergic, 02.05.2022",
           "scope": "context"
+        },
+        {
+          "fact": "Айвазовський писав здебільшого не з натури, а з пам'яті, і дуже швидко. Він так добре знав будову кораблів, що на цьому «спотикалися» підробники.",
+          "sourceId": "xk_05ef9cae",
+          "sourceLabel": "LB.ua: «2 травня. Іван Айвазовський»",
+          "scope": "story"
+        },
+        {
+          "fact": "За життя Айвазовський створив близько 6000 робіт і мав 120 персональних виставок.",
+          "sourceId": "xk_05ef9cae",
+          "sourceLabel": "LB.ua: «2 травня. Іван Айвазовський»",
+          "scope": "story"
+        },
+        {
+          "fact": "Писати з пам'яті він навчився під час мандрів Європою в 1840–1844 роках — якраз перед тим, як з'явилися його одеські краєвиди 1846 року.",
+          "sourceId": "xk_a96473ee",
+          "sourceLabel": "Культура.РФ: Иван Айвазовский",
+          "scope": "story"
+        },
+        {
+          "fact": "Айвазовський народився у Феодосії у вірменській родині; у рідному місті він провів воду зі свого маєтку, відкрив художню школу й музей.",
+          "sourceId": "xk_2aa06fb4",
+          "sourceLabel": "Van Abbemuseum: Ivan Aivazovsky",
+          "scope": "story"
         }
       ]
     },
@@ -1918,6 +2076,30 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_55472a33",
+          "label": "Pepys Diary Encyclopedia: Peter Lely",
+          "url": "https://www.pepysdiary.com/encyclopedia/1488/",
+          "note": null
+        },
+        {
+          "id": "xk_d97afe0f",
+          "label": "Artvee: Peter Lely",
+          "url": "https://artvee.com/?p=10290",
+          "note": null
+        },
+        {
+          "id": "xk_6dcf05b2",
+          "label": "Wikipedia (IPFS): Peter Lely",
+          "url": "https://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq.ipfs.4everland.io/wiki/Peter_Lely.html",
+          "note": "⚠ verify"
+        },
+        {
+          "id": "xk_5de6c717",
+          "label": "Wikipedia: Peter Lely",
+          "url": "https://akarinohon.com/text/taketori.cgi/en.m.wikipedia.org/wiki/Peter_Lely",
+          "note": null
         }
       ],
       "chat": {
@@ -2047,6 +2229,37 @@
           "sourceId": "xk_82f0e47d",
           "sourceLabel": "JusticeInfo: The art of war in Ukraine",
           "scope": "context"
+        },
+        {
+          "fact": "Майстерня Лелі працювала як «фабрика портретів»: сам Лелі писав обличчя, а учні домальовували фігуру в одній із пронумерованих поз, з типовими драпіруваннями, квітами й інструментами.",
+          "sourceId": "xk_55472a33",
+          "sourceLabel": "Pepys Diary Encyclopedia: Peter Lely",
+          "scope": "story"
+        },
+        {
+          "fact": "Через це якість «портретів Лелі» дуже різна — від блискучих оригіналів до слабких повторень учнів.",
+          "sourceId": "xk_55472a33",
+          "sourceLabel": "Pepys Diary Encyclopedia: Peter Lely",
+          "scope": "story"
+        },
+        {
+          "fact": "Лелі помер у 1680 році просто за мольбертом, працюючи над портретом герцогині Сомерсет.",
+          "sourceId": "xk_d97afe0f",
+          "sourceLabel": "Artvee: Peter Lely",
+          "scope": "story"
+        },
+        {
+          "fact": "Після його смерті виконавці заповіту найняли близько дюжини помічників, щоб дописати для продажу незавершені полотна з його майстерні.",
+          "sourceId": "xk_6dcf05b2",
+          "sourceLabel": "Wikipedia (IPFS): Peter Lely",
+          "verify": true,
+          "scope": "story"
+        },
+        {
+          "fact": "Лелі одним із перших в Англії зрозумів, як гравюра-мецотинто допомагає поширювати його портрети.",
+          "sourceId": "xk_5de6c717",
+          "sourceLabel": "Wikipedia: Peter Lely",
+          "scope": "story"
         }
       ]
     },
@@ -2289,6 +2502,18 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_dc33c8cd",
+          "label": "Wikipedia: Vladimir Orlovsky",
+          "url": "https://www.wikipedia.com/wiki/Vladimir_Orlovsky",
+          "note": null
+        },
+        {
+          "id": "xk_8fcc009e",
+          "label": "Encyclopedia of Ukraine: Orlovsky, Volodymyr",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CO%5CR%5COrlovskyVolodymyr.htm",
+          "note": null
         }
       ],
       "chat": {
@@ -2423,6 +2648,30 @@
           "sourceId": "xk_82f0e47d",
           "sourceLabel": "JusticeInfo: The art of war in Ukraine",
           "scope": "context"
+        },
+        {
+          "fact": "Учитель Орловського Іван Сошенко не лише вчив його, а й поселив у власній квартирі й брав із собою на етюди.",
+          "sourceId": "xk_de00ca4b",
+          "sourceLabel": "Укрінформ: «Володимир Орловський. Натурфілософ із пензлем»",
+          "scope": "story"
+        },
+        {
+          "fact": "Наприкінці життя Орловський зізнавався: «Живопис я люблю більше за життя».",
+          "sourceId": "xk_de00ca4b",
+          "sourceLabel": "Укрінформ: «Володимир Орловський. Натурфілософ із пензлем»",
+          "scope": "story"
+        },
+        {
+          "fact": "Картини Орловського купували московська й петербурзька аристократія і навіть імператор Олександр III.",
+          "sourceId": "xk_dc33c8cd",
+          "sourceLabel": "Wikipedia: Vladimir Orlovsky",
+          "scope": "story"
+        },
+        {
+          "fact": "Поступово відходячи від академізму, Орловський писав дедалі природніше: вільніша композиція, певніша лінія, тонший колір.",
+          "sourceId": "xk_8fcc009e",
+          "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr",
+          "scope": "story"
         }
       ]
     },
@@ -2647,6 +2896,24 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_842a66b5",
+          "label": "Wikipedia: Fyodor Bronnikov",
+          "url": "https://www.Wikipedia.com/wiki/Fyodor_Bronnikov",
+          "note": null
+        },
+        {
+          "id": "xk_31ae8ef3",
+          "label": "Циклопедия: «Гимн пифагорейцев» Бронникова",
+          "url": "https://cyclowiki.org/wiki/%D0%93%D0%B8%D0%BC%D0%BD_%D0%BF%D0%B8%D1%84%D0%B0%D0%B3%D0%BE%D1%80%D0%B5%D0%B9%D1%86%D0%B5%D0%B2_%D0%B2%D0%BE%D1%81%D1%85%D0%BE%D0%B4%D1%8F%D1%89%D0%B5%D0%BC%D1%83_%D1%81%D0%BE%D0%BB%D0%BD%D1%86%D1%83_(%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%B0_%D0%A4.%D0%90._%D0%91%D1%80%D0%BE%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0)",
+          "note": "⚠ verify"
+        },
+        {
+          "id": "xk_758f588e",
+          "label": "Азбука: Бронников Федор Андреевич",
+          "url": "https://azbyka.ru/art/avtor/bronnikov-fedor-andreevich/",
+          "note": null
         }
       ],
       "chat": {
@@ -2764,6 +3031,25 @@
           "sourceId": "xk_82f0e47d",
           "sourceLabel": "JusticeInfo: The art of war in Ukraine",
           "scope": "context"
+        },
+        {
+          "fact": "У 16 років, після смерті батька, Бронников сам поїхав до Петербурга вступати в Академію. Спершу не вступив і працював учнем у гравера по дереву, поки на нього не звернув увагу скульптор Петро Клодт.",
+          "sourceId": "xk_842a66b5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov",
+          "scope": "story"
+        },
+        {
+          "fact": "Перед великою картиною Бронников робив багато ескізів і начерків і часто брав деталі зі свого архіву етюдів. Можливо, так з'явився й «Капуцин» — невеликий етюд на дереві.",
+          "sourceId": "xk_31ae8ef3",
+          "sourceLabel": "Циклопедия: «Гимн пифагорейцев» Бронникова",
+          "verify": true,
+          "scope": "story"
+        },
+        {
+          "fact": "Бронников заповів рідному Шадринську понад 300 картин, ескізів і малюнків та 40 000 рублів на художню школу.",
+          "sourceId": "xk_758f588e",
+          "sourceLabel": "Азбука: Бронников Федор Андреевич",
+          "scope": "story"
         }
       ]
     },
@@ -3001,6 +3287,36 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_5432a726",
+          "label": "DailyArt Magazine: 10 Scandalous Cases of Censorship",
+          "url": "https://www.dailyartmagazine.com/?p=175175",
+          "note": null
+        },
+        {
+          "id": "xk_2e743d81",
+          "label": "Wikipedia: Reply of the Zaporozhian Cossacks",
+          "url": "https://en.wikipedia.org/wiki/Reply_of_the_Zaporozhian_Cossacks",
+          "note": null
+        },
+        {
+          "id": "xk_b452e758",
+          "label": "Wikipedia: Reply of the Zaporozhian Cossacks",
+          "url": "https://wikipedia.com/wiki/Reply_of_the_Zaporozhian_Cossacks",
+          "note": null
+        },
+        {
+          "id": "xk_da1c93dc",
+          "label": "Wikipedia: Reply of the Zaporozhian Cossacks",
+          "url": "https://ipfs.ssi.eecc.de/ipns/en.wikipedia-on-ipfs.org/wiki/Reply_of_the_Zaporozhian_Cossacks",
+          "note": null
+        },
+        {
+          "id": "xk_abcaf738",
+          "label": "Kyiv Post: Ілля Рєпін",
+          "url": "https://kyivpost.com/post/19333",
+          "note": null
         }
       ],
       "chat": {
@@ -3118,6 +3434,36 @@
           "sourceId": "xk_82f0e47d",
           "sourceLabel": "JusticeInfo: The art of war in Ukraine",
           "scope": "context"
+        },
+        {
+          "fact": "Рєпін уперше почув текст листа запорожців у 1878 році: Яворницький, щоб розвеселити гостей, іноді читав його вголос.",
+          "sourceId": "xk_5432a726",
+          "sourceLabel": "DailyArt Magazine: 10 Scandalous Cases of Censorship",
+          "scope": "story"
+        },
+        {
+          "fact": "Чи справді існував такий лист, історики сперечаються: надійних доказів немає, але саме він став символом козацької волі.",
+          "sourceId": "xk_2e743d81",
+          "sourceLabel": "Wikipedia: Reply of the Zaporozhian Cossacks",
+          "scope": "story"
+        },
+        {
+          "fact": "Для образу козака-голоти позував кучер Тарновського Микитка. Рєпін «зловив» його, коли вони разом переправлялися поромом через Дніпро.",
+          "sourceId": "xk_b452e758",
+          "sourceLabel": "Wikipedia: Reply of the Zaporozhian Cossacks",
+          "scope": "story"
+        },
+        {
+          "fact": "Серед натурників був і журналіст Володимир Гіляровський, який мав козацьке коріння.",
+          "sourceId": "xk_da1c93dc",
+          "sourceLabel": "Wikipedia: Reply of the Zaporozhian Cossacks",
+          "scope": "story"
+        },
+        {
+          "fact": "У 1880 році Рєпін їздив на Запоріжжя збирати матеріал: зброю, одяг, обличчя.",
+          "sourceId": "xk_abcaf738",
+          "sourceLabel": "Kyiv Post: Ілля Рєпін",
+          "scope": "story"
         }
       ]
     },
@@ -3332,6 +3678,30 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_c3b96c49",
+          "label": "Wikipedia: Job Kondzelevych",
+          "url": "https://en.wikipedia.org/wiki/Job_Kondzelevych",
+          "note": null
+        },
+        {
+          "id": "xk_92c0b2b0",
+          "label": "Encyclopedia of Ukraine: Kondzelevych, Yov",
+          "url": "https://www.encyclopediaofukraine.com/pages%5CK%5CO%5CKondzelevychYov.htm",
+          "note": null
+        },
+        {
+          "id": "xk_aa86a5c2",
+          "label": "Народознавчі зошити, 2011",
+          "url": "https://nz.lviv.ua/archiv/2011-6/12.pdf",
+          "note": null
+        },
+        {
+          "id": "xk_48b4325f",
+          "label": "В. Ларіонова, Л. Борисович: «Йов Кондзелевич: ієромонах і геніальний митець», 2007",
+          "url": "https://harvester.nas.gov.ua/Record/irk-123456789-16511/Description",
+          "note": null
         }
       ],
       "chat": {
@@ -3437,6 +3807,30 @@
           "sourceId": "xk_82f0e47d",
           "sourceLabel": "JusticeInfo: The art of war in Ukraine",
           "scope": "context"
+        },
+        {
+          "fact": "Кондзелевич народився в Жовкві й був ієромонахом; згодом став ігуменом Хрестовоздвиженського монастиря в Луцьку.",
+          "sourceId": "xk_c3b96c49",
+          "sourceLabel": "Wikipedia: Job Kondzelevych",
+          "scope": "story"
+        },
+        {
+          "fact": "Він навчався в Жовківській малярській школі, а мистецтвознавці вважають, що, ймовірно, ще й у іконописній майстерні Києво-Печерської лаври та за кордоном.",
+          "sourceId": "xk_92c0b2b0",
+          "sourceLabel": "Encyclopedia of Ukraine: Kondzelevych, Yov",
+          "scope": "story"
+        },
+        {
+          "fact": "Іконостас простояв у Богородчанах понад століття — з 1785 до 1916 року.",
+          "sourceId": "xk_aa86a5c2",
+          "sourceLabel": "Народознавчі зошити, 2011",
+          "scope": "story"
+        },
+        {
+          "fact": "У його творчості дослідники бачать рідкісне поєднання східної та західної традицій іконопису.",
+          "sourceId": "xk_48b4325f",
+          "sourceLabel": "В. Ларіонова, Л. Борисович: «Йов Кондзелевич: ієромонах і геніальний митець», 2007",
+          "scope": "story"
         }
       ]
     },
@@ -3674,6 +4068,30 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_c41accdf",
+          "label": "Вікна: загинула Марина Гриценко",
+          "url": "https://vikna.tv/dlia-tebe/vijna-v-ukrayini/zagynula-maryna-gryczenko-zberigachka-fondiv-chernigivskogo-hudozhnogo-muzeyu/",
+          "note": null
+        },
+        {
+          "id": "xk_136d6a35",
+          "label": "УП Життя: Марина Гриценко отримала премію Europa Nostra",
+          "url": "https://life.pravda.com.ua/society/boyova-medikinya-marina-gricenko-otrimala-premiyu-europa-nostra-awards-315285/",
+          "note": null
+        },
+        {
+          "id": "xk_2e4b21de",
+          "label": "EU Neighbours East",
+          "url": "https://euneighbourseast.eu/uk/news/latest-news/hranytelka-chernigivskogo-hudozhnogo-muzeyu-posmertno-otrymala-prestyzhnu-premiyu-europa-nostra/",
+          "note": null
+        },
+        {
+          "id": "xk_937622c8",
+          "label": "АрміяInform: «Сакральний Мамай»",
+          "url": "https://armyinform.com.ua/2021/07/13/sakralnyj-mamaj-iz-rodu-kyyativ-ta-jogo-spadshhyna/",
+          "note": "⚠ verify"
         }
       ],
       "chat": {
@@ -3784,6 +4202,37 @@
           "sourceId": "xk_82f0e47d",
           "sourceLabel": "JusticeInfo: The art of war in Ukraine",
           "scope": "context"
+        },
+        {
+          "fact": "Головна зберігачка фондів Марина Гриценко на початку великої війни разом із донькою перебралася жити просто в музей, щоб берегти експонати.",
+          "sourceId": "xk_c41accdf",
+          "sourceLabel": "Вікна: загинула Марина Гриценко",
+          "scope": "story"
+        },
+        {
+          "fact": "Завдяки їй і колегам вдалося зберегти близько 17 тисяч експонатів.",
+          "sourceId": "xk_136d6a35",
+          "sourceLabel": "УП Життя: Марина Гриценко отримала премію Europa Nostra",
+          "scope": "story"
+        },
+        {
+          "fact": "У лютому 2023 року Марина пішла до війська й стала бойовою медикинею 3-ї штурмової бригади; вона загинула у 2025 році.",
+          "sourceId": "xk_c41accdf",
+          "sourceLabel": "Вікна: загинула Марина Гриценко",
+          "scope": "story"
+        },
+        {
+          "fact": "У 2026 році Марина Гриценко посмертно отримала гран-прі премії Europa Nostra в категорії «Герої культурної спадщини».",
+          "sourceId": "xk_2e4b21de",
+          "sourceLabel": "EU Neighbours East",
+          "scope": "story"
+        },
+        {
+          "fact": "Козак Мамай настільки став символом, що під час повстань з'являлися свої «отамани Мамаї» — наприклад, Яків Щириця на Черкащині у 1917–1921 роках.",
+          "sourceId": "xk_937622c8",
+          "sourceLabel": "АрміяInform: «Сакральний Мамай»",
+          "verify": true,
+          "scope": "story"
         }
       ]
     },

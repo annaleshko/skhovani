@@ -94,7 +94,7 @@ async function callModel(
 } | null> {
   const completion = await openai.chat.completions.create({
     model,
-    temperature: 0.3,
+    temperature: 0.6,
     response_format: { type: "json_object" },
     messages,
   });
@@ -150,7 +150,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "artwork_not_found" }, { status: 404 });
   }
 
-  const messages = Array.isArray(body.messages) ? body.messages.slice(-10) : [];
+  const messages = Array.isArray(body.messages) ? body.messages.slice(-6) : [];
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
   const question = (lastUser?.content ?? "").trim().slice(0, MAX_INPUT);
   if (!question) {
@@ -159,10 +159,17 @@ export async function POST(req: Request) {
 
   const detailTitle = body.detail?.zoneOrStopTitle?.trim() || null;
 
-  // Default questions → curated bank immediately (no model).
-  const curated = curatedResponse(artworkId, question);
-  if (curated) {
-    return NextResponse.json(curated);
+  // Curated defaults only the first time that exact question appears in this chat.
+  const priorUserQs = messages
+    .filter((m) => m.role === "user")
+    .slice(0, -1)
+    .map((m) => String(m.content ?? "").trim());
+  const askedBefore = priorUserQs.some((q) => q === question);
+  if (!askedBefore) {
+    const curated = curatedResponse(artworkId, question);
+    if (curated) {
+      return NextResponse.json(curated);
+    }
   }
 
   // Trap: passport / safety, skip the model.

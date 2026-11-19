@@ -1,3 +1,4 @@
+import { MapLandArt } from "@/components/map/MapLandArt";
 import { cn } from "@/lib/cn";
 import type { ReactNode } from "react";
 
@@ -9,7 +10,7 @@ type Props = {
 };
 
 /**
- * Figma Illustration/Map 61:46 — wraps map.svg in SVG coordinate space.
+ * Figma Illustration/Map 61:46 — inline map paths (vector at any scale).
  * Camera transforms (Stage 4) should wrap this component.
  */
 export function MapIllustration({
@@ -24,7 +25,7 @@ export function MapIllustration({
       role="img"
       aria-label="Карта України"
     >
-      <image href="/map/map.svg" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" />
+      <MapLandArt />
       {children}
     </svg>
   );

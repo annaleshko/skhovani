@@ -141,3 +141,81 @@
 ## 4 · Вид міста Одеси — Айвазовський і Куїнджі
 
 - Айвазовський народився в Криму, а Куїнджі — у Маріуполі; обидва відомі морськими пейзажами, і роботи обох окупанти вивезли з музеїв у 2022 році. [src: Hyperallergic, 02.05.2022 | https://hyperallergic.com/729290/ukraine-accuses-russia-looting-mariupol-melitopol-artworks/]
+
+---
+
+# Раунд 2 · Живі історії та деталі
+
+Факти з історій створення, курйози, люди за картинами. Гід використовує їх як «а ось що цікаво…». Застереження ⚠ verify діє так само, як у раунді 1.
+
+## 1 · Великодня заутреня (Микола Пимоненко)
+
+- За першу «Великодню заутреню» (1891) і картину «Весілля в Київській губернії» Пимоненко того ж року отримав звання почесного вільного слухача Академії мистецтв. ⚠ verify [src: Азбука: «Пасхальная заутреня в Малороссии» | https://azbyka.ru/art/pashalnaya-zautrenya-v-malorossii/]
+- Пимоненка називають майстром світлових ефектів: у «заутрені» саме світло — з церкви і від свічок — тримає всю картину. [src: Kyiv Post: «Ранок Христового Воскресіння» | https://www.kyivpost.com/uk/post/51120]
+- Щоб точно передати нічне й місячне світло, Пимоненко ходив на етюди літніми вечорами, а вдень уважно розглядав учорашній етюд, щоб увечері виправити побачене. [src: Укрінформ: «Микола Пимоненко. Відтворювач України» | https://www.ukrinform.ua/rubric-culture/2906693-mikola-pimonenko-1-vidtvoruvac-ukraini.html]
+- Тесть, художник Володимир Орловський, жартома називав Пимоненка «комплексом», бо той однаково добре писав людей, пейзажі, квіти й тварин. [src: LB.ua: «21 березня. Микола Пимоненко» | https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html]
+- У селі Малютянка, де Пимоненко щоліта працював у своїй майстерні, з 1997 року діє його музей. [src: LB.ua: «21 березня. Микола Пимоненко» | https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html]
+
+## 2 · Колядки (Микола Пимоненко)
+
+- Пимоненко ілюстрував поеми Шевченка — «Причинну», «Утоплену», «Русалку», «Черницю Мар'яну». [src: Укрінформ: «Микола Пимоненко. Відтворювач України» | https://www.ukrinform.ua/rubric-culture/2906693-mikola-pimonenko-1-vidtvoruvac-ukraini.html]
+- Пимоненко багато працював на пленері разом із тестем Орловським — звідси жива природа і світло в його сільських сценах. [src: LB.ua: «21 березня. Микола Пимоненко» | https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html]
+- Для Володимирського собору в Києві Пимоненко написав образи святої Анни та Миколая Мирлікійського. [src: LB.ua: «21 березня. Микола Пимоненко» | https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html]
+- Батько Пимоненка був іконописцем, і малий Микола змалку їздив із ним на роботи в Васильків, Боярку, Малютянку — ці села потім з'являлися на його картинах. [src: Укрінформ: «Микола Пимоненко. Відтворювач України» | https://www.ukrinform.ua/rubric-culture/2906693-mikola-pimonenko-1-vidtvoruvac-ukraini.html]
+
+## 3 · Скіфське золото Мелітополя
+
+- Після захоплення музею проросійські пабліки показали відео, де призначений окупантами «директор» хвалився, що його люди довго шукали сховане працівниками музею золото. [src: УП Життя: окупанти захопили музей зі скіфським золотом | https://life.pravda.com.ua/culture/2022/04/28/248445/]
+- 30 квітня 2022 року золото мав оцінити «експерт», якого окупанти привезли з Криму. ⚠ verify [src: Еспресо, 30.04.2022 | https://espreso.tv/iz-muzeyu-v-okupovanomu-melitopoli-rashisti-vivozyat-skifske-zoloto]
+- Мелітопольське золото — не єдина втрата: у квітні 2022 року окупанти пограбували й три музеї Маріуполя, зокрема Художній музей Куїнджі. [src: Human Rights Watch, 20.12.2022 | https://www.hrw.org/news/2022/12/20/ukraine-russians-pillage-kherson-cultural-institutions]
+
+## 4 · Вид міста Одеси (Іван Айвазовський)
+
+- Айвазовський писав здебільшого не з натури, а з пам'яті, і дуже швидко. Він так добре знав будову кораблів, що на цьому «спотикалися» підробники. [src: LB.ua: «2 травня. Іван Айвазовський» | https://lb.ua/blog/art_calendar/303745_2_travnya_ivan_ayvazovskiy.html]
+- За життя Айвазовський створив близько 6000 робіт і мав 120 персональних виставок. [src: LB.ua: «2 травня. Іван Айвазовський» | https://lb.ua/blog/art_calendar/303745_2_travnya_ivan_ayvazovskiy.html]
+- Писати з пам'яті він навчився під час мандрів Європою в 1840–1844 роках — якраз перед тим, як з'явилися його одеські краєвиди 1846 року. [src: Культура.РФ: Иван Айвазовский | https://www.culture.ru/persons/8258/ivan-aivazovskii]
+- Айвазовський народився у Феодосії у вірменській родині; у рідному місті він провів воду зі свого маєтку, відкрив художню школу й музей. [src: Van Abbemuseum: Ivan Aivazovsky | https://ls.vanabbemuseum.nl/A/aivazovskii/text/aivazovskii.htm]
+
+## 5 · Дама з собакою (Пітер Лелі)
+
+- Майстерня Лелі працювала як «фабрика портретів»: сам Лелі писав обличчя, а учні домальовували фігуру в одній із пронумерованих поз, з типовими драпіруваннями, квітами й інструментами. [src: Pepys Diary Encyclopedia: Peter Lely | https://www.pepysdiary.com/encyclopedia/1488/]
+- Через це якість «портретів Лелі» дуже різна — від блискучих оригіналів до слабких повторень учнів. [src: Pepys Diary Encyclopedia: Peter Lely | https://www.pepysdiary.com/encyclopedia/1488/]
+- Лелі помер у 1680 році просто за мольбертом, працюючи над портретом герцогині Сомерсет. [src: Artvee: Peter Lely | https://artvee.com/?p=10290]
+- Після його смерті виконавці заповіту найняли близько дюжини помічників, щоб дописати для продажу незавершені полотна з його майстерні. ⚠ verify [src: Wikipedia (IPFS): Peter Lely | https://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq.ipfs.4everland.io/wiki/Peter_Lely.html]
+- Лелі одним із перших в Англії зрозумів, як гравюра-мецотинто допомагає поширювати його портрети. [src: Wikipedia: Peter Lely | https://akarinohon.com/text/taketori.cgi/en.m.wikipedia.org/wiki/Peter_Lely]
+
+## 6 · Околиці Києва (Володимир Орловський)
+
+- Учитель Орловського Іван Сошенко не лише вчив його, а й поселив у власній квартирі й брав із собою на етюди. [src: Укрінформ: «Володимир Орловський. Натурфілософ із пензлем» | https://www.ukrinform.ua/rubric-culture/3654756-volodimir-orlovskij-naturfilosof-iz-penzlem.html]
+- Наприкінці життя Орловський зізнавався: «Живопис я люблю більше за життя». [src: Укрінформ: «Володимир Орловський. Натурфілософ із пензлем» | https://www.ukrinform.ua/rubric-culture/3654756-volodimir-orlovskij-naturfilosof-iz-penzlem.html]
+- Картини Орловського купували московська й петербурзька аристократія і навіть імператор Олександр III. [src: Wikipedia: Vladimir Orlovsky | https://www.wikipedia.com/wiki/Vladimir_Orlovsky]
+- Поступово відходячи від академізму, Орловський писав дедалі природніше: вільніша композиція, певніша лінія, тонший колір. [src: Encyclopedia of Ukraine: Orlovsky, Volodymyr | https://www.encyclopediaofukraine.com/pages%5CO%5CR%5COrlovskyVolodymyr.htm]
+
+## 7 · Капуцин (Федір Бронников)
+
+- У 16 років, після смерті батька, Бронников сам поїхав до Петербурга вступати в Академію. Спершу не вступив і працював учнем у гравера по дереву, поки на нього не звернув увагу скульптор Петро Клодт. [src: Wikipedia: Fyodor Bronnikov | https://www.Wikipedia.com/wiki/Fyodor_Bronnikov]
+- Перед великою картиною Бронников робив багато ескізів і начерків і часто брав деталі зі свого архіву етюдів. Можливо, так з'явився й «Капуцин» — невеликий етюд на дереві. ⚠ verify (про сам «Капуцин» — припущення, подавати як «можливо») [src: Циклопедия: «Гимн пифагорейцев» Бронникова | https://cyclowiki.org/wiki/%D0%93%D0%B8%D0%BC%D0%BD_%D0%BF%D0%B8%D1%84%D0%B0%D0%B3%D0%BE%D1%80%D0%B5%D0%B9%D1%86%D0%B5%D0%B2_%D0%B2%D0%BE%D1%81%D1%85%D0%BE%D0%B4%D1%8F%D1%89%D0%B5%D0%BC%D1%83_%D1%81%D0%BE%D0%BB%D0%BD%D1%86%D1%83_(%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%B0_%D0%A4.%D0%90._%D0%91%D1%80%D0%BE%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0)]
+- Бронников заповів рідному Шадринську понад 300 картин, ескізів і малюнків та 40 000 рублів на художню школу. [src: Азбука: Бронников Федор Андреевич | https://azbyka.ru/art/avtor/bronnikov-fedor-andreevich/]
+
+## 8 · Запорожці пишуть листа турецькому султанові (Ілля Рєпін)
+
+- Рєпін уперше почув текст листа запорожців у 1878 році: Яворницький, щоб розвеселити гостей, іноді читав його вголос. [src: DailyArt Magazine: 10 Scandalous Cases of Censorship | https://www.dailyartmagazine.com/?p=175175]
+- Чи справді існував такий лист, історики сперечаються: надійних доказів немає, але саме він став символом козацької волі. [src: Wikipedia: Reply of the Zaporozhian Cossacks | https://en.wikipedia.org/wiki/Reply_of_the_Zaporozhian_Cossacks]
+- Для образу козака-голоти позував кучер Тарновського Микитка. Рєпін «зловив» його, коли вони разом переправлялися поромом через Дніпро. [src: Wikipedia: Reply of the Zaporozhian Cossacks | https://wikipedia.com/wiki/Reply_of_the_Zaporozhian_Cossacks]
+- Серед натурників був і журналіст Володимир Гіляровський, який мав козацьке коріння. [src: Wikipedia: Reply of the Zaporozhian Cossacks | https://ipfs.ssi.eecc.de/ipns/en.wikipedia-on-ipfs.org/wiki/Reply_of_the_Zaporozhian_Cossacks]
+- У 1880 році Рєпін їздив на Запоріжжя збирати матеріал: зброю, одяг, обличчя. [src: Kyiv Post: Ілля Рєпін | https://kyivpost.com/post/19333]
+
+## 9 · Богородчанський іконостас (Йов Кондзелевич)
+
+- Кондзелевич народився в Жовкві й був ієромонахом; згодом став ігуменом Хрестовоздвиженського монастиря в Луцьку. [src: Wikipedia: Job Kondzelevych | https://en.wikipedia.org/wiki/Job_Kondzelevych]
+- Він навчався в Жовківській малярській школі, а мистецтвознавці вважають, що, ймовірно, ще й у іконописній майстерні Києво-Печерської лаври та за кордоном. [src: Encyclopedia of Ukraine: Kondzelevych, Yov | https://www.encyclopediaofukraine.com/pages%5CK%5CO%5CKondzelevychYov.htm]
+- Іконостас простояв у Богородчанах понад століття — з 1785 до 1916 року. [src: Народознавчі зошити, 2011 | https://nz.lviv.ua/archiv/2011-6/12.pdf]
+- У його творчості дослідники бачать рідкісне поєднання східної та західної традицій іконопису. [src: В. Ларіонова, Л. Борисович: «Йов Кондзелевич: ієромонах і геніальний митець», 2007 | https://harvester.nas.gov.ua/Record/irk-123456789-16511/Description]
+
+## 10 · Козак-бандурист (Федір Стовбуненко) і Чернігівський музей
+
+- Головна зберігачка фондів Марина Гриценко на початку великої війни разом із донькою перебралася жити просто в музей, щоб берегти експонати. [src: Вікна: загинула Марина Гриценко | https://vikna.tv/dlia-tebe/vijna-v-ukrayini/zagynula-maryna-gryczenko-zberigachka-fondiv-chernigivskogo-hudozhnogo-muzeyu/]
+- Завдяки їй і колегам вдалося зберегти близько 17 тисяч експонатів. [src: УП Життя: Марина Гриценко отримала премію Europa Nostra | https://life.pravda.com.ua/society/boyova-medikinya-marina-gricenko-otrimala-premiyu-europa-nostra-awards-315285/]
+- У лютому 2023 року Марина пішла до війська й стала бойовою медикинею 3-ї штурмової бригади; вона загинула у 2025 році. [src: Вікна: загинула Марина Гриценко | https://vikna.tv/dlia-tebe/vijna-v-ukrayini/zagynula-maryna-gryczenko-zberigachka-fondiv-chernigivskogo-hudozhnogo-muzeyu/]
+- У 2026 році Марина Гриценко посмертно отримала гран-прі премії Europa Nostra в категорії «Герої культурної спадщини». [src: EU Neighbours East | https://euneighbourseast.eu/uk/news/latest-news/hranytelka-chernigivskogo-hudozhnogo-muzeyu-posmertno-otrymala-prestyzhnu-premiyu-europa-nostra/]
+- Козак Мамай настільки став символом, що під час повстань з'являлися свої «отамани Мамаї» — наприклад, Яків Щириця на Черкащині у 1917–1921 роках. ⚠ verify [src: АрміяInform: «Сакральний Мамай» | https://armyinform.com.ua/2021/07/13/sakralnyj-mamaj-iz-rodu-kyyativ-ta-jogo-spadshhyna/]
