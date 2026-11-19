@@ -213,3 +213,33 @@
 - У лютому 2023 року Марина пішла до війська й стала бойовою медикинею 3-ї штурмової бригади; вона загинула у 2025 році. [src: Вікна: загинула Марина Гриценко | https://vikna.tv/dlia-tebe/vijna-v-ukrayini/zagynula-maryna-gryczenko-zberigachka-fondiv-chernigivskogo-hudozhnogo-muzeyu/]
 - У 2026 році Марина Гриценко посмертно отримала гран-прі премії Europa Nostra в категорії «Герої культурної спадщини». [src: EU Neighbours East | https://euneighbourseast.eu/uk/news/latest-news/hranytelka-chernigivskogo-hudozhnogo-muzeyu-posmertno-otrymala-prestyzhnu-premiyu-europa-nostra/]
 - Козак Мамай настільки став символом, що під час повстань з'являлися свої «отамани Мамаї» — наприклад, Яків Щириця на Черкащині у 1917–1921 роках. ⚠ verify [src: АрміяInform: «Сакральний Мамай» | https://armyinform.com.ua/2021/07/13/sakralnyj-mamaj-iz-rodu-kyyativ-ta-jogo-spadshhyna/]
+
+---
+
+# Раунд 3 · Факти з переліку джерел хакатону
+
+## Спільне для творів Херсонського художнього музею (id 1, 2, 4, 5, 6, 7)
+
+- Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну. [src: Google Arts & Culture: Kherson Museum of Fine Arts | https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w]
+- Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture. [src: Google Arts & Culture: Kherson Museum of Fine Arts | https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w]
+- Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин. [src: Google Arts & Culture: Kherson Museum of Fine Arts | https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w]
+- У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах. [src: МЗС України: виставка «Повернення памʼяті Херсона» | https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya]
+- Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві. [src: Discover.ua: «Херсон: НЕвкрадене» | https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi]
+
+## 8 · Запорожці пишуть листа турецькому султанові (Ілля Рєпін)
+
+- Харківський художній музей має найбільшу в Україні збірку творів Рєпіна — 11 картин, серед них і «Запорожці». [src: Wikipedia: Kharkiv Art Museum | https://en.wikipedia.org/wiki/Kharkiv_Art_Museum]
+
+## 10 · Козак-бандурист (Федір Стовбуненко)
+
+- Колекцію Чернігівського художнього музею імені Григорія Галагана можна переглядати на Google Arts & Culture. У музеї понад 16 тисяч творів образотворчого й декоративного мистецтва від XVI століття до сьогодні, зокрема унікальна збірка козацького роду Галаганів. [src: Google Arts & Culture: Galagan Art Museum | https://artsandculture.google.com/partner/galagan-art-museum]
+
+# Раунд 3 · Живі історії з переліку джерел хакатону
+
+## 9 · Богородчанський іконостас (Йов Кондзелевич)
+
+- Кондзелевича називають «українським Рафаелем», а багато науковців вважають його іконостас найвизначнішим зразком барокового сакрального мистецтва Центральної Європи. [src: Smithsonian Magazine: The Race to Save Ukraine's Sacred Art | https://www.smithsonianmag.com/arts-culture/the-race-to-save-ukraines-sacred-art-180980019/]
+- У березні 2022 року іконостас розібрали всьоме за його історію: 12 працівників чотири дні розʼєднували дерев'яні з'єднання й панелі. Де він зберігається тепер, тримають у таємниці за наказом Міністерства культури. [src: Smithsonian Magazine: The Race to Save Ukraine's Sacred Art | https://www.smithsonianmag.com/arts-culture/the-race-to-save-ukraines-sacred-art-180980019/]
+- За радянських часів іконостас розібрали: показували лише одну панель, а решту тримали на складі у Вірменському соборі Львова. Після реставрації його знову виставили 2013 року. [src: Smithsonian Magazine: The Race to Save Ukraine's Sacred Art | https://www.smithsonianmag.com/arts-culture/the-race-to-save-ukraines-sacred-art-180980019/]
+- Директор музею Ігор Кожан пояснював, що мета Росії у війні — знищити українську ідентичність, а завдання музею — зберегти її. [src: Smithsonian Magazine: The Race to Save Ukraine's Sacred Art | https://www.smithsonianmag.com/arts-culture/the-race-to-save-ukraines-sacred-art-180980019/]
+- У відновленому монастирі Скит Манявський тепер стоїть копія іконостаса — її створили за вісім місяців. [src: Smithsonian Magazine: The Race to Save Ukraine's Sacred Art | https://www.smithsonianmag.com/arts-culture/the-race-to-save-ukraines-sacred-art-180980019/]

@@ -315,6 +315,24 @@
           "label": "LB.ua: «21 березня. Микола Пимоненко»",
           "url": "https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html",
           "note": null
+        },
+        {
+          "id": "xk_865fe1a2",
+          "label": "Google Arts & Culture: Kherson Museum of Fine Arts",
+          "url": "https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w",
+          "note": null
+        },
+        {
+          "id": "xk_34b68af7",
+          "label": "МЗС України: виставка «Повернення памʼяті Херсона»",
+          "url": "https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya",
+          "note": null
+        },
+        {
+          "id": "xk_32d6309a",
+          "label": "Discover.ua: «Херсон: НЕвкрадене»",
+          "url": "https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi",
+          "note": null
         }
       ],
       "chat": {
@@ -510,6 +528,31 @@
           "sourceId": "xk_041f95f0",
           "sourceLabel": "LB.ua: «21 березня. Микола Пимоненко»",
           "scope": "story"
+        },
+        {
+          "fact": "Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах.",
+          "sourceId": "xk_34b68af7",
+          "sourceLabel": "МЗС України: виставка «Повернення памʼяті Херсона»"
+        },
+        {
+          "fact": "Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві.",
+          "sourceId": "xk_32d6309a",
+          "sourceLabel": "Discover.ua: «Херсон: НЕвкрадене»"
         }
       ]
     },
@@ -784,6 +827,24 @@
           "label": "LB.ua: «21 березня. Микола Пимоненко»",
           "url": "https://lb.ua/blog/culture/299347_21_bereznya_mikola_pimonenko.html",
           "note": null
+        },
+        {
+          "id": "xk_865fe1a2",
+          "label": "Google Arts & Culture: Kherson Museum of Fine Arts",
+          "url": "https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w",
+          "note": null
+        },
+        {
+          "id": "xk_34b68af7",
+          "label": "МЗС України: виставка «Повернення памʼяті Херсона»",
+          "url": "https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya",
+          "note": null
+        },
+        {
+          "id": "xk_32d6309a",
+          "label": "Discover.ua: «Херсон: НЕвкрадене»",
+          "url": "https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi",
+          "note": null
         }
       ],
       "chat": {
@@ -949,6 +1010,31 @@
           "sourceId": "xk_18676692",
           "sourceLabel": "Укрінформ: «Микола Пимоненко. Відтворювач України»",
           "scope": "story"
+        },
+        {
+          "fact": "Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах.",
+          "sourceId": "xk_34b68af7",
+          "sourceLabel": "МЗС України: виставка «Повернення памʼяті Херсона»"
+        },
+        {
+          "fact": "Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві.",
+          "sourceId": "xk_32d6309a",
+          "sourceLabel": "Discover.ua: «Херсон: НЕвкрадене»"
         }
       ]
     },
@@ -1654,6 +1740,24 @@
           "label": "Wikipedia: Ivan Aivazovsky",
           "url": "https://en.wikipedia.org/wiki/Ivan_Aivazovsky",
           "note": null
+        },
+        {
+          "id": "xk_865fe1a2",
+          "label": "Google Arts & Culture: Kherson Museum of Fine Arts",
+          "url": "https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w",
+          "note": null
+        },
+        {
+          "id": "xk_34b68af7",
+          "label": "МЗС України: виставка «Повернення памʼяті Херсона»",
+          "url": "https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya",
+          "note": null
+        },
+        {
+          "id": "xk_32d6309a",
+          "label": "Discover.ua: «Херсон: НЕвкрадене»",
+          "url": "https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi",
+          "note": null
         }
       ],
       "chat": {
@@ -1792,6 +1896,31 @@
           "sourceId": "xk_2aa06fb4",
           "sourceLabel": "Van Abbemuseum: Ivan Aivazovsky",
           "scope": "story"
+        },
+        {
+          "fact": "Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах.",
+          "sourceId": "xk_34b68af7",
+          "sourceLabel": "МЗС України: виставка «Повернення памʼяті Херсона»"
+        },
+        {
+          "fact": "Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві.",
+          "sourceId": "xk_32d6309a",
+          "sourceLabel": "Discover.ua: «Херсон: НЕвкрадене»"
         }
       ]
     },
@@ -2054,6 +2183,24 @@
           "label": "Wikipedia: Peter Lely",
           "url": "https://en.wikipedia.org/wiki/Peter_Lely",
           "note": null
+        },
+        {
+          "id": "xk_865fe1a2",
+          "label": "Google Arts & Culture: Kherson Museum of Fine Arts",
+          "url": "https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w",
+          "note": null
+        },
+        {
+          "id": "xk_34b68af7",
+          "label": "МЗС України: виставка «Повернення памʼяті Херсона»",
+          "url": "https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya",
+          "note": null
+        },
+        {
+          "id": "xk_32d6309a",
+          "label": "Discover.ua: «Херсон: НЕвкрадене»",
+          "url": "https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi",
+          "note": null
         }
       ],
       "chat": {
@@ -2213,6 +2360,31 @@
           "sourceId": "xk_4af29525",
           "sourceLabel": "Wikipedia: Peter Lely",
           "scope": "story"
+        },
+        {
+          "fact": "Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах.",
+          "sourceId": "xk_34b68af7",
+          "sourceLabel": "МЗС України: виставка «Повернення памʼяті Херсона»"
+        },
+        {
+          "fact": "Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві.",
+          "sourceId": "xk_32d6309a",
+          "sourceLabel": "Discover.ua: «Херсон: НЕвкрадене»"
         }
       ]
     },
@@ -2467,6 +2639,24 @@
           "label": "Wikipedia: Vladimir Orlovsky",
           "url": "https://en.wikipedia.org/wiki/Vladimir_Orlovsky",
           "note": null
+        },
+        {
+          "id": "xk_865fe1a2",
+          "label": "Google Arts & Culture: Kherson Museum of Fine Arts",
+          "url": "https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w",
+          "note": null
+        },
+        {
+          "id": "xk_34b68af7",
+          "label": "МЗС України: виставка «Повернення памʼяті Херсона»",
+          "url": "https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya",
+          "note": null
+        },
+        {
+          "id": "xk_32d6309a",
+          "label": "Discover.ua: «Херсон: НЕвкрадене»",
+          "url": "https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi",
+          "note": null
         }
       ],
       "chat": {
@@ -2625,6 +2815,31 @@
           "sourceId": "xk_8fcc009e",
           "sourceLabel": "Encyclopedia of Ukraine: Orlovsky, Volodymyr",
           "scope": "story"
+        },
+        {
+          "fact": "Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах.",
+          "sourceId": "xk_34b68af7",
+          "sourceLabel": "МЗС України: виставка «Повернення памʼяті Херсона»"
+        },
+        {
+          "fact": "Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві.",
+          "sourceId": "xk_32d6309a",
+          "sourceLabel": "Discover.ua: «Херсон: НЕвкрадене»"
         }
       ]
     },
@@ -2843,6 +3058,24 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
+        },
+        {
+          "id": "xk_865fe1a2",
+          "label": "Google Arts & Culture: Kherson Museum of Fine Arts",
+          "url": "https://artsandculture.google.com/asset/kherson-museum-of-fine-arts-skeiron/3AE79ZtkCSib1w",
+          "note": null
+        },
+        {
+          "id": "xk_34b68af7",
+          "label": "МЗС України: виставка «Повернення памʼяті Херсона»",
+          "url": "https://mfa.gov.ua/en/news/u-mzs-ukrayini-vidkrivsya-vistavkovij-proyekt-povernennya-pamyati-hersona-vikradene-mistectvo-zberezhene-v-muzejnih-artprintah-hersonska-kolekciya",
+          "note": null
+        },
+        {
+          "id": "xk_32d6309a",
+          "label": "Discover.ua: «Херсон: НЕвкрадене»",
+          "url": "https://discover.ua/inspiration/herson-nevkradene-ak-ukrainski-hudozniki-nagaduut-svitovi-pro-vikradeni-muzejni-skarbi",
+          "note": null
         }
       ],
       "chat": {
@@ -2972,6 +3205,31 @@
           "sourceId": "xk_3ad63be5",
           "sourceLabel": "Wikipedia: Fyodor Bronnikov",
           "scope": "story"
+        },
+        {
+          "fact": "Будівлю колишньої міської думи, де тепер музей, звів на початку XX століття одеський архітектор Адольф Мінкус. Її стиль — еклектика: поєднання неоренесансу, неокласицизму й модерну.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Будівлю музею оцифрувала в 3D львівська команда Skeiron — модель можна оглянути на Google Arts & Culture.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "Удова Олексія Шовкуненка у 1981 році подарувала музею понад 60 його картин.",
+          "sourceId": "xk_865fe1a2",
+          "sourceLabel": "Google Arts & Culture: Kherson Museum of Fine Arts"
+        },
+        {
+          "fact": "У травні 2026 року в Міністерстві закордонних справ України відкрилася виставка «Повернення памʼяті Херсона»: викрадені твори Херсонського художнього музею показали у високоякісних артпринтах.",
+          "sourceId": "xk_34b68af7",
+          "sourceLabel": "МЗС України: виставка «Повернення памʼяті Херсона»"
+        },
+        {
+          "fact": "Виставку «Херсон: НЕвкрадене», де українські художники нагадують світові про викрадені з музею твори, у березні 2026 року після Львова показали в Києві.",
+          "sourceId": "xk_32d6309a",
+          "sourceLabel": "Discover.ua: «Херсон: НЕвкрадене»"
         }
       ]
     },
@@ -3227,6 +3485,12 @@
           "label": "Kyiv Post: Ілля Рєпін",
           "url": "https://kyivpost.com/post/19333",
           "note": null
+        },
+        {
+          "id": "xk_5aa6960f",
+          "label": "Wikipedia: Kharkiv Art Museum",
+          "url": "https://en.wikipedia.org/wiki/Kharkiv_Art_Museum",
+          "note": null
         }
       ],
       "chat": {
@@ -3368,6 +3632,11 @@
           "sourceId": "xk_abcaf738",
           "sourceLabel": "Kyiv Post: Ілля Рєпін",
           "scope": "story"
+        },
+        {
+          "fact": "Харківський художній музей має найбільшу в Україні збірку творів Рєпіна — 11 картин, серед них і «Запорожці».",
+          "sourceId": "xk_5aa6960f",
+          "sourceLabel": "Wikipedia: Kharkiv Art Museum"
         }
       ]
     },
@@ -3606,6 +3875,12 @@
           "label": "В. Ларіонова, Л. Борисович: «Йов Кондзелевич: ієромонах і геніальний митець», 2007",
           "url": "https://harvester.nas.gov.ua/Record/irk-123456789-16511/Description",
           "note": null
+        },
+        {
+          "id": "xk_d2643c74",
+          "label": "Smithsonian Magazine: The Race to Save Ukraine's Sacred Art",
+          "url": "https://www.smithsonianmag.com/arts-culture/the-race-to-save-ukraines-sacred-art-180980019/",
+          "note": null
         }
       ],
       "chat": {
@@ -3734,6 +4009,36 @@
           "fact": "У його творчості дослідники бачать рідкісне поєднання східної та західної традицій іконопису.",
           "sourceId": "xk_48b4325f",
           "sourceLabel": "В. Ларіонова, Л. Борисович: «Йов Кондзелевич: ієромонах і геніальний митець», 2007",
+          "scope": "story"
+        },
+        {
+          "fact": "Кондзелевича називають «українським Рафаелем», а багато науковців вважають його іконостас найвизначнішим зразком барокового сакрального мистецтва Центральної Європи.",
+          "sourceId": "xk_d2643c74",
+          "sourceLabel": "Smithsonian Magazine: The Race to Save Ukraine's Sacred Art",
+          "scope": "story"
+        },
+        {
+          "fact": "У березні 2022 року іконостас розібрали всьоме за його історію: 12 працівників чотири дні розʼєднували дерев'яні з'єднання й панелі. Де він зберігається тепер, тримають у таємниці за наказом Міністерства культури.",
+          "sourceId": "xk_d2643c74",
+          "sourceLabel": "Smithsonian Magazine: The Race to Save Ukraine's Sacred Art",
+          "scope": "story"
+        },
+        {
+          "fact": "За радянських часів іконостас розібрали: показували лише одну панель, а решту тримали на складі у Вірменському соборі Львова. Після реставрації його знову виставили 2013 року.",
+          "sourceId": "xk_d2643c74",
+          "sourceLabel": "Smithsonian Magazine: The Race to Save Ukraine's Sacred Art",
+          "scope": "story"
+        },
+        {
+          "fact": "Директор музею Ігор Кожан пояснював, що мета Росії у війні — знищити українську ідентичність, а завдання музею — зберегти її.",
+          "sourceId": "xk_d2643c74",
+          "sourceLabel": "Smithsonian Magazine: The Race to Save Ukraine's Sacred Art",
+          "scope": "story"
+        },
+        {
+          "fact": "У відновленому монастирі Скит Манявський тепер стоїть копія іконостаса — її створили за вісім місяців.",
+          "sourceId": "xk_d2643c74",
+          "sourceLabel": "Smithsonian Magazine: The Race to Save Ukraine's Sacred Art",
           "scope": "story"
         }
       ]
@@ -3996,6 +4301,12 @@
           "label": "АрміяInform: «Сакральний Мамай»",
           "url": "https://armyinform.com.ua/2021/07/13/sakralnyj-mamaj-iz-rodu-kyyativ-ta-jogo-spadshhyna/",
           "note": "⚠ verify"
+        },
+        {
+          "id": "xk_2f515899",
+          "label": "Google Arts & Culture: Galagan Art Museum",
+          "url": "https://artsandculture.google.com/partner/galagan-art-museum",
+          "note": null
         }
       ],
       "chat": {
@@ -4137,6 +4448,11 @@
           "sourceLabel": "АрміяInform: «Сакральний Мамай»",
           "verify": true,
           "scope": "story"
+        },
+        {
+          "fact": "Колекцію Чернігівського художнього музею імені Григорія Галагана можна переглядати на Google Arts & Culture. У музеї понад 16 тисяч творів образотворчого й декоративного мистецтва від XVI століття до сьогодні, зокрема унікальна збірка козацького роду Галаганів.",
+          "sourceId": "xk_2f515899",
+          "sourceLabel": "Google Arts & Culture: Galagan Art Museum"
         }
       ]
     },
