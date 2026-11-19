@@ -19,7 +19,6 @@ web/.env.*
 **/.DS_Store
 *.pem
 Thumbs.db
-.cursor/
 
 # debug / coverage
 npm-debug.log*
@@ -31,12 +30,7 @@ yarn-error.log*
 # misc
 *.log
 
-# Internal working notes (kept on disk, not in the public repo)
-docs/cursor-prompts.md
-docs/cursor-prompts-v2.md
-docs/cursor-prompts-FAST.md
-docs/qa-report.md
-docs/verify/
+# Local-only (not for the public repo)
 Skhovani_Hackathon_Rules_Knowledge.md
 *.pdf
 
