@@ -12,8 +12,9 @@ function isUnknownYear(year: string): boolean {
   const y = year.trim();
   if (!y) return true;
   // Whole value unknown, or only «не встановлено…» with no real date.
-  if (/^не\s+встановлено\b/i.test(y)) return true;
+  if (/^не\s+встановлен/i.test(y)) return true;
   if (/^датування\b.*не\s+встановлен/i.test(y)) return true;
+  if (/^невідом/i.test(y)) return true;
   return false;
 }
 
@@ -41,6 +42,8 @@ export function displayYear(year: string): string {
     if (comma > 0) s = s.slice(0, comma).trim();
   }
   if (isUnknownYear(s)) return "";
+  // Never leak «не встановлено» into meta lines.
+  if (/не\s+встановлен/i.test(s)) return "";
   return s || "";
 }
 

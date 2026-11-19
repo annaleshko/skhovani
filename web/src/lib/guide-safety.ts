@@ -2,7 +2,7 @@
  * Hard safety for the guide chat — status-aware location rules.
  */
 
-import type { ArtworkStatus } from "@/data/types";
+import type { Artwork, ArtworkStatus } from "@/data/types";
 
 const SAFE_SHELTER =
   "Твір в укритті. Точне місце зберігання я не називаю і не вгадую.";
@@ -11,7 +11,7 @@ const SAFE_SAVED =
   "Твір врятовано. Точне місце зберігання я не називаю і не вгадую.";
 
 const SAFE_STOLEN =
-  "Окупанти вивезли її з музею. Точне місце зараз невідоме.";
+  "Окупанти вивезли цей твір з музею. Точне місце зараз невідоме.";
 
 /** Concrete facility / invented-storage guesses (blocked for all statuses). */
 const UNSAFE_FACILITY =
@@ -81,4 +81,54 @@ export function looksLikeSpeculation(text: string): boolean {
     /можливо,\s+це\s+означає/i.test(text) ||
     /натякає\s+на/i.test(text)
   );
+}
+
+/** Digit tokens (years, counts, sizes) — commas normalized to dots. */
+export function extractNumberTokens(text: string): string[] {
+  const out: string[] = [];
+  for (const m of text.match(/\d+(?:[.,]\d+)?/g) ?? []) {
+    out.push(m.replace(",", "."));
+  }
+  return out;
+}
+
+/** Passport tabs + extended facts + sources — the only corpus for grounded numbers. */
+export function artworkKnowledgeCorpus(artwork: Artwork): string {
+  const parts: string[] = [
+    artwork.title,
+    artwork.headline,
+    artwork.author,
+    artwork.year,
+    artwork.statusRaw,
+    artwork.museum,
+    artwork.openQuestions,
+    artwork.chat.aiNotes,
+    ...artwork.tabs.history,
+    ...artwork.tabs.about,
+    ...artwork.tabs.author,
+    ...artwork.tourStops.map((s) => `${s.title}\n${s.text}`),
+    ...artwork.touchZones.zones.map((z) => `${z.title}\n${z.text}`),
+    ...artwork.chat.knowledgeBase.map(
+      (k) => `${k.source}\n${k.use}${k.url ? `\n${k.url}` : ""}`,
+    ),
+    ...(artwork.extendedKnowledge ?? []).map((e) => e.fact),
+    ...artwork.sources.map(
+      (s) => `${s.label}\n${s.note ?? ""}\n${s.url ?? ""}`,
+    ),
+  ];
+  return parts.join("\n");
+}
+
+/** Numbers in the answer that never appear in the knowledge corpus. */
+export function ungroundedNumbers(answer: string, knowledge: string): string[] {
+  const known = new Set(extractNumberTokens(knowledge));
+  const used = extractNumberTokens(answer);
+  return [...new Set(used)].filter((n) => !known.has(n));
+}
+
+export function answerHasUngroundedNumbers(
+  answer: string,
+  knowledge: string,
+): boolean {
+  return ungroundedNumbers(answer, knowledge).length > 0;
 }

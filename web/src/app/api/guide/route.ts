@@ -6,6 +6,8 @@ import {
 import { getArtwork } from "@/data";
 import { buildGuideSystemPrompt } from "@/lib/guide-prompt";
 import {
+  answerHasUngroundedNumbers,
+  artworkKnowledgeCorpus,
   isLocationTrapQuestion,
   looksLikeNoDataShrug,
   looksLikeSpeculation,
@@ -87,6 +89,7 @@ async function callModel(
   openai: OpenAI,
   model: string,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+  temperature = 0.5,
 ): Promise<{
   answer: string;
   sourceIds: string[];
@@ -94,7 +97,7 @@ async function callModel(
 } | null> {
   const completion = await openai.chat.completions.create({
     model,
-    temperature: 0.6,
+    temperature,
     response_format: { type: "json_object" },
     messages,
   });
@@ -246,6 +249,40 @@ export async function POST(req: Request) {
         result = retry;
       } else {
         return NextResponse.json(fallbackResponse(artworkId, question));
+      }
+    }
+
+    // Invented counts / years / sizes → one strict retry, then warm shrug.
+    const knowledge = artworkKnowledgeCorpus(artwork);
+    if (answerHasUngroundedNumbers(result.answer, knowledge)) {
+      const retry = await callModel(
+        openai,
+        model,
+        [
+          ...baseMessages,
+          {
+            role: "system",
+            content:
+              "СТРОГО: у відповіді можна використовувати ЛИШЕ числа, роки, розміри й кількості, які буквально є в паспорті / додаткових фактах / джерелах. Не рахуй фігури на картині. Якщо точної цифри немає — скажи тепло, що в джерелах цього немає, без жодної вигаданої кількості.",
+          },
+        ],
+        0.2,
+      );
+      if (
+        retry &&
+        !answerHasUngroundedNumbers(retry.answer, knowledge) &&
+        !looksLikeSpeculation(retry.answer)
+      ) {
+        result = retry;
+      } else {
+        return NextResponse.json({
+          answer:
+            "У моїх джерелах немає точної кількості чи цифри з цього питання — тож не буду вгадувати. Можу розповісти про те, що в паспорті є напевно.",
+          sourceIds: [] as string[],
+          followUps: artwork.chat.defaultQuestions.slice(0, 2),
+          fallback: true as const,
+          curated: false as const,
+        });
       }
     }
 

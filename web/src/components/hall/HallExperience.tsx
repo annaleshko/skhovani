@@ -235,7 +235,9 @@ export function HallExperience({
   const px = Math.max(viewW / 390, viewH / 844);
   const stageH = designH * px;
   const stageOffsetY = (viewH - stageH) / 2;
-  const hallWidthPx = Math.max(designW * px, viewW);
+  // Side pads so edge frames can centre and the wall never shows its end.
+  const edgePadDes = Math.max(24, Math.ceil(viewW / (2 * px)));
+  const hallWidthPx = Math.max((designW + edgePadDes * 2) * px, viewW);
 
   const isStolen = focus?.status === "stolen";
   const isShelter = focus?.status === "shelter";
@@ -248,13 +250,18 @@ export function HallExperience({
     const el = scrollerRef.current;
     if (!el) return;
     const slot = slots[pathSlotIndex]!;
-    const centerX = (slot.frameRect.x + slot.frameRect.w / 2) * px;
-    const left = Math.max(0, centerX - el.clientWidth / 2);
+    const centerX =
+      (slot.frameRect.x + edgePadDes + slot.frameRect.w / 2) * px;
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    const left = Math.min(
+      maxScroll,
+      Math.max(0, centerX - el.clientWidth / 2),
+    );
     const t = window.setTimeout(() => {
       scrollLeftTo(el, left, motionTokens.hallScroll, reduced);
     }, 40);
     return () => window.clearTimeout(t);
-  }, [pathSlotIndex, phase, reduced, slots, px, artworkId]);
+  }, [pathSlotIndex, phase, reduced, slots, px, artworkId, edgePadDes]);
 
   // Track horizontal scroll for hint-ring viewport clamp
   useEffect(() => {
@@ -342,7 +349,8 @@ export function HallExperience({
       let best = el.scrollLeft;
       let bestD = Infinity;
       for (const slot of slots) {
-        const centerX = (slot.frameRect.x + slot.frameRect.w / 2) * px;
+        const centerX =
+          (slot.frameRect.x + edgePadDes + slot.frameRect.w / 2) * px;
         const left = Math.max(0, centerX - el.clientWidth / 2);
         const d = Math.abs(left - el.scrollLeft);
         if (d < bestD) {
@@ -443,7 +451,7 @@ export function HallExperience({
       el.removeEventListener("pointerup", onPointerUp);
       el.removeEventListener("pointercancel", onPointerUp);
     };
-  }, [phase, px, reduced, slots]);
+  }, [phase, px, reduced, slots, edgePadDes]);
 
   // Entry: darkness 100%→70% → lamp → cone → bright → UI
   useEffect(() => {
@@ -698,7 +706,7 @@ export function HallExperience({
     let cy: number;
     let frameTop: number;
     if (museumId === "melitopol") {
-      cx = glass.x + glass.w - 8;
+      cx = glass.x + edgePadDes + glass.w - 8;
       cy = glass.y + 14;
       frameTop = glass.y;
     } else {
@@ -710,7 +718,7 @@ export function HallExperience({
         w: Math.min(rawR.w, box.w),
         h: Math.min(rawR.h, box.h),
       };
-      cx = Math.min(r.x + r.w - 22, box.x + box.w - 26);
+      cx = Math.min(r.x + r.w - 22, box.x + box.w - 26) + edgePadDes;
       cy = Math.max(r.y + 12, box.y + 12);
       frameTop = Math.max(r.y, box.y);
     }
@@ -730,6 +738,7 @@ export function HallExperience({
       // Empty-state copy is hidden while this hint is visible (see empty label).
       const badgeBottom = (layout.captions.badgeY ?? 208) + 28;
       hintW = 130;
+      // cx already includes edgePadDes
       hintLeft = cx - half - gap - hintW;
       hintTop = Math.max(frameTop + 12, badgeBottom + 16);
       // Keep under the glass top edge, never on the badge row.
@@ -808,7 +817,7 @@ export function HallExperience({
               <img
                 src={layout.wallSrc}
                 alt=""
-                className="pointer-events-none absolute inset-0 z-0 size-full max-w-none select-none object-cover object-left"
+                className="pointer-events-none absolute inset-0 z-0 size-full max-w-none select-none object-cover object-center"
                 draggable={false}
               />
 
@@ -839,7 +848,7 @@ export function HallExperience({
                     data-hall-idx={slot.artworkId}
                     className="absolute z-[1] snap-center"
                     style={{
-                      left: r.x * px,
+                      left: (r.x + edgePadDes) * px,
                       top: r.y * px,
                       width: r.w * px,
                       height: r.h * px,
@@ -928,7 +937,10 @@ export function HallExperience({
                       const shape = openingShape(slot.artworkId);
                       const clip = openingClipPath(inset, shape);
                       const slotConeX =
-                        slot.lampX + layout.lamp.w / 2 - layout.cone.w / 2;
+                        slot.lampX +
+                        edgePadDes +
+                        layout.lamp.w / 2 -
+                        layout.cone.w / 2;
                       return (
                         <div key={`lit-${slot.artworkId}`}>
                           {showCone ? (
@@ -945,26 +957,22 @@ export function HallExperience({
                               animate={{
                                 opacity: isActive
                                   ? coneOpacity
-                                  : coneOpacity * 0.55,
+                                  : coneOpacity * 0.45,
                               }}
                               transition={{
                                 duration: reduced ? 0 : 0.5,
                                 ease: easings.easeOut,
                               }}
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={hallUi.cone}
-                                alt=""
-                                className="size-full origin-center rotate-180 object-contain mix-blend-screen"
-                                draggable={false}
+                              {/* Soft warm beam tip under the lamp → fades onto the painting.
+                                  Plain gradient (no mix-blend) so iOS Safari keeps it visible. */}
+                              <div
+                                className="size-full"
                                 style={{
-                                  // Soft feather — no hard rectangular edge under the lamp.
-                                  maskImage:
-                                    "radial-gradient(ellipse 75% 70% at 50% 0%, #000 35%, transparent 78%)",
-                                  WebkitMaskImage:
-                                    "radial-gradient(ellipse 75% 70% at 50% 0%, #000 35%, transparent 78%)",
+                                  background:
+                                    "radial-gradient(ellipse 48% 78% at 50% 0%, rgba(233,184,114,0.62) 0%, rgba(233,184,114,0.32) 38%, rgba(233,184,114,0.1) 62%, transparent 78%)",
                                 }}
+                                aria-hidden
                               />
                             </motion.div>
                           ) : null}
@@ -972,7 +980,7 @@ export function HallExperience({
                           <motion.div
                             className="pointer-events-none absolute z-[7]"
                             style={{
-                              left: slot.frameRect.x * px,
+                              left: (slot.frameRect.x + edgePadDes) * px,
                               top: slot.frameRect.y * px,
                               width: slot.frameRect.w * px,
                               height: slot.frameRect.h * px,
@@ -1080,16 +1088,19 @@ export function HallExperience({
                               // Melitopol: hint replaces this copy so they never overlap.
                               !(museumId === "melitopol" && hintStolen) ? (
                                 (() => {
-                                  // Narrow openings (Капуцин, Дама): label below the frame.
+                                  // Narrow openings (Капуцин, Дама): keep copy inside the opening.
                                   const openW =
                                     slot.frameRect.w *
                                     (1 - inset.left - inset.right);
-                                  const placeBelow =
+                                  const narrow =
                                     slot.artworkId === 5 ||
                                     slot.artworkId === 7 ||
                                     openW < 140;
-                                  const fontPx = placeBelow
-                                    ? 14
+                                  // While captions are up, hide empty copy on narrow frames
+                                  // so it never overlaps title/author/badge.
+                                  if (narrow && showUi) return null;
+                                  const fontPx = narrow
+                                    ? Math.max(10, Math.min(12, openW * 0.09))
                                     : Math.max(
                                         11,
                                         Math.min(14, openW * 0.085),
@@ -1097,23 +1108,11 @@ export function HallExperience({
                                   return (
                                     <motion.div
                                       key="empty-label"
-                                      className={
-                                        placeBelow
-                                          ? "absolute left-1/2 flex w-[90%] -translate-x-1/2 items-center justify-center text-center"
-                                          : "absolute flex items-center justify-center text-center"
-                                      }
-                                      style={
-                                        placeBelow
-                                          ? {
-                                              top: "100%",
-                                              marginTop: 8 * px,
-                                              padding: 8,
-                                            }
-                                          : {
-                                              ...emptyInsetCss,
-                                              padding: 8,
-                                            }
-                                      }
+                                      className="absolute flex items-center justify-center text-center"
+                                      style={{
+                                        ...emptyInsetCss,
+                                        padding: narrow ? 6 : 8,
+                                      }}
                                       initial={false}
                                       animate={{ opacity: 1 }}
                                       exit={{ opacity: 0 }}
@@ -1160,7 +1159,7 @@ export function HallExperience({
                             key={`lamp-${slot.artworkId}`}
                             className="pointer-events-none absolute z-[8]"
                             style={{
-                              left: slot.lampX * px,
+                              left: (slot.lampX + edgePadDes) * px,
                               top: layout.lamp.y * px,
                               width: layout.lamp.w * px,
                               height: layout.lamp.h * px,
@@ -1200,20 +1199,15 @@ export function HallExperience({
                   : null}
               </AnimatePresence>
 
-              {/* 5. Captions — every lit opened frame (Figma 05); hidden during neighbor (12) */}
+              {/* 5. Captions — active frame only; hidden during neighbor (12) */}
               <AnimatePresence>
                 {showUi && neighborId == null
                   ? slots
-                      .filter(
-                        (s) =>
-                          litSlotIds.has(s.artworkId) &&
-                          (openedIds.has(s.artworkId) ||
-                            s.artworkId === artworkId),
-                      )
+                      .filter((s) => s.artworkId === artworkId)
                       .map((slot) => {
                         const art = getArtwork(slot.artworkId);
                         if (!art) return null;
-                        const isActiveCap = slot.artworkId === artworkId;
+                        const isActiveCap = true;
                         return (
                           <motion.div
                             key={`cap-${slot.artworkId}`}
@@ -1221,14 +1215,17 @@ export function HallExperience({
                             className="pointer-events-none absolute z-[9] flex max-w-[226px] flex-col items-center text-center"
                             style={{
                               left:
-                                (slot.frameRect.x + slot.frameRect.w / 2) * px,
+                                (slot.frameRect.x +
+                                  edgePadDes +
+                                  slot.frameRect.w / 2) *
+                                px,
                               top: layout.captions.titleY * px,
                               width: 226 * px,
-                              opacity: isActiveCap ? 1 : 0.92,
+                              opacity: 1,
                             }}
                             initial={{ opacity: 0, x: "-50%", y: 6 }}
                             animate={{
-                              opacity: isActiveCap ? 1 : 0.92,
+                              opacity: 1,
                               x: "-50%",
                               y: 0,
                             }}
@@ -1285,7 +1282,10 @@ export function HallExperience({
                       const slot = slots.find((s) => s.artworkId === neighborId);
                       if (!slot) return null;
                       const cx =
-                        (slot.frameRect.x + slot.frameRect.w / 2) * px;
+                        (slot.frameRect.x +
+                          edgePadDes +
+                          slot.frameRect.w / 2) *
+                        px;
                       const top =
                         (slot.frameRect.y + slot.frameRect.h + 12) * px;
                       return (
