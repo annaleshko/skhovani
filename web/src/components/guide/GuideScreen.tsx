@@ -189,8 +189,25 @@ export function GuideScreen({
   const surname = authorSurname(artwork.author);
   const empty = messages.length === 0;
   const suggestions = artwork.chat.defaultQuestions.slice(0, 3);
-  const lastGuide = [...messages].reverse().find((m) => m.role === "guide");
-  const followUps = lastGuide?.followUps?.slice(0, 2) ?? [];
+  /** Persistent chips: followUps → starters → detail chip; deduped, max 8. */
+  const persistentChips = useMemo(() => {
+    const lastGuide = [...messages].reverse().find((m) => m.role === "guide");
+    const followUps = lastGuide?.followUps?.slice(0, 2) ?? [];
+    const out: string[] = [];
+    const seen = new Set<string>();
+    const push = (q: string | null | undefined) => {
+      const t = (q ?? "").trim();
+      if (!t || seen.has(t)) return;
+      seen.add(t);
+      out.push(t);
+    };
+    for (const f of followUps) push(f);
+    for (const q of artwork.chat.defaultQuestions) push(q);
+    if (attachedDetail) {
+      push(`Розкажи більше про: ${attachedDetail}`);
+    }
+    return out.slice(0, 8);
+  }, [artwork.chat.defaultQuestions, attachedDetail, messages]);
 
   return (
     <AnimatePresence>
@@ -406,20 +423,34 @@ export function GuideScreen({
             )}
           </div>
 
-          {/* Follow-ups after an answer */}
-          {!empty && followUps.length > 0 && !waiting ? (
-            <div className="flex shrink-0 gap-sm overflow-x-auto px-xl pb-sm">
-              {followUps.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  disabled={waiting}
-                  onClick={() => void send(f)}
-                  className="shrink-0 rounded-pill border border-border-subtle bg-surface px-md py-sm text-label-md text-text-secondary"
-                >
-                  {f}
-                </button>
-              ))}
+          {/* Persistent suggestions — above composer whenever chat has messages */}
+          {!empty && persistentChips.length > 0 ? (
+            <div
+              className="relative shrink-0"
+              style={{
+                maskImage:
+                  "linear-gradient(to right, #000 0%, #000 calc(100% - 28px), transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to right, #000 0%, #000 calc(100% - 28px), transparent 100%)",
+              }}
+            >
+              <ul
+                className="flex list-none gap-sm overflow-x-auto px-xl py-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                aria-label="Пропозиції питань"
+              >
+                {persistentChips.map((q) => (
+                  <li key={q} className="shrink-0">
+                    <button
+                      type="button"
+                      disabled={waiting}
+                      onClick={() => void send(q)}
+                      className="min-h-10 shrink-0 rounded-pill border border-border-accent bg-surface px-md py-sm text-label-md text-text-accent disabled:opacity-50"
+                    >
+                      {q}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : null}
 
