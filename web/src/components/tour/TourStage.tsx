@@ -16,7 +16,6 @@ import {
   stopScreenPoint,
   tourImageSrc,
 } from "@/lib/tour-camera";
-import { photographerCreditLine } from "@/lib/photo-credit";
 import {
   easings,
   motionTokens,
@@ -53,7 +52,7 @@ type Props = {
   onClose?: () => void;
   /** Header ▶ → replay tour. */
   onReplayTour?: () => void;
-  /** Header ⬇ → wallpaper 11. */
+  /** Header wallpaper icon → wallpaper 11. */
   onSaveWallpaper?: () => void;
   /** Selected touch zone for 08 detail card (parent renders card above sheet). */
   onZoneChange?: (zone: TouchZone | null) => void;
@@ -165,7 +164,9 @@ export function TourStage({
   const advancing = useRef(false);
   const pausedRef = useRef(startExplore);
   const pauseOffset = useRef(0);
-  const startStopRef = useRef<(idx: number) => void>(() => {});
+  const startStopRef = useRef<
+    (idx: number, opts?: { keepPaused?: boolean }) => void
+  >(() => {});
   const camAnims = useRef<ReturnType<typeof animate>[]>([]);
   const stopIdxRef = useRef(stopIdx);
   const zoomedInRef = useRef(zoomedIn);
@@ -288,7 +289,7 @@ export function TourStage({
   }, [clearTimers, goFull, onTourDone, onZoneChange, reduced]);
 
   const startStop = useCallback(
-    (idx: number) => {
+    (idx: number, opts?: { keepPaused?: boolean }) => {
       const s = stops[idx];
       if (!s) {
         finishTour();
@@ -302,9 +303,11 @@ export function TourStage({
       zoomedInRef.current = true;
       setStopIdx(idx);
       setTextKey((k) => k + 1);
-      pausedRef.current = false;
-      setPaused(false);
+      const stayPaused = Boolean(opts?.keepPaused);
+      pausedRef.current = stayPaused;
+      setPaused(stayPaused);
       setRingProgress(0);
+      pauseOffset.current = 0;
       setMode("tour");
       setRingVisible(false);
       setZoomedIn(true);
@@ -321,8 +324,12 @@ export function TourStage({
 
       flyTo(target.x, target.y, target.zoom, glideSec, () => {
         setRingVisible(true);
-        audioRef.current.play();
         ringStart.current = performance.now();
+        if (!pausedRef.current) {
+          audioRef.current.play();
+        } else {
+          pauseOffset.current = 0;
+        }
         const tick = () => {
           if (pausedRef.current) {
             ringRaf.current = requestAnimationFrame(tick);
@@ -345,6 +352,14 @@ export function TourStage({
       });
     },
     [artwork.touchZones, clearTimers, finishTour, flyTo, reduced, stops],
+  );
+
+  const jumpToStop = useCallback(
+    (idx: number) => {
+      if (idx < 0 || idx >= stops.length) return;
+      startStop(idx, { keepPaused: pausedRef.current });
+    },
+    [startStop, stops.length],
   );
 
   useEffect(() => {
@@ -574,7 +589,6 @@ export function TourStage({
   })();
   const tourRingCx = tourRingPos.x;
   const tourRingCy = tourRingPos.y;
-  const photoLine = photographerCreditLine(artwork.photoCredit);
 
   // Soft radial glow (no hard rectangle) — same approach as pre-d9ed697.
   const lampTop = mode === "explore" ? P.lamp.y * sy : 8 * sy;
@@ -798,23 +812,62 @@ export function TourStage({
                 className="size-10 min-h-10 min-w-10 border border-border-subtle bg-surface text-text-accent"
                 onClick={() => onReplayTour?.()}
               >
-                <span className="text-[14px] leading-none" aria-hidden>
-                  ▶
-                </span>
+                <svg
+                  width={20}
+                  height={20}
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M6.5 4.5v11l9-5.5-9-5.5Z"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </IconButton>
               <IconButton
-                label="Зберегти шпалери"
+                label="Шпалери"
                 className="size-10 min-h-10 min-w-10 border border-border-subtle bg-surface text-text-accent"
                 onClick={() => onSaveWallpaper?.()}
               >
-                <span className="text-[16px] leading-none" aria-hidden>
-                  ⬇
-                </span>
+                <svg
+                  width={20}
+                  height={20}
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden
+                >
+                  <rect
+                    x={2.75}
+                    y={3.75}
+                    width={14.5}
+                    height={12.5}
+                    rx={1.5}
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  />
+                  <path
+                    d="M3.5 13.5 7.2 10l2.6 2.4L13 9.5l3.5 4"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    cx={13.25}
+                    cy={7}
+                    r={1.25}
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  />
+                </svg>
               </IconButton>
             </div>
           </div>
 
-          {/* Credit + hint under the frame — hide while detail-zoomed */}
+          {/* Hint under the frame — hide while detail-zoomed */}
           <div
             className="pointer-events-none absolute inset-x-0 z-[5] flex flex-col gap-sm px-xl"
             style={{
@@ -822,9 +875,6 @@ export function TourStage({
               opacity: zoomedIn ? 0 : 1,
             }}
           >
-            {photoLine ? (
-              <p className="text-caption text-text-secondary">{photoLine}</p>
-            ) : null}
             <motion.p
               className="flex items-start gap-sm text-caption text-text-secondary"
               animate={
@@ -853,14 +903,34 @@ export function TourStage({
               "max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px))",
           }}
         >
-          <div className="flex flex-col gap-lg">
-            <ProgressStepper total={stops.length} current={stopIdx + 1} />
+          <div
+            className="flex flex-col gap-lg"
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                jumpToStop(stopIdx - 1);
+              } else if (e.key === "ArrowRight") {
+                e.preventDefault();
+                if (stopIdx >= stops.length - 1) finishTour();
+                else jumpToStop(stopIdx + 1);
+              }
+            }}
+          >
+            <ProgressStepper
+              total={stops.length}
+              current={stopIdx + 1}
+              labels={stops.map((s) => s.title)}
+              onSelect={(step) => jumpToStop(step - 1)}
+            />
             <motion.div
               key={textKey}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: motionTokens.stopCrossfade }}
               className="flex flex-col gap-sm"
+              tabIndex={0}
+              role="region"
+              aria-label={`Крок ${stopIdx + 1}: ${stop.title}`}
             >
               <p className="text-h3 text-text-primary">{stop.title}</p>
               <p className="text-body-lg text-text-primary">{stop.text}</p>
