@@ -42,3 +42,8 @@ Skhovani_Hackathon_Rules_Knowledge.md
 
 # accidental nested Cursor folder (empty project)
 Безіменний/
+
+# Icon source exports — keep only the master 1024
+icon/*.png
+!icon/shovani-icon-1024.png
+

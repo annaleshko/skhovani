@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Сховані",
     short_name: "Сховані",
-    description: "Щодня — один шлях до міста, звідки твори вкрали, вивезли або сховали.",
+    description:
+      "Цифровий музей українського мистецтва, яке сьогодні не побачиш наживо.",
     start_url: "/",
     display: "standalone",
     background_color: "#110f0e",
@@ -20,6 +21,12 @@ export default function manifest(): MetadataRoute.Manifest {
       },
       {
         src: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
