@@ -299,12 +299,6 @@
           "note": null
         },
         {
-          "id": "xk_47fea1db",
-          "label": "Азбука: «Пасхальная заутреня в Малороссии»",
-          "url": "https://azbyka.ru/art/pashalnaya-zautrenya-v-malorossii/",
-          "note": "⚠ verify"
-        },
-        {
           "id": "xk_59a999f2",
           "label": "Kyiv Post: «Ранок Христового Воскресіння»",
           "url": "https://www.kyivpost.com/uk/post/51120",
@@ -492,13 +486,6 @@
           "sourceId": "xk_85c8a94d",
           "sourceLabel": "Радіо Свобода: Великдень",
           "scope": "context"
-        },
-        {
-          "fact": "За першу «Великодню заутреню» (1891) і картину «Весілля в Київській губернії» Пимоненко того ж року отримав звання почесного вільного слухача Академії мистецтв.",
-          "sourceId": "xk_47fea1db",
-          "sourceLabel": "Азбука: «Пасхальная заутреня в Малороссии»",
-          "verify": true,
-          "scope": "story"
         },
         {
           "fact": "Пимоненка називають майстром світлових ефектів: у «заутрені» саме світло — з церкви і від свічок — тримає всю картину.",
@@ -1621,18 +1608,6 @@
           "note": null
         },
         {
-          "id": "xk_b3d012b2",
-          "label": "Російський музей: View of Odessa on a Moonlit Night",
-          "url": "https://rusmuseumvrm.ru/data/collections/painting/18_19/zh_2201/?lang=en",
-          "note": null
-        },
-        {
-          "id": "xk_cbce86c2",
-          "label": "Tretyakov Gallery Magazine: Aivazovsky's House and Guests",
-          "url": "https://www.tretyakovgallerymagazine.com/node/5193",
-          "note": null
-        },
-        {
           "id": "xk_ba46f67d",
           "label": "Kyiv Post: росіяни викрали з Херсонського музею картини Айвазовського",
           "url": "https://www.kyivpost.com/uk/amp/post/20053",
@@ -1669,15 +1644,15 @@
           "note": null
         },
         {
-          "id": "xk_a96473ee",
-          "label": "Культура.РФ: Иван Айвазовский",
-          "url": "https://www.culture.ru/persons/8258/ivan-aivazovskii",
-          "note": null
-        },
-        {
           "id": "xk_2aa06fb4",
           "label": "Van Abbemuseum: Ivan Aivazovsky",
           "url": "https://ls.vanabbemuseum.nl/A/aivazovskii/text/aivazovskii.htm",
+          "note": null
+        },
+        {
+          "id": "xk_6ff9472e",
+          "label": "Wikipedia: Ivan Aivazovsky",
+          "url": "https://en.wikipedia.org/wiki/Ivan_Aivazovsky",
           "note": null
         }
       ],
@@ -1755,24 +1730,9 @@
           "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
         },
         {
-          "fact": "У 1840-х роках імператор Микола I доручив Айвазовському написати краєвиди чорноморських портів — Одеси, Севастополя, Керчі.",
-          "sourceId": "xk_b3d012b2",
-          "sourceLabel": "Російський музей: View of Odessa on a Moonlit Night"
-        },
-        {
-          "fact": "Айвазовський писав Одесу не раз: інший «Вид Одеси в місячну ніч» того ж 1846 року (122 × 190 см) зберігається в Санкт-Петербурзі. Херсонська картина — окремий твір.",
-          "sourceId": "xk_b3d012b2",
-          "sourceLabel": "Російський музей: View of Odessa on a Moonlit Night"
-        },
-        {
-          "fact": "Сучасники хвалили одеські краєвиди Айвазовського за природне світло на хвилях і передану чарівність південної місячної ночі.",
-          "sourceId": "xk_b3d012b2",
-          "sourceLabel": "Російський музей: View of Odessa on a Moonlit Night"
-        },
-        {
-          "fact": "У 1846 році Айвазовський влаштував свої перші персональні виставки — у Феодосії та Одесі.",
-          "sourceId": "xk_cbce86c2",
-          "sourceLabel": "Tretyakov Gallery Magazine: Aivazovsky's House and Guests"
+          "fact": "Критики хвалили Айвазовського за вміння передати рух води й відблиски сонця та місячного світла на хвилях.",
+          "sourceId": "xk_6ff9472e",
+          "sourceLabel": "Wikipedia: Ivan Aivazovsky"
         },
         {
           "fact": "З Херсонського музею окупанти вивезли три картини Айвазовського: «Буря вщухає», «Вид міста Одеси» та «Море».",
@@ -1822,9 +1782,9 @@
           "scope": "story"
         },
         {
-          "fact": "Писати з пам'яті він навчився під час мандрів Європою в 1840–1844 роках — якраз перед тим, як з'явилися його одеські краєвиди 1846 року.",
-          "sourceId": "xk_a96473ee",
-          "sourceLabel": "Культура.РФ: Иван Айвазовский",
+          "fact": "Айвазовський не писав моря з натури — лише з памʼяті, далеко від узбережжя. У 1840–1844 роках він навчався й мандрував Європою, а вже 1846 року зʼявилися його одеські краєвиди.",
+          "sourceId": "xk_6ff9472e",
+          "sourceLabel": "Wikipedia: Ivan Aivazovsky",
           "scope": "story"
         },
         {
@@ -2090,15 +2050,9 @@
           "note": null
         },
         {
-          "id": "xk_6dcf05b2",
-          "label": "Wikipedia (IPFS): Peter Lely",
-          "url": "https://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq.ipfs.4everland.io/wiki/Peter_Lely.html",
-          "note": "⚠ verify"
-        },
-        {
-          "id": "xk_5de6c717",
+          "id": "xk_4af29525",
           "label": "Wikipedia: Peter Lely",
-          "url": "https://akarinohon.com/text/taketori.cgi/en.m.wikipedia.org/wiki/Peter_Lely",
+          "url": "https://en.wikipedia.org/wiki/Peter_Lely",
           "note": null
         }
       ],
@@ -2249,15 +2203,14 @@
           "scope": "story"
         },
         {
-          "fact": "Після його смерті виконавці заповіту найняли близько дюжини помічників, щоб дописати для продажу незавершені полотна з його майстерні.",
-          "sourceId": "xk_6dcf05b2",
-          "sourceLabel": "Wikipedia (IPFS): Peter Lely",
-          "verify": true,
+          "fact": "Після смерті Лелі виконавці заповіту найняли близько дюжини помічників, щоб дописати для продажу незавершені полотна з його майстерні.",
+          "sourceId": "xk_4af29525",
+          "sourceLabel": "Wikipedia: Peter Lely",
           "scope": "story"
         },
         {
-          "fact": "Лелі одним із перших в Англії зрозумів, як гравюра-мецотинто допомагає поширювати його портрети.",
-          "sourceId": "xk_5de6c717",
+          "fact": "Лелі одним із перших в Англії зрозумів, як гравюра-мецотинто допомагає поширювати його портрети, і запрошував голландських майстрів мецотинто копіювати його роботи.",
+          "sourceId": "xk_4af29525",
           "sourceLabel": "Wikipedia: Peter Lely",
           "scope": "story"
         }
@@ -2504,15 +2457,15 @@
           "note": null
         },
         {
-          "id": "xk_dc33c8cd",
-          "label": "Wikipedia: Vladimir Orlovsky",
-          "url": "https://www.wikipedia.com/wiki/Vladimir_Orlovsky",
-          "note": null
-        },
-        {
           "id": "xk_8fcc009e",
           "label": "Encyclopedia of Ukraine: Orlovsky, Volodymyr",
           "url": "https://www.encyclopediaofukraine.com/pages%5CO%5CR%5COrlovskyVolodymyr.htm",
+          "note": null
+        },
+        {
+          "id": "xk_d25081b9",
+          "label": "Wikipedia: Vladimir Orlovsky",
+          "url": "https://en.wikipedia.org/wiki/Vladimir_Orlovsky",
           "note": null
         }
       ],
@@ -2663,7 +2616,7 @@
         },
         {
           "fact": "Картини Орловського купували московська й петербурзька аристократія і навіть імператор Олександр III.",
-          "sourceId": "xk_dc33c8cd",
+          "sourceId": "xk_d25081b9",
           "sourceLabel": "Wikipedia: Vladimir Orlovsky",
           "scope": "story"
         },
@@ -2699,7 +2652,7 @@
           "На тлі сірої стіни вистоїть на повний зріст чоловік середнього віку в довгому сіро-бузковому вбранні, з білим мереживним комірцем і білими рукавичками. У правій руці він тримає червоний жезл із золотим навершям. Кругле обличчя, сиве волосся, трохи насмішкуватий погляд."
         ],
         "author": [
-          "Федір Бронников (1827–1902) народився в Шадринську, у родині іконописця, і навчався в Петербурзькій академії мистецтв. У 1854 році поїхав до Рима і прожив в Італії до кінця життя. Писав історичні та побутові сцени, часто — з італійського життя."
+          "Федір Бронников (1827–1902) народився в Шадринську, у родині художника-декоратора, і навчався в Петербурзькій академії мистецтв. У 1854 році поїхав до Рима і прожив в Італії до кінця життя. Писав історичні та побутові сцени, часто — з італійського життя."
         ]
       },
       "touchZones": {
@@ -2839,8 +2792,8 @@
         },
         {
           "id": "s4",
-          "label": "Енциклопедичний словник Брокгауза і Ефрона: Бронников (Вікіджерела)",
-          "url": "https://ru.wikisource.org/wiki/%D0%AD%D0%A1%D0%91%D0%95/%D0%91%D1%80%D0%BE%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2,_%D0%A4%D0%B5%D0%B4%D0%BE%D1%80_%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B5%D0%B2%D0%B8%D1%87",
+          "label": "Wikipedia: Fyodor Bronnikov",
+          "url": "https://en.wikipedia.org/wiki/Fyodor_Bronnikov",
           "note": "біографія"
         },
         {
@@ -2868,12 +2821,6 @@
           "note": null
         },
         {
-          "id": "xk_e0634384",
-          "label": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab",
-          "url": "https://fantlab.ru/art4173",
-          "note": null
-        },
-        {
           "id": "xk_3ad63be5",
           "label": "Wikipedia: Fyodor Bronnikov",
           "url": "https://en.wikipedia.org/wiki/Fyodor_Bronnikov",
@@ -2896,24 +2843,6 @@
           "label": "JusticeInfo: The art of war in Ukraine",
           "url": "https://www.justiceinfo.net/en?p=148452",
           "note": null
-        },
-        {
-          "id": "xk_842a66b5",
-          "label": "Wikipedia: Fyodor Bronnikov",
-          "url": "https://www.Wikipedia.com/wiki/Fyodor_Bronnikov",
-          "note": null
-        },
-        {
-          "id": "xk_31ae8ef3",
-          "label": "Циклопедия: «Гимн пифагорейцев» Бронникова",
-          "url": "https://cyclowiki.org/wiki/%D0%93%D0%B8%D0%BC%D0%BD_%D0%BF%D0%B8%D1%84%D0%B0%D0%B3%D0%BE%D1%80%D0%B5%D0%B9%D1%86%D0%B5%D0%B2_%D0%B2%D0%BE%D1%81%D1%85%D0%BE%D0%B4%D1%8F%D1%89%D0%B5%D0%BC%D1%83_%D1%81%D0%BE%D0%BB%D0%BD%D1%86%D1%83_(%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%B0_%D0%A4.%D0%90._%D0%91%D1%80%D0%BE%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0)",
-          "note": "⚠ verify"
-        },
-        {
-          "id": "xk_758f588e",
-          "label": "Азбука: Бронников Федор Андреевич",
-          "url": "https://azbyka.ru/art/avtor/bronnikov-fedor-andreevich/",
-          "note": null
         }
       ],
       "chat": {
@@ -2931,8 +2860,8 @@
             "use": "Дата, техніка, розміри, опис зображення, підпис, інвентарні позначки (Ж – 923, КП – 3173), стан збереженості"
           },
           {
-            "source": "Енциклопедичний словник Брокгауза і Ефрона",
-            "url": "https://ru.wikisource.org/wiki/%D0%AD%D0%A1%D0%91%D0%95/%D0%91%D1%80%D0%BE%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2,_%D0%A4%D0%B5%D0%B4%D0%BE%D1%80_%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B5%D0%B2%D0%B8%D1%87",
+            "source": "Wikipedia: Fyodor Bronnikov",
+            "url": "https://en.wikipedia.org/wiki/Fyodor_Bronnikov",
             "sourceId": "s4",
             "use": "Біографія: Шадринськ, академія, життя в Римі з 1854 року"
           },
@@ -2984,9 +2913,9 @@
           "sourceLabel": "УП Життя: «У Херсоні ідентифікували ще одну викрадену картину»"
         },
         {
-          "fact": "Федір Бронников народився в 1827 році в місті Шадринськ; перші уроки малювання йому дав батько — іконописець.",
-          "sourceId": "xk_e0634384",
-          "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+          "fact": "Федір Бронников народився 1827 року в Шадринську; перші уроки малювання йому дав батько — художник-декоратор.",
+          "sourceId": "xk_3ad63be5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov"
         },
         {
           "fact": "За випускну картину в Академії мистецтв Бронников у 1853 році отримав велику золоту медаль і право на поїздку до Італії.",
@@ -2999,14 +2928,14 @@
           "sourceLabel": "Wikipedia: Fyodor Bronnikov"
         },
         {
-          "fact": "Бронников майже повністю присвятив себе сценам зі староримського життя та італійському жанру — вуличним і повсякденним сюжетам.",
-          "sourceId": "xk_e0634384",
-          "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+          "fact": "З 1854 року Бронников жив у Римі й писав пейзажі, жанрові сцени та історичні картини.",
+          "sourceId": "xk_3ad63be5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov"
         },
         {
-          "fact": "З 1881 року — того ж, коли написано «Капуцина», — Бронников виставлявся вже не на академічних виставках, а з Товариством пересувних виставок.",
-          "sourceId": "xk_e0634384",
-          "sourceLabel": "Енциклопедичний словник Брокгауза і Ефрона, через fantlab"
+          "fact": "Приїхавши додому в 1863–1865 роках, Бронников зблизився з художниками, яких згодом назвуть передвижниками, а пізніше сам став членом їхнього товариства.",
+          "sourceId": "xk_3ad63be5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov"
         },
         {
           "fact": "У 2022 році російські військові пограбували не лише Херсон і Мелітополь: у квітні в Маріуполі з трьох музеїв, зокрема з Художнього музею Куїнджі, вивезли картини та реліквії.",
@@ -3033,22 +2962,15 @@
           "scope": "context"
         },
         {
-          "fact": "У 16 років, після смерті батька, Бронников сам поїхав до Петербурга вступати в Академію. Спершу не вступив і працював учнем у гравера по дереву, поки на нього не звернув увагу скульптор Петро Клодт.",
-          "sourceId": "xk_842a66b5",
+          "fact": "У 16 років, після смерті батька, Бронников сам поїхав до Петербурга. До Академії він спершу не вступив і став учнем у майстерні відомого різьбяра по дереву Євстафія Бернардського, поки скульптор Петро Клодт не влаштував йому відвідування занять в Академії.",
+          "sourceId": "xk_3ad63be5",
           "sourceLabel": "Wikipedia: Fyodor Bronnikov",
           "scope": "story"
         },
         {
-          "fact": "Перед великою картиною Бронников робив багато ескізів і начерків і часто брав деталі зі свого архіву етюдів. Можливо, так з'явився й «Капуцин» — невеликий етюд на дереві.",
-          "sourceId": "xk_31ae8ef3",
-          "sourceLabel": "Циклопедия: «Гимн пифагорейцев» Бронникова",
-          "verify": true,
-          "scope": "story"
-        },
-        {
-          "fact": "Бронников заповів рідному Шадринську понад 300 картин, ескізів і малюнків та 40 000 рублів на художню школу.",
-          "sourceId": "xk_758f588e",
-          "sourceLabel": "Азбука: Бронников Федор Андреевич",
+          "fact": "Бронников заповів рідному Шадринську понад 300 картин і малюнків та гроші на художню школу. Школу відкрили вже за радянських часів, а його твори стали основою місцевого музею.",
+          "sourceId": "xk_3ad63be5",
+          "sourceLabel": "Wikipedia: Fyodor Bronnikov",
           "scope": "story"
         }
       ]
@@ -3212,9 +3134,9 @@
         },
         {
           "id": "s3",
-          "label": "Reuters через Daily Sabah: Kharkiv museum tries to save art",
-          "url": "https://www.dailysabah.com/arts/kharkiv-museum-tries-to-save-russian-art-from-russias-invasion/news",
-          "note": "10.03.2022 (зняли зі стіни)"
+          "label": "The Kyiv Independent: Russia destroys Ukraine's historic heritage",
+          "url": "https://kyivindependent.com/russia-destroys-ukraines-historic-heritage-steals-rare-collections-from-museums",
+          "note": "березень 2022 (картину евакуювали)"
         },
         {
           "id": "s4",
@@ -3301,18 +3223,6 @@
           "note": null
         },
         {
-          "id": "xk_b452e758",
-          "label": "Wikipedia: Reply of the Zaporozhian Cossacks",
-          "url": "https://wikipedia.com/wiki/Reply_of_the_Zaporozhian_Cossacks",
-          "note": null
-        },
-        {
-          "id": "xk_da1c93dc",
-          "label": "Wikipedia: Reply of the Zaporozhian Cossacks",
-          "url": "https://ipfs.ssi.eecc.de/ipns/en.wikipedia-on-ipfs.org/wiki/Reply_of_the_Zaporozhian_Cossacks",
-          "note": null
-        },
-        {
           "id": "xk_abcaf738",
           "label": "Kyiv Post: Ілля Рєпін",
           "url": "https://kyivpost.com/post/19333",
@@ -3347,8 +3257,8 @@
             "use": "Козацьке походження Рєпіна, звʼязок із Слобожанщиною"
           },
           {
-            "source": "Reuters через Daily Sabah, 10.03.2022",
-            "url": "https://www.dailysabah.com/arts/kharkiv-museum-tries-to-save-russian-art-from-russias-invasion/news",
+            "source": "The Kyiv Independent, 2022",
+            "url": "https://kyivindependent.com/russia-destroys-ukraines-historic-heritage-steals-rare-collections-from-museums",
             "sourceId": "s3",
             "use": "Картину зняли зі стіни для збереження"
           },
@@ -3449,13 +3359,7 @@
         },
         {
           "fact": "Для образу козака-голоти позував кучер Тарновського Микитка. Рєпін «зловив» його, коли вони разом переправлялися поромом через Дніпро.",
-          "sourceId": "xk_b452e758",
-          "sourceLabel": "Wikipedia: Reply of the Zaporozhian Cossacks",
-          "scope": "story"
-        },
-        {
-          "fact": "Серед натурників був і журналіст Володимир Гіляровський, який мав козацьке коріння.",
-          "sourceId": "xk_da1c93dc",
+          "sourceId": "xk_2e743d81",
           "sourceLabel": "Wikipedia: Reply of the Zaporozhian Cossacks",
           "scope": "story"
         },
