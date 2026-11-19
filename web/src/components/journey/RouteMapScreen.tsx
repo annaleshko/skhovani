@@ -17,7 +17,6 @@ import {
   getPathOrigin,
   getVisitedMuseumOrder,
   isMuseumPassed,
-  museumHasOpenedArtwork,
   type ResolvedPath,
 } from "@/data/journey";
 import {
@@ -74,8 +73,7 @@ function toStageCam07(stageW: number, stageH: number) {
 export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
-  const { completedPaths, openedArtworkIds, startCityId, resetAll } =
-    useAppState();
+  const { completedPaths, startCityId, resetAll } = useAppState();
   const vb = getMapViewBox();
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [sheetExit, setSheetExit] = useState(false);
@@ -184,7 +182,8 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
 
   const onMuseumTap = (id: string) => {
     if (sheetExit) return;
-    if (museumHasOpenedArtwork(id, openedArtworkIds) && onRevisit) {
+    // Museum tap → free-explore hall (not «Вирушити»).
+    if (onRevisit) {
       const nextIn = getNextPathInMuseum(id, completedPaths);
       if (nextIn) {
         onRevisit(nextIn, { reopen: false });

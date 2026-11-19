@@ -91,6 +91,8 @@ type Props = {
   revisit?: boolean;
   /** Hall shows last opened artwork already revealed. */
   reopenHall?: boolean;
+  /** Free hall exploration (museum tap on 02в only). */
+  exploreHall?: boolean;
   /**
    * From 02в «Вирушить» — skip path-1 sheet; flight still uses cam07 → cam09
    * (02в map is framed with the same 07 camera so there is no jump).
@@ -190,6 +192,7 @@ export function JourneyFlow({
   autostart = false,
   revisit = false,
   reopenHall = false,
+  exploreHall = false,
 }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
@@ -258,6 +261,7 @@ export function JourneyFlow({
   const pathRef = useRef<ResolvedPath | null>(null);
   const revisitRef = useRef(revisit);
   const reopenHallRef = useRef(reopenHall);
+  const exploreHallRef = useRef(exploreHall);
   const entryTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mapStageRef = useRef<HTMLDivElement>(null);
   const mapLayerRef = useRef<HTMLDivElement>(null);
@@ -554,6 +558,10 @@ export function JourneyFlow({
   }, [reopenHall]);
 
   useEffect(() => {
+    exploreHallRef.current = exploreHall;
+  }, [exploreHall]);
+
+  useEffect(() => {
     if (path) pathRef.current = path;
   }, [path]);
 
@@ -708,6 +716,7 @@ export function JourneyFlow({
       pathRef.current = picked;
       revisitRef.current = revisit;
       reopenHallRef.current = reopenHall;
+      exploreHallRef.current = exploreHall;
       setStartCity(origin.city);
       setOriginAbroad(origin.abroad);
       setPath(picked);
@@ -754,7 +763,8 @@ export function JourneyFlow({
     clearRevisitEnterTimer("enterDoor");
     setPhase("entering");
     const reopenQs = reopenHallRef.current ? "&reopen=1" : "";
-    const hallUrl = `/hall/${p.museumId}?path=${p.n}&artwork=${p.artworkId}${reopenQs}`;
+    const exploreQs = exploreHallRef.current ? "&explore=1" : "";
+    const hallUrl = `/hall/${p.museumId}?path=${p.n}&artwork=${p.artworkId}${reopenQs}${exploreQs}`;
     if (reduced) {
       setBlackout(1);
       router.push(hallUrl);

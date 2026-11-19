@@ -26,7 +26,7 @@ export function JourneyRouteMap() {
     (path: ResolvedPath, opts: { reopen: boolean }) => {
       const reopen = opts.reopen ? "&reopen=1" : "";
       router.replace(
-        `/journey?path=${path.n}&autostart=1&revisit=1${reopen}`,
+        `/journey?path=${path.n}&autostart=1&revisit=1&explore=1${reopen}`,
       );
     },
     [router],

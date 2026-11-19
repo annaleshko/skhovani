@@ -25,7 +25,7 @@ import {
   getNextPath,
   getPathForArtwork,
   getPaths,
-  getNextPathInMuseum,
+  shouldSkipMapToHall,
   type ResolvedPath,
 } from "@/data/journey";
 import { getMuseumShortLabel } from "@/data/museums";
@@ -80,6 +80,11 @@ type Props = {
    * tap → passport (no empty/blur/tour).
    */
   reopenHall?: boolean;
+  /**
+   * Free exploration — only when entering via a museum tap on 02в.
+   * «Вирушити» / «Далі» / autostart never set this.
+   */
+  exploreHall?: boolean;
 };
 
 function scrollLeftTo(
@@ -116,6 +121,7 @@ export function HallExperience({
   pathN,
   artworkId,
   reopenHall = false,
+  exploreHall = false,
 }: Props) {
   const router = useRouter();
   const reduced = useReducedMotionSafe();
@@ -128,17 +134,12 @@ export function HallExperience({
   const museum = getMuseum(museumId);
   const hallUi = getHallAssets(museumId);
   const layout = getHallLayout(museumId);
-  const slots = useMemo(() => layout?.slots ?? [], [layout]);
-  const [viewArtworkId, setViewArtworkId] = useState(artworkId);
-  /** Active hall focus — may diverge from URL when freely exploring. */
-  const [hallActiveId, setHallActiveId] = useState(artworkId);
-  const [hallActivePathN, setHallActivePathN] = useState(pathN);
   const completedWithCurrent = useMemo(() => {
-    if (hallActivePathN == null) return completedPaths;
-    return completedPaths.includes(hallActivePathN)
+    if (pathN == null) return completedPaths;
+    return completedPaths.includes(pathN)
       ? completedPaths
-      : [...completedPaths, hallActivePathN].sort((a, b) => a - b);
-  }, [completedPaths, hallActivePathN]);
+      : [...completedPaths, pathN].sort((a, b) => a - b);
+  }, [completedPaths, pathN]);
   const nextPath = useMemo(
     () => getNextPath(completedWithCurrent),
     [completedWithCurrent],
@@ -151,16 +152,22 @@ export function HallExperience({
     }
     return ids;
   }, [completedPaths, openedArtworkIds]);
+
+  const slots = useMemo(() => layout?.slots ?? [], [layout]);
+  const [viewArtworkId, setViewArtworkId] = useState(artworkId);
+  /** Explore-mode focus (URL path stays the entry path). */
+  const [exploreActiveId, setExploreActiveId] = useState(artworkId);
+  const hallFocusId = exploreHall ? exploreActiveId : artworkId;
   const focusSlotIndex = Math.max(
     0,
     slots.findIndex((s) => s.artworkId === viewArtworkId),
   );
   const pathSlotIndex = Math.max(
     0,
-    slots.findIndex((s) => s.artworkId === hallActiveId),
+    slots.findIndex((s) => s.artworkId === hallFocusId),
   );
   const focus = getArtwork(viewArtworkId) ?? getArtwork(slots[0]?.artworkId ?? -1);
-  const isReplayPassport = viewArtworkId !== hallActiveId;
+  const isReplayPassport = viewArtworkId !== hallFocusId;
 
   const [phase, setPhase] = useState<Phase>("hall");
   type Intro = "black" | "lamp" | "cone" | "bright" | "ui" | "done";
@@ -200,8 +207,7 @@ export function HallExperience({
   if (artworkId !== focusKey) {
     setFocusKey(artworkId);
     setViewArtworkId(artworkId);
-    setHallActiveId(artworkId);
-    setHallActivePathN(pathN);
+    setExploreActiveId(artworkId);
     setStolenPhase(reopenHall ? "remembered" : "empty");
     setNeighborId(null);
     setPhase("hall");
@@ -266,7 +272,7 @@ export function HallExperience({
       scrollLeftTo(el, left, motionTokens.hallScroll, reduced);
     }, 40);
     return () => window.clearTimeout(t);
-  }, [pathSlotIndex, phase, reduced, slots, px, hallActiveId, edgePadDes]);
+  }, [pathSlotIndex, phase, reduced, slots, px, hallFocusId, edgePadDes]);
 
   // Track horizontal scroll for hint-ring viewport clamp
   useEffect(() => {
@@ -502,7 +508,8 @@ export function HallExperience({
     );
   }, [openTour, reduced]);
 
-  const beginArtworkFlow = useCallback(
+  /** Explore-only: open any frame (reveal / tour / passport). */
+  const beginExploreArtwork = useCallback(
     (artId: number) => {
       const art = getArtwork(artId);
       const pathFor = getPathForArtwork(artId);
@@ -510,73 +517,118 @@ export function HallExperience({
       setNeighborId(null);
       setDetailZone(null);
       setViewArtworkId(artId);
-      setHallActiveId(artId);
-      setHallActivePathN(pathFor.n);
-      if (reopenHall || openedIds.has(artId)) {
+      setExploreActiveId(artId);
+      if (openedIds.has(artId)) {
         setStolenPhase("remembered");
         setPhase("about");
         return;
       }
-      // Back to the hall so reveal / lamp / captions can run.
       setPhase("hall");
       setIntroStep("done");
       if (art.status === "stolen") {
         setStolenPhase("empty");
         clearRevealTimers();
-        // Defer reveal so focus/status state commits first.
         window.setTimeout(() => startReveal(), 0);
         return;
       }
       setStolenPhase("remembered");
       openTour();
     },
-    [clearRevealTimers, openedIds, openTour, reopenHall, startReveal],
+    [clearRevealTimers, openedIds, openTour, startReveal],
   );
 
   const onFrameTap = (slot: HallSlot) => {
     const art = getArtwork(slot.artworkId);
     if (!art) return;
 
-    // Already-opened neighbour → passport 16 (replay), keep hall active as-is
-    if (art.id !== hallActiveId && openedIds.has(art.id)) {
-      setNeighborId(null);
-      setDetailZone(null);
-      setViewArtworkId(art.id);
-      setPhase("about");
-      return;
-    }
-
-    // Free exploration: any unopened frame is tappable (or re-tap active)
-    if (art.id !== hallActiveId) {
-      beginArtworkFlow(art.id);
-      return;
-    }
-
-    // Active frame
-    setViewArtworkId(hallActiveId);
-    if (reopenHall || openedIds.has(hallActiveId)) {
-      if (reopenHall || stolenPhase !== "empty") {
+    if (exploreHall) {
+      if (art.id !== exploreActiveId && openedIds.has(art.id)) {
+        setNeighborId(null);
+        setDetailZone(null);
+        setViewArtworkId(art.id);
         setPhase("about");
         return;
       }
-    }
-    if (art.status === "stolen") {
-      if (stolenPhase === "empty") {
-        clearRevealTimers();
-        startReveal();
+      if (art.id !== exploreActiveId) {
+        beginExploreArtwork(art.id);
+        return;
+      }
+      setViewArtworkId(exploreActiveId);
+      if (openedIds.has(exploreActiveId)) {
+        if (stolenPhase !== "empty") {
+          setPhase("about");
+          return;
+        }
+      }
+      if (art.status === "stolen") {
+        if (stolenPhase === "empty") {
+          clearRevealTimers();
+          startReveal();
+          return;
+        }
+        openTour();
         return;
       }
       openTour();
       return;
     }
+
+    // —— Normal path flow (be212c7) ——
+    // Neighbor frame
+    if (art.id !== artworkId) {
+      // Already opened → straight to passport 16
+      if (openedIds.has(art.id)) {
+        setNeighborId(null);
+        setDetailZone(null);
+        setViewArtworkId(art.id);
+        setPhase("about");
+        return;
+      }
+      // Not yet opened — quiet caption only (no 12б sheet)
+      setShakeId(art.id);
+      window.setTimeout(() => setShakeId(null), motionTokens.frameShake * 1000);
+      setNeighborId(art.id);
+      if (neighborTimer.current) clearTimeout(neighborTimer.current);
+      neighborTimer.current = setTimeout(
+        () => setNeighborId(null),
+        motionTokens.neighborCaption * 1000,
+      );
+      return;
+    }
+
+    // Path focus frame
+    setViewArtworkId(artworkId);
+    // Revisit of already-opened artwork → passport directly
+    if (reopenHall || openedIds.has(artworkId)) {
+      if (reopenHall || stolenPhase !== "empty") {
+        setPhase("about");
+        return;
+      }
+    }
+    if (isStolen) {
+      if (stolenPhase === "empty") {
+        clearRevealTimers();
+        startReveal();
+        return;
+      }
+      // Tap during reveal / remembered skips the wait → tour
+      openTour();
+      return;
+    }
+
+    // shelter / saved → tour
     openTour();
   };
 
   const completeCurrentPath = useCallback(() => {
-    if (hallActivePathN != null && focus) {
-      markPathComplete(hallActivePathN, focus.id);
+    if (!focus) return;
+    if (exploreHall) {
+      const pathFor = getPathForArtwork(focus.id);
+      if (pathFor) markPathComplete(pathFor.n, focus.id);
+      return;
     }
-  }, [focus, hallActivePathN, markPathComplete]);
+    if (pathN != null) markPathComplete(pathN, focus.id);
+  }, [exploreHall, focus, markPathComplete, pathN]);
 
   const onTourDone = useCallback(() => {
     if (focus) markTourSeen(focus.id);
@@ -605,56 +657,95 @@ export function HallExperience({
     setRouteFlight(path.n);
   }, []);
 
-  /** Next unopened in this hall, else null → 02в / «Шлях пройдено». */
-  const continueInHall = useMemo(() => {
-    const base = isReplayPassport ? completedPaths : completedWithCurrent;
-    return getNextPathInMuseum(museumId, base) ?? null;
-  }, [completedPaths, completedWithCurrent, isReplayPassport, museumId]);
-
-  const continueGlobal = useMemo(() => {
-    const base = isReplayPassport ? completedPaths : completedWithCurrent;
+  /** Next unfinished path for passport «Далі — <місто>» (journey order). */
+  const continueTarget = useMemo(() => {
+    // Reopened passport / explore: don't treat the in-progress path as done.
+    const base =
+      isReplayPassport || exploreHall ? completedPaths : completedWithCurrent;
     return getNextPath(base) ?? null;
-  }, [completedPaths, completedWithCurrent, isReplayPassport]);
+  }, [
+    completedPaths,
+    completedWithCurrent,
+    exploreHall,
+    isReplayPassport,
+  ]);
 
   const continueLabel = useMemo(() => {
-    if (continueInHall) {
-      return `Далі — ${getMuseumShortLabel(continueInHall.museumId)}`;
-    }
-    if (continueGlobal) {
-      return `Далі — ${getMuseumShortLabel(continueGlobal.museumId)}`;
-    }
-    return "Шлях пройдено";
-  }, [continueGlobal, continueInHall]);
+    if (!continueTarget) return "Шлях пройдено";
+    return `Далі — ${getMuseumShortLabel(continueTarget.museumId)}`;
+  }, [continueTarget]);
 
   const goContinueFromPassport = useCallback(() => {
     setDetailZone(null);
 
-    // Reopened passport: don't mark the in-progress hall focus done.
+    // Explore: «Далі» returns to the same hall (frames stay lit as opened).
+    if (exploreHall) {
+      if (!isReplayPassport) completeCurrentPath();
+      setViewArtworkId(exploreActiveId);
+      setStolenPhase("remembered");
+      setNeighborId(null);
+      setPhase("hall");
+      setIntroStep("done");
+      return;
+    }
+
+    const target = continueTarget;
+
+    // Reopened passport (tapped an already-opened frame): never mark the
+    // in-progress path done and never jump to another passport. Same museum →
+    // hall blur→reveal→tour; other museum → 02в.
     if (isReplayPassport) {
-      if (continueInHall) {
-        beginArtworkFlow(continueInHall.artworkId);
+      if (!target) {
+        setViewArtworkId(artworkId);
+        setPhase("route");
         return;
       }
-      setViewArtworkId(hallActiveId);
+      if (target.museumId === museumId) {
+        if (target.n === pathN && target.artworkId === artworkId) {
+          // Same URL soft-nav would no-op and leave phase "about" — enter hall.
+          setViewArtworkId(artworkId);
+          setStolenPhase("empty");
+          setNeighborId(null);
+          setIntroStep(reduced ? "done" : "black");
+          setPhase("hall");
+          return;
+        }
+        router.replace(
+          `/hall/${target.museumId}?path=${target.n}&artwork=${target.artworkId}`,
+        );
+        return;
+      }
+      setViewArtworkId(artworkId);
       setPhase("route");
       return;
     }
 
     completeCurrentPath();
-    if (continueInHall) {
-      // Stay in hall — next unopened artwork here.
-      beginArtworkFlow(continueInHall.artworkId);
+    setViewArtworkId(artworkId);
+    if (!target) {
+      setPhase("route");
       return;
     }
-    // No more in this hall → 02в (route to first unvisited path globally).
-    setViewArtworkId(hallActiveId);
+    const skipMap = shouldSkipMapToHall(completedWithCurrent, target);
+    if (skipMap) {
+      router.replace(
+        `/hall/${target.museumId}?path=${target.n}&artwork=${target.artworkId}`,
+      );
+      return;
+    }
     setPhase("route");
   }, [
-    beginArtworkFlow,
+    artworkId,
     completeCurrentPath,
-    continueInHall,
-    hallActiveId,
+    completedWithCurrent,
+    continueTarget,
+    exploreActiveId,
+    exploreHall,
     isReplayPassport,
+    museumId,
+    pathN,
+    reduced,
+    router,
   ]);
 
   useEffect(() => {
@@ -666,9 +757,9 @@ export function HallExperience({
 
   const litSlotIds = useMemo(() => {
     const ids = new Set<number>(openedIds);
-    ids.add(hallActiveId);
+    ids.add(hallFocusId);
     return ids;
-  }, [openedIds, hallActiveId]);
+  }, [openedIds, hallFocusId]);
 
   if (!focus || !museum || !layout) {
     return (
@@ -684,7 +775,7 @@ export function HallExperience({
   const hallFocusSlot = showHall ? pathSlot : focusSlot;
   const coneTop = layout.cone.y;
   const emptyInset = paintingOpeningInset(
-    showHall ? hallActiveId : focus.id,
+    showHall ? hallFocusId : focus.id,
   );
 
   const showUi = intro === "ui" || intro === "done";
@@ -787,6 +878,29 @@ export function HallExperience({
       ref={stageRef}
       className="relative min-h-dvh overflow-hidden bg-screen text-text-primary"
     >
+      {showHall && exploreHall ? (
+        <div
+          className="pointer-events-auto absolute left-0 right-0 z-30 flex px-xl"
+          style={{
+            top: "max(12px, calc(env(safe-area-inset-top, 0px) + 8px))",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setDetailZone(null);
+              setNeighborId(null);
+              setPhase("route");
+            }}
+            className="inline-flex min-h-11 items-center gap-sm rounded-full border border-border-subtle bg-surface px-lg text-label-md text-text-primary"
+            aria-label="До маршруту"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ui/icon-back.svg" alt="" width={20} height={20} />
+            До маршруту
+          </button>
+        </div>
+      ) : null}
       {showHall ? (
         <div className="absolute inset-0 z-0">
           {/* Full-viewport wall bleed — covers letterbox / short-phone gaps. */}
@@ -832,7 +946,7 @@ export function HallExperience({
               {/* 2. ALL frames under darkness (unopened stay here) */}
               {slots.map((slot) => {
                 const art = getArtwork(slot.artworkId);
-                const isPathFocus = slot.artworkId === hallActiveId;
+                const isPathFocus = slot.artworkId === hallFocusId;
                 const isOpenedFrame = openedIds.has(slot.artworkId);
                 const r = slot.frameRect;
                 const inset = paintingOpeningInset(slot.artworkId);
@@ -923,10 +1037,10 @@ export function HallExperience({
                       (s) =>
                         litSlotIds.has(s.artworkId) &&
                         (openedIds.has(s.artworkId) ||
-                          s.artworkId === hallActiveId),
+                          s.artworkId === hallFocusId),
                     )
                     .map((slot) => {
-                      const isActive = slot.artworkId === hallActiveId;
+                      const isActive = slot.artworkId === hallFocusId;
                       const isOpenedNeighbor =
                         openedIds.has(slot.artworkId) && !isActive;
                       const showOpenedFull =
@@ -1157,7 +1271,7 @@ export function HallExperience({
                   ? slots
                       .filter((s) => litSlotIds.has(s.artworkId))
                       .map((slot) => {
-                        const isActive = slot.artworkId === hallActiveId;
+                        const isActive = slot.artworkId === hallFocusId;
                         const targetOpacity = isActive ? 1 : 0.85;
                         return (
                           <motion.div
@@ -1206,17 +1320,17 @@ export function HallExperience({
 
               {/* 5. Captions — every opened frame + active; scroll with frames */}
               <AnimatePresence>
-                {showUi
+                {showUi && (exploreHall || neighborId == null)
                   ? slots
                       .filter(
                         (s) =>
-                          s.artworkId === hallActiveId ||
+                          s.artworkId === hallFocusId ||
                           openedIds.has(s.artworkId),
                       )
                       .map((slot) => {
                         const art = getArtwork(slot.artworkId);
                         if (!art) return null;
-                        const isActiveCap = slot.artworkId === hallActiveId;
+                        const isActiveCap = slot.artworkId === hallFocusId;
                         return (
                           <motion.div
                             key={`cap-${slot.artworkId}`}
@@ -1281,6 +1395,41 @@ export function HallExperience({
                           </motion.div>
                         );
                       })
+                  : null}
+              </AnimatePresence>
+
+              {/* Neighbor caption (12) — normal path only */}
+              <AnimatePresence>
+                {!exploreHall && neighborId != null
+                  ? (() => {
+                      const slot = slots.find((s) => s.artworkId === neighborId);
+                      if (!slot) return null;
+                      const cx =
+                        (slot.frameRect.x +
+                          edgePadDes +
+                          slot.frameRect.w / 2) *
+                        px;
+                      const top =
+                        (slot.frameRect.y + slot.frameRect.h + 12) * px;
+                      return (
+                        <motion.p
+                          key={`neighbor-${neighborId}`}
+                          className="pointer-events-none absolute z-[10] text-center text-body-md text-text-secondary"
+                          style={{
+                            left: cx,
+                            top,
+                            width: 226 * px,
+                            x: "-50%",
+                          }}
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          Відкриється наступним шляхом
+                        </motion.p>
+                      );
+                    })()
                   : null}
               </AnimatePresence>
 
@@ -1491,7 +1640,7 @@ export function HallExperience({
         onRevisit={(path, opts) => {
           const reopen = opts.reopen ? "&reopen=1" : "";
           router.replace(
-            `/journey?path=${path.n}&autostart=1&revisit=1${reopen}`,
+            `/journey?path=${path.n}&autostart=1&revisit=1&explore=1${reopen}`,
           );
         }}
       />

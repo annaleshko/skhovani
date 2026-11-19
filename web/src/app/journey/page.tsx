@@ -16,6 +16,7 @@ function JourneyInner() {
   const autostart = params.get("autostart") === "1";
   const revisit = params.get("revisit") === "1";
   const reopen = params.get("reopen") === "1";
+  const explore = params.get("explore") === "1";
 
   if (!ready) return <div className="min-h-dvh bg-screen" aria-busy />;
 
@@ -33,6 +34,7 @@ function JourneyInner() {
       autostart={autostart}
       revisit={revisit}
       reopenHall={reopen}
+      exploreHall={explore}
     />
   );
 }
