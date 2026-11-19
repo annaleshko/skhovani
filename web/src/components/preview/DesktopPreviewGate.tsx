@@ -4,7 +4,13 @@ import { LandscapeLock } from "@/components/layout/LandscapeLock";
 import { DesktopPhonePreview } from "@/components/preview/DesktopPhonePreview";
 import { EmbedUrlSync } from "@/components/preview/EmbedUrlSync";
 import { AppStateProvider } from "@/state/AppState";
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 function isPwaStandalone(): boolean {
   if (typeof window === "undefined") return false;
@@ -24,6 +30,37 @@ function shouldUsePhonePreview(): boolean {
   if (isPwaStandalone()) return false;
   // Phone-frame demo preview on wide desktops; ≤500px uses the centered shell.
   return window.innerWidth > 500;
+}
+
+/** Fixed shell + `--app-h` from measured height (not dvh). */
+function AppShell({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const apply = () => {
+      const h = el.getBoundingClientRect().height;
+      if (h <= 0) return;
+      const value = `${Math.round(h)}px`;
+      el.style.setProperty("--app-h", value);
+      // Also on :root so fixed overlays (sheets) resolve the same height.
+      document.documentElement.style.setProperty("--app-h", value);
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty("--app-h");
+    };
+  }, []);
+
+  return (
+    <div id="app-shell" ref={ref}>
+      {children}
+    </div>
+  );
 }
 
 /**
@@ -46,7 +83,7 @@ export function DesktopPreviewGate({ children }: { children: ReactNode }) {
   if (mode === "pending") {
     return (
       <div
-        className="min-h-dvh w-full"
+        className="h-full w-full"
         style={{ backgroundColor: "var(--color-bg-hall-dark)" }}
         aria-busy
       />
@@ -60,7 +97,7 @@ export function DesktopPreviewGate({ children }: { children: ReactNode }) {
   return (
     <AppStateProvider persist>
       <EmbedUrlSync />
-      <div id="app-shell">{children}</div>
+      <AppShell>{children}</AppShell>
       <LandscapeLock />
     </AppStateProvider>
   );

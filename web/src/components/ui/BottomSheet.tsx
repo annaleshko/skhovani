@@ -43,7 +43,9 @@ export function BottomSheet({
   const hasSnaps = Boolean(snapPoints?.length);
 
   const heightClass =
-    hasSnaps && snap === "expanded" ? "max-h-[92dvh]" : "max-h-[70dvh]";
+    hasSnaps && snap === "expanded"
+      ? "max-h-[calc(0.92*var(--app-h))]"
+      : "max-h-[calc(0.7*var(--app-h))]";
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {

@@ -9,7 +9,7 @@ export default function HomePage() {
   const { ready, startCityId } = useAppState();
 
   if (!ready) {
-    return <div className="min-h-dvh bg-screen" aria-busy />;
+    return <div className="h-full bg-screen" aria-busy />;
   }
 
   if (!startCityId) {

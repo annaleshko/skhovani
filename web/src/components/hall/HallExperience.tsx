@@ -763,7 +763,7 @@ export function HallExperience({
 
   if (!focus || !museum || !layout) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-screen px-xl text-body-md text-text-secondary">
+      <div className="flex h-full items-center justify-center bg-screen px-xl text-body-md text-text-secondary">
         Залу не знайдено
       </div>
     );
@@ -876,7 +876,7 @@ export function HallExperience({
   return (
     <div
       ref={stageRef}
-      className="relative min-h-dvh overflow-hidden bg-screen text-text-primary"
+      className="relative h-full overflow-hidden bg-screen text-text-primary"
     >
       {showHall && exploreHall ? (
         <div
@@ -1568,7 +1568,7 @@ export function HallExperience({
               key="detail-dim"
               className="absolute inset-x-0 bottom-0 z-[35] bg-black/55"
               style={{
-                top: `calc(${PASSPORT_LAYOUT.dim.y / 844} * 100dvh)`,
+                top: `calc(${PASSPORT_LAYOUT.dim.y / 844} * var(--app-h))`,
               }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

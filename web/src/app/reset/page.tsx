@@ -15,5 +15,5 @@ export default function ResetPage() {
     router.replace(resetHomeHref());
   }, [resetAll, router]);
 
-  return <div className="min-h-dvh bg-screen" aria-busy />;
+  return <div className="h-full bg-screen" aria-busy />;
 }

@@ -33,7 +33,7 @@ export function JourneyRouteMap() {
   );
 
   return (
-    <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-screen">
+    <div className="relative mx-auto h-full w-full max-w-[430px] bg-screen">
       <RouteMapScreen
         open
         next={next}

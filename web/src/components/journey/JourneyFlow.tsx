@@ -1073,11 +1073,11 @@ export function JourneyFlow({
   const breatheGlow = phase === "map" && showTargetPin && !reduced;
 
   if (!path) {
-    return <div className="min-h-dvh bg-screen" aria-busy />;
+    return <div className="h-full bg-screen" aria-busy />;
   }
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-screen text-text-primary">
+    <div className="relative h-full overflow-hidden bg-screen text-text-primary">
       {showMapTrail ? <RouteTrail items={trailItems} /> : null}
 
       {/* Map stage — ALWAYS full-screen; flight/zoom only move the camera */}

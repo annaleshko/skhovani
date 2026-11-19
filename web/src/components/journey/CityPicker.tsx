@@ -33,7 +33,7 @@ export function CityPicker({ onPicked }: Props) {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-screen text-text-primary">
+    <div className="flex h-full flex-col bg-screen text-text-primary">
       <div className="flex flex-1 flex-col gap-2xl overflow-y-auto px-xl pb-[calc(32px+var(--safe-bottom))] pt-[calc(24px+var(--safe-top))]">
         <header className="flex flex-col gap-sm">
           <h1 className="text-h1 tracking-[-0.02em]">Звідки починаємо шлях?</h1>

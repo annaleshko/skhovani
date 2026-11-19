@@ -17,10 +17,10 @@ function HallInner() {
   const reopenHall = search.get("reopen") === "1";
   const exploreHall = search.get("explore") === "1";
 
-  if (!ready) return <div className="min-h-dvh bg-screen" aria-busy />;
+  if (!ready) return <div className="h-full bg-screen" aria-busy />;
   if (!museum || !artworkId) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-screen px-xl text-body-md text-text-secondary">
+      <div className="flex h-full items-center justify-center bg-screen px-xl text-body-md text-text-secondary">
         Залу не знайдено
       </div>
     );
@@ -39,7 +39,7 @@ function HallInner() {
 
 export default function HallPage() {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-screen" aria-busy />}>
+    <Suspense fallback={<div className="h-full bg-screen" aria-busy />}>
       <HallInner />
     </Suspense>
   );

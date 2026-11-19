@@ -17,5 +17,5 @@ export default function FinishPage() {
     router.replace(startCityId ? "/journey?mode=route" : "/");
   }, [ready, router, startCityId]);
 
-  return <div className="min-h-dvh bg-screen" aria-busy />;
+  return <div className="h-full bg-screen" aria-busy />;
 }

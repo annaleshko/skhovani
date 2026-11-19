@@ -16,7 +16,7 @@ export function HomePlaceholder() {
 
   if (isJourneyComplete(completedPaths) || !next) {
     return (
-      <main className="flex min-h-dvh flex-col justify-end gap-lg px-xl pb-[calc(48px+var(--safe-bottom))] pt-[calc(48px+var(--safe-top))]">
+      <main className="flex h-full flex-col justify-end gap-lg px-xl pb-[calc(48px+var(--safe-bottom))] pt-[calc(48px+var(--safe-top))]">
         <p className="text-overline uppercase text-text-accent">Сховані</p>
         <h1 className="text-h1">{ALL_DONE_COPY.title}</h1>
         <p className="text-body-lg text-text-secondary">{ALL_DONE_COPY.body}</p>
@@ -27,7 +27,7 @@ export function HomePlaceholder() {
   const km = haversineKm(start, next.museum);
 
   return (
-    <main className="flex min-h-dvh flex-col justify-end gap-lg px-xl pb-[calc(48px+var(--safe-bottom))] pt-[calc(48px+var(--safe-top))]">
+    <main className="flex h-full flex-col justify-end gap-lg px-xl pb-[calc(48px+var(--safe-bottom))] pt-[calc(48px+var(--safe-top))]">
       <p className="text-overline uppercase text-text-accent">Сьогодні</p>
       <h1 className="text-h1">Привіт, {user.nameVocative}</h1>
       <p className="text-body-lg text-text-secondary">

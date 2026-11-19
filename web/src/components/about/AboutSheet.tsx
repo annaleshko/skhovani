@@ -103,15 +103,15 @@ export function AboutSheet({
               y: 48,
               opacity: 0,
               // Collapsed: leave room above for credit+hint. Frame shrinks first
-              // (TourStage ≥150px); sheet sits lower on short phones (≤58dvh).
-              top: `min(58dvh, max(42dvh, ${(L.sheetCollapsed.y / 844) * 100}dvh))`,
+              // (TourStage ≥150px); sheet sits lower on short phones (≤58% of shell).
+              top: `min(calc(0.58 * var(--app-h)), max(calc(0.42 * var(--app-h)), calc(${(L.sheetCollapsed.y / 844).toFixed(4)} * var(--app-h))))`,
             }}
             animate={{
               y: 0,
               opacity: 1,
               top: expanded
-                ? `max(12dvh, ${(L.sheetExpanded.y / 844) * 100}dvh)`
-                : `min(58dvh, max(42dvh, ${(sheetTop / 844) * 100}dvh))`,
+                ? `max(calc(0.12 * var(--app-h)), calc(${(L.sheetExpanded.y / 844).toFixed(4)} * var(--app-h)))`
+                : `min(calc(0.58 * var(--app-h)), max(calc(0.42 * var(--app-h)), calc(${(sheetTop / 844).toFixed(4)} * var(--app-h))))`,
             }}
             exit={{ y: 48, opacity: 0 }}
             transition={defaultSpring}

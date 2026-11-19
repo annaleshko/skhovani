@@ -18,7 +18,7 @@ function JourneyInner() {
   const reopen = params.get("reopen") === "1";
   const explore = params.get("explore") === "1";
 
-  if (!ready) return <div className="min-h-dvh bg-screen" aria-busy />;
+  if (!ready) return <div className="h-full bg-screen" aria-busy />;
 
   if (!startCityId) {
     return <CityPicker />;
@@ -41,7 +41,7 @@ function JourneyInner() {
 
 export default function JourneyPage() {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-screen" aria-busy />}>
+    <Suspense fallback={<div className="h-full bg-screen" aria-busy />}>
       <JourneyInner />
     </Suspense>
   );

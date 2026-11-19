@@ -104,7 +104,7 @@ export default function CalibratePage() {
 
   if (!artwork) {
     return (
-      <div className="min-h-dvh bg-screen p-xl text-text-secondary">
+      <div className="h-full bg-screen p-xl text-text-secondary">
         Немає творів
       </div>
     );
@@ -124,7 +124,7 @@ export default function CalibratePage() {
         : null;
 
   return (
-    <main className="min-h-dvh bg-screen px-xl pb-2xl pt-[calc(48px+var(--safe-top))] text-text-primary">
+    <main className="h-full bg-screen px-xl pb-2xl pt-[calc(48px+var(--safe-top))] text-text-primary">
       <div className="mb-md flex items-center justify-between">
         <Link href="/dev/tokens" className="text-label-md text-text-accent">
           ← Tokens

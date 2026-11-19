@@ -104,7 +104,7 @@ export function DesktopPhonePreview() {
 
   return (
     <div
-      className="flex min-h-dvh w-full flex-col items-center justify-center gap-lg px-xl py-2xl"
+      className="flex h-full w-full flex-col items-center justify-center gap-lg px-xl py-2xl"
       style={{ backgroundColor: "var(--color-bg-hall-dark)" }}
     >
       <div

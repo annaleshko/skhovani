@@ -213,7 +213,7 @@ export function GuideScreen({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="absolute inset-0 z-50 flex h-dvh max-h-dvh flex-col overflow-hidden bg-screen text-text-primary"
+          className="absolute inset-0 z-50 flex h-full flex-col overflow-hidden bg-screen text-text-primary"
           initial={reduced ? false : { x: "100%" }}
           animate={{ x: 0 }}
           exit={reduced ? { opacity: 0 } : { x: "100%" }}
