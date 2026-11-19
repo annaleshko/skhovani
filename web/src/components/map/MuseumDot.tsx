@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import { MAP_HIT_R_SVG } from "@/lib/map-label";
+import { MAP_LABEL_GAP_SVG } from "@/lib/map-label";
 
 type Props = {
   x: number;
@@ -39,7 +39,8 @@ export function MuseumDot({
   const labelFill =
     tone === "dim" ? "var(--color-text-secondary)" : "var(--color-text-primary)";
   const opacity = tone === "dim" ? 0.85 : 1;
-  const gap = MAP_HIT_R_SVG + 6;
+  // Visual ring r=7 + small gap (not the 44×44 hit radius).
+  const gap = 7 + MAP_LABEL_GAP_SVG;
   const labelPos =
     labelSide === "left"
       ? { x: -gap, y: 4 + labelDy, anchor: "end" as const }

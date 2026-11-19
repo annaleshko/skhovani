@@ -83,6 +83,15 @@ export function getNextPathInMuseum(
   return getPath(next.n);
 }
 
+/** Journey path for an artwork id, if any. */
+export function getPathForArtwork(
+  artworkId: number,
+): ResolvedPath | undefined {
+  const path = getPaths().find((p) => p.artworkId === artworkId);
+  if (!path) return undefined;
+  return getPath(path.n);
+}
+
 /** True if any path in this museum is completed. */
 export function isMuseumPassed(
   museumId: string,

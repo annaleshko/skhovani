@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import { MAP_HIT_R_SVG } from "@/lib/map-label";
+import { MAP_LABEL_GAP_SVG } from "@/lib/map-label";
 import { defaultSpring, motionTokens, useReducedMotionSafe } from "@/lib/motion";
 import { motion } from "framer-motion";
 
@@ -67,8 +67,8 @@ export function MapStar({
       : "var(--color-text-primary)";
   const glowR = glow === "strong" ? half * 1.55 : half * 1.2;
   const glowOp = glow === "strong" ? 0.45 : glow === "soft" ? 0.22 : 0;
-  /** Keep labels outside the 44×44 hit circle. */
-  const gap = Math.max(half + 6, MAP_HIT_R_SVG + 6);
+  /** Close to the sparkle; layoutMapLabels moves further only on collision. */
+  const gap = half + MAP_LABEL_GAP_SVG;
   const labelPos =
     labelSide === "left"
       ? { x: -gap, y: 4 + labelDy, anchor: "end" as const }

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import { MAP_HIT_R_SVG } from "@/lib/map-label";
+import { MAP_LABEL_GAP_SVG } from "@/lib/map-label";
 import { defaultSpring } from "@/lib/motion";
 import { motion } from "framer-motion";
 
@@ -66,7 +66,14 @@ export function MapPin({
       </>
     );
 
-  const gap = MAP_HIT_R_SVG + 6;
+  // Visual marker radius by variant (not the tap hit circle).
+  const visualR =
+    variant === "target" || variant === "museum"
+      ? 12
+      : variant === "star"
+        ? 8
+        : 10;
+  const gap = visualR + MAP_LABEL_GAP_SVG;
   const labelPos =
     labelSide === "right"
       ? { x: gap, y: 5 + labelDy, anchor: "start" as const, size: 14 }

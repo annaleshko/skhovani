@@ -13,7 +13,7 @@ export type MapLabelMarker = {
 
 export type MapLabelPlacement = {
   side: MapLabelSide;
-  /** Extra vertical offset in SVG px (keeps 6px from marker). */
+  /** Extra vertical offset in SVG px (keeps gap from marker). */
   dy: number;
 };
 
@@ -25,11 +25,18 @@ export function mapLabelSide(
   return x > mapW * 0.72 ? "left" : "right";
 }
 
-const GAP = 6;
-const FONT = 12;
-const LINE_H = 14;
+/** Gap between visual marker edge and label text. */
+export const MAP_LABEL_GAP_SVG = 5;
+/**
+ * Visual marker radius (pin/star/dot), not the 44×44 tap target.
+ * ~8–11 SVG px depending on variant — use mid for layout.
+ */
+export const MAP_MARKER_R_SVG = 9;
 /** ~22 CSS px hit radius → SVG units at typical ~360px map width. */
 export const MAP_HIT_R_SVG = 25;
+
+const FONT = 12;
+const LINE_H = 14;
 
 function approxWidth(label: string, fontSize = FONT): number {
   return Math.max(24, label.length * fontSize * 0.58);
@@ -39,19 +46,20 @@ function labelBox(
   m: MapLabelMarker,
   side: MapLabelSide,
   dy: number,
-  half: number = MAP_HIT_R_SVG,
+  half: number = MAP_MARKER_R_SVG,
 ): { x0: number; y0: number; x1: number; y1: number } {
   const w = approxWidth(m.label);
+  const gap = MAP_LABEL_GAP_SVG;
   if (side === "right") {
-    const x0 = m.x + half + GAP;
+    const x0 = m.x + half + gap;
     return { x0, y0: m.y - LINE_H / 2 + dy, x1: x0 + w, y1: m.y + LINE_H / 2 + dy };
   }
   if (side === "left") {
-    const x1 = m.x - half - GAP;
+    const x1 = m.x - half - gap;
     return { x0: x1 - w, y0: m.y - LINE_H / 2 + dy, x1, y1: m.y + LINE_H / 2 + dy };
   }
   if (side === "top") {
-    const y1 = m.y - half - GAP + dy;
+    const y1 = m.y - half - gap + dy;
     return {
       x0: m.x - w / 2,
       y0: y1 - LINE_H,
@@ -59,7 +67,7 @@ function labelBox(
       y1,
     };
   }
-  const y0 = m.y + half + GAP + dy;
+  const y0 = m.y + half + gap + dy;
   return {
     x0: m.x - w / 2,
     y0,
@@ -94,8 +102,8 @@ function hitsCircle(
 }
 
 /**
- * Assign non-overlapping label sides (6px from 44×44 hit areas).
- * Labels must not sit inside another marker's hit circle.
+ * Assign non-overlapping label sides (close to the visual marker).
+ * Labels may sit further only to avoid collisions; hit circles still use MAP_HIT_R_SVG.
  */
 export function layoutMapLabels(
   markers: MapLabelMarker[],
