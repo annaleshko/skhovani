@@ -13,9 +13,11 @@ import {
   pathSheetBlurb,
 } from "@/data/museum-copy";
 import {
+  FACADE_ASPECT,
   getMuseumDisplayName,
   getMuseumShortLabel,
   getMuseumUi,
+  type MuseumUi,
 } from "@/data/museums";
 import {
   getPath,
@@ -116,6 +118,50 @@ const GLOW_R_07 = 100; // Ø 200
 const GLOW_R_09 = 160; // Ø 320
 const vb = getMapViewBox();
 
+type FacadeImgLayout = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  originX: number;
+  originY: number;
+};
+
+/**
+ * Width-fit facade (no object-fit crop), ground 12px above the sheet.
+ * Scales down only when the building would collide with the trail.
+ */
+function computeFacadeImgLayout(
+  rootW: number,
+  sheetTop: number,
+  trailBottom: number,
+  ui: MuseumUi,
+): FacadeImgLayout {
+  const maxW = Math.max(1, rootW);
+  const maxH = maxW * FACADE_ASPECT;
+  const bandTop = trailBottom + 16;
+  const bandBottom = sheetTop - 12;
+  const available = Math.max(48, bandBottom - bandTop);
+  const buildingFrac = Math.max(0.05, ui.facadeGround - ui.facadeTop);
+  const scale = Math.min(1, available / (buildingFrac * maxH));
+  const width = maxW * scale;
+  const height = maxH * scale;
+  const left = (maxW - width) / 2;
+  let top = bandBottom - ui.facadeGround * height;
+  const buildingTop = top + ui.facadeTop * height;
+  if (buildingTop < bandTop) {
+    top = bandTop - ui.facadeTop * height;
+  }
+  return {
+    left,
+    top,
+    width,
+    height,
+    originX: left + (ui.doorX / 100) * width,
+    originY: top + (ui.doorY / 100) * height,
+  };
+}
+
 /**
  * Design-space 07 camera → stage pixels.
  * Width drives scale (1 viewBox unit tracks CSS px × sx). Keep for 07 only —
@@ -168,6 +214,8 @@ export function JourneyFlow({
   const [flightRouteOpacity, setFlightRouteOpacity] = useState(0.85);
   const [occupationNote, setOccupationNote] = useState(false);
   const [facadeOpacity, setFacadeOpacity] = useState(0);
+  /** Sheet-anchored facade image box (kept through door zoom). */
+  const [facadeImg, setFacadeImg] = useState<FacadeImgLayout | null>(null);
   const [blackout, setBlackout] = useState(0);
   const [debugMap] = useState(
     () =>
@@ -267,6 +315,62 @@ export function JourneyFlow({
   }, []);
 
   const museumUi = path ? getMuseumUi(path.museumId) : undefined;
+
+  // Anchor facade image to the bottom sheet (and under the trail) on every viewport.
+  useLayoutEffect(() => {
+    if (phase !== "facade" && phase !== "entering") return;
+    if (phase === "entering") return; // keep last layout while door zooms
+    const root = facadeRootRef.current;
+    const card = facadeCardRef.current;
+    const ui = museumUi;
+    if (!root || !card || !ui) return;
+
+    const measure = () => {
+      const r = facadeRootRef.current;
+      const c = facadeCardRef.current;
+      const trail = facadeTrailRef.current;
+      if (!r || !c || !ui) return;
+      const rootW = r.clientWidth;
+      // Layout box (ignores sheet slide transform) — card shares bottom with root.
+      const sheetTop = Math.max(0, r.clientHeight - c.offsetHeight);
+      const trailBottom = trail
+        ? trail.offsetTop + trail.offsetHeight
+        : 0;
+      const next = computeFacadeImgLayout(rootW, sheetTop, trailBottom, ui);
+      setFacadeImg((prev) => {
+        if (
+          prev &&
+          Math.abs(prev.left - next.left) < 0.5 &&
+          Math.abs(prev.top - next.top) < 0.5 &&
+          Math.abs(prev.width - next.width) < 0.5 &&
+          Math.abs(prev.height - next.height) < 0.5
+        ) {
+          return prev;
+        }
+        return next;
+      });
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(root);
+    ro.observe(card);
+    const trail = facadeTrailRef.current;
+    if (trail) ro.observe(trail);
+    window.addEventListener("resize", measure);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", measure);
+    // Sheet spring / fonts can settle a beat later.
+    const t1 = window.setTimeout(measure, 50);
+    const t2 = window.setTimeout(measure, 320);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+      vv?.removeEventListener("resize", measure);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [phase, museumUi, revisit]);
 
   const trailItems: TrailItem[] | null = useMemo(() => {
     if (!path) return null;
@@ -1263,7 +1367,7 @@ export function JourneyFlow({
         )}
       </AnimatePresence>
 
-      {/* Facade 11 — native aspect, shifted so groundY sits just above the card */}
+      {/* Facade 11 — width-fit image anchored so ground sits just above the sheet */}
       {(phase === "facade" || phase === "entering") && museumUi && (
         <motion.div
           ref={facadeRootRef}
@@ -1277,23 +1381,34 @@ export function JourneyFlow({
             className="absolute inset-0 overflow-hidden"
             style={{
               scale: phase === "entering" ? doorCamScale : facadeScale,
-              transformOrigin: `${museumUi.doorX}% ${museumUi.doorY}%`,
+              transformOrigin: facadeImg
+                ? `${facadeImg.originX}px ${facadeImg.originY}px`
+                : `${museumUi.doorX}% ${museumUi.doorY}%`,
               backgroundColor: museumUi.facadeFill,
             }}
           >
-            {/* Figma 390×844 facade as full-screen cover — sheet overlays the lower part. */}
             {phase === "facade" && !revisit ? (
               <button
                 type="button"
                 aria-label="Зайти в музей"
                 onClick={enterDoor}
-                className="absolute inset-0 z-[1] cursor-pointer border-0 bg-transparent p-0"
+                className="absolute z-[1] cursor-pointer border-0 bg-transparent p-0"
+                style={
+                  facadeImg
+                    ? {
+                        left: facadeImg.left,
+                        top: facadeImg.top,
+                        width: facadeImg.width,
+                        height: facadeImg.height,
+                      }
+                    : { inset: 0 }
+                }
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={museumUi.facadeSrc}
                   alt=""
-                  className="pointer-events-none size-full select-none object-cover object-[center_top]"
+                  className="pointer-events-none size-full select-none"
                   draggable={false}
                 />
               </button>
@@ -1302,7 +1417,17 @@ export function JourneyFlow({
               <img
                 src={museumUi.facadeSrc}
                 alt=""
-                className="pointer-events-none absolute inset-0 z-[1] size-full select-none object-cover object-[center_top]"
+                className="pointer-events-none absolute z-[1] select-none"
+                style={
+                  facadeImg
+                    ? {
+                        left: facadeImg.left,
+                        top: facadeImg.top,
+                        width: facadeImg.width,
+                        height: facadeImg.height,
+                      }
+                    : { inset: 0, width: "100%", height: "100%" }
+                }
                 draggable={false}
               />
             )}

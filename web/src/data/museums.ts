@@ -4,6 +4,8 @@ import { getMuseum } from "./index";
 /** Native facade export size (390×844 @2×). */
 export const FACADE_NATIVE_W = 780;
 export const FACADE_NATIVE_H = 1688;
+/** Design aspect for width-fit facade layout (no object-fit crop). */
+export const FACADE_ASPECT = 844 / 390;
 
 /** Facade + hall UI for journey screen 11 / enter animation. */
 export type MuseumUi = {
@@ -13,25 +15,22 @@ export type MuseumUi = {
   /** Display title for UI (Figma spelling, e.g. «імені» not «ім.»). */
   displayName: string;
   /**
-   * Transform-origin for the enter zoom (%, of facade).
+   * Transform-origin for the enter zoom (%, of facade image).
    * Door hint UI was removed; whole facade is tappable.
    */
   doorX: number;
   doorY: number;
-  /** Building top as a fraction of image height (780×1688 exports). */
-  buildingTopY: number;
-  /**
-   * Building ground line as a fraction of image height (780×1688 exports).
-   * Used with buildingTopY to fit the facade between trail and card.
-   */
-  groundY: number;
+  /** Building roof as a fraction of image height (measured WebP). */
+  facadeTop: number;
+  /** Building ground line as a fraction of image height (measured WebP). */
+  facadeGround: number;
   /** Top-left pixel of the facade export — fill above/below so no seam shows. */
   facadeFill: string;
 };
 
 /**
  * Full-screen facade exports (390×844 @2× → /museums/<id>.webp).
- * buildingTopY / groundY measured from the WebP exports.
+ * facadeTop / facadeGround measured from the WebP exports.
  */
 export const museumUi: Record<string, MuseumUi> = {
   kherson: {
@@ -41,8 +40,8 @@ export const museumUi: Record<string, MuseumUi> = {
     displayName: "Херсонський обласний художній музей імені Олексія Шовкуненка",
     doorX: 50,
     doorY: 45,
-    buildingTopY: 0.22,
-    groundY: 0.6,
+    facadeTop: 0.19,
+    facadeGround: 0.59,
     facadeFill: "#0e0c0b",
   },
   melitopol: {
@@ -52,8 +51,8 @@ export const museumUi: Record<string, MuseumUi> = {
     displayName: "Мелітопольський краєзнавчий музей",
     doorX: 50,
     doorY: 45,
-    buildingTopY: 0.29,
-    groundY: 0.62,
+    facadeTop: 0.28,
+    facadeGround: 0.61,
     facadeFill: "#0d0503",
   },
   kharkiv: {
@@ -63,8 +62,8 @@ export const museumUi: Record<string, MuseumUi> = {
     displayName: "Харківський художній музей",
     doorX: 50,
     doorY: 45,
-    buildingTopY: 0.27,
-    groundY: 0.7,
+    facadeTop: 0.26,
+    facadeGround: 0.65,
     facadeFill: "#0d0503",
   },
   lviv: {
@@ -74,8 +73,8 @@ export const museumUi: Record<string, MuseumUi> = {
     displayName: "Національний музей у Львові імені Андрея Шептицького",
     doorX: 50,
     doorY: 45,
-    buildingTopY: 0.23,
-    groundY: 0.64,
+    facadeTop: 0.22,
+    facadeGround: 0.62,
     facadeFill: "#0d0503",
   },
   chernihiv: {
@@ -85,8 +84,8 @@ export const museumUi: Record<string, MuseumUi> = {
     displayName: "Чернігівський обласний художній музей імені Григорія Галагана",
     doorX: 50,
     doorY: 45,
-    buildingTopY: 0.28,
-    groundY: 0.66,
+    facadeTop: 0.28,
+    facadeGround: 0.64,
     facadeFill: "#0d0503",
   },
 };
