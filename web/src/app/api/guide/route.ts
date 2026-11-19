@@ -31,7 +31,10 @@ type ChatMessage = {
 const MAX_INPUT = 800;
 const MAX_MESSAGES = 6;
 const MAX_DETAIL = 120;
-const ALLOWED_HOSTS = new Set(["web-eta-tawny-94.vercel.app"]);
+const ALLOWED_HOSTS = new Set([
+  "shovani.vercel.app",
+  "web-eta-tawny-94.vercel.app",
+]);
 
 /**
  * In-memory rate limits. Prepaid OpenAI credits (no auto-recharge) are the real cost cap.

@@ -15,7 +15,7 @@ const SITE_DESCRIPTION =
   "Цифровий музей українського мистецтва, яке сьогодні не побачиш наживо.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://web-eta-tawny-94.vercel.app"),
+  metadataBase: new URL("https://shovani.vercel.app"),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   applicationName: SITE_TITLE,
