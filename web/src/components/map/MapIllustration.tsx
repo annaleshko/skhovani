@@ -10,8 +10,8 @@ type Props = {
 };
 
 /**
- * Figma Illustration/Map 61:46 — inline map paths (vector at any scale).
- * Camera transforms (Stage 4) should wrap this component.
+ * Inline map paths (vector at any scale).
+ * Camera transforms () should wrap this component.
  */
 export function MapIllustration({
   children,

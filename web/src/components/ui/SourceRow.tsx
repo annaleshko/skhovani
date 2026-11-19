@@ -8,7 +8,7 @@ type Props = {
   showDivider?: boolean;
 };
 
-/** Figma Source Row 72:700 — external-link icon from Icon/External. */
+/** Source row with external-link icon. */
 export function SourceRow({
   label,
   date,

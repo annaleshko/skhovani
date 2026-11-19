@@ -9,7 +9,7 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
   label?: string;
 };
 
-/** Figma Text Field 60:13 — Default / Focused, optional icon */
+/** Text field — default / focused, optional icon. */
 export function TextField({ icon, label, className, id, onFocus, onBlur, ...rest }: Props) {
   const autoId = useId();
   const inputId = id ?? autoId;

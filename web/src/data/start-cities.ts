@@ -1,6 +1,6 @@
 import { getCity, type City } from "./cities";
 
-/** MVP v2 city picker order — docs/mvp-v2.md screen 01. */
+/** City picker order. */
 export const START_CITY_IDS = [
   "kyiv",
   "vinnytsia",

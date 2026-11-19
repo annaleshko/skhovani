@@ -151,7 +151,7 @@ export function TourStage({
     sy,
   ]);
 
-  /** Passport 16: contain in Figma box x24 y125 w342 h265 (never under header / over hint). */
+  /** Passport 16: contain in box x24 y125 w342 h265 (never under header / over hint).*/
   const imgLayout = useMemo(
     () => fitSlotOrigin(frameSlot, imgNatural.w, imgNatural.h),
     [frameSlot, imgNatural.h, imgNatural.w],

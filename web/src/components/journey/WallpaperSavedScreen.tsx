@@ -22,7 +22,7 @@ const STEPS = [
 ] as const;
 
 /**
- * MVP v2 screen 17 — Figma `240:1889`.
+ * screen — design.
  * Product decision 2026-11-18: CTA «Повернутись до твору» → passport 16
  * (journey continue lives on passport «Далі — <місто>»).
  */

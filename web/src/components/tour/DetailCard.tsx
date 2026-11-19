@@ -11,7 +11,7 @@ type Props = {
   onAskGuide: () => void;
 };
 
-/** Figma 08 detail card — slides up from the bottom over the passport. */
+/** 08 detail card — slides up from the bottom over the passport.*/
 export function DetailCard({ zone, sourceUrl, onClose, onAskGuide }: Props) {
   return (
     <motion.div

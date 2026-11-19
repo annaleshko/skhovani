@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 /**
- * MVP v2: disabled — final screen with counters.
+ * disabled — final screen with counters.
  * Redirects into the journey / route-map flow.
  */
 export default function FinishPage() {

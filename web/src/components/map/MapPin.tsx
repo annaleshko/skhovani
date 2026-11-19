@@ -23,7 +23,7 @@ type Props = {
 };
 
 /**
- * Figma Map Pin 71:684 — SVG coordinate space.
+ * Map pin in SVG coordinate space.
  * Outer `<g transform="translate(x y)">` stays attribute-based;
  * animations only touch an inner group.
  */
@@ -59,7 +59,7 @@ export function MapPin({
         <circle r={4} fill={fill} />
       </>
     ) : (
-      /* start — Figma «You» 24px: ring + gold dot */
+      /* start — «You» 24px: ring + gold dot*/
       <>
         <circle r={10} fill="none" stroke={fill} strokeWidth={1.5} />
         <circle r={3.5} fill={fill} />

@@ -11,7 +11,7 @@ type Props = {
 
 /** Circular timer around Pause / Play. */
 export function TourRing({ progress, paused, className, onToggle }: Props) {
-  // Figma 100:1681 — 64×64 pause timer
+  // design — 64×64 pause timer
   const size = 64;
   const r = 26;
   const c = 2 * Math.PI * r;

@@ -1,7 +1,7 @@
 /**
- * MVP v2 map copy — genitive city names and sheet blurbs.
+ * Map copy — genitive city names and sheet blurbs.
  * Keep as data maps; do not invent forms in UI strings.
- * Facts from docs/artwork-passports.md / data/artworks.json.
+ * Facts come from data/artworks.json.
  */
 
 import type { ResolvedPath } from "@/data/journey";

@@ -1,4 +1,4 @@
-/** Hall layouts in Figma design px (wall height = 844). */
+/** Hall layouts in design px (wall height = 844). */
 
 export type HallRect = { x: number; y: number; w: number; h: number };
 
@@ -20,7 +20,7 @@ export type HallLayout = {
   designHeight: number;
   wallSrc: string;
   lamp: { w: number; h: number; y: number };
-  /** Figma projector 92:4276 — fixed 353×745, top y 99, centered on lamp. */
+  /** Light cone: fixed 353×745, top y 99, centered on lamp. */
   cone: { w: number; h: number; y: number };
   /** Absolute Y for captions under each frame (Kherson wall). */
   captions: { titleY: number; metaY: number; badgeY: number };
@@ -39,7 +39,7 @@ function framePaths(id: number): Pick<HallSlot, "frameSrc" | "hiddenSrc"> {
 }
 
 /**
- * Kherson wall + frames from Figma `156:15129` / screen `92:4217`.
+ * Kherson wall + frames.
  * Coords are relative to the wall image (1659×844).
  * Lamps at y 45, x ≈ 133, 432, 673, 936, 1222, 1477.
  */
@@ -92,8 +92,8 @@ export const hallLayouts: Record<string, HallLayout> = {
     ],
   },
   /**
-   * Melitopol — Figma `188:7356`: title/meta/badge ABOVE the vitrine;
-   * vitrine+pedestal at x25 y273 w340 (bottom-anchored via h=571).
+   * Melitopol: title/meta/badge above the vitrine.
+   * Vitrine+pedestal at x25 y273 w340 (bottom-anchored via h=571).
    */
   melitopol: {
     museumId: "melitopol",
@@ -114,7 +114,7 @@ export const hallLayouts: Record<string, HallLayout> = {
       },
     ],
   },
-  /** Kharkiv — Figma `169:6425`. */
+  /** Kharkiv hall. */
   kharkiv: {
     museumId: "kharkiv",
     designWidth: 390,
@@ -132,7 +132,7 @@ export const hallLayouts: Record<string, HallLayout> = {
       },
     ],
   },
-  /** Chernihiv — Figma `170:6497`. */
+  /** Chernihiv hall. */
   chernihiv: {
     museumId: "chernihiv",
     designWidth: 390,
@@ -150,7 +150,7 @@ export const hallLayouts: Record<string, HallLayout> = {
       },
     ],
   },
-  /** Lviv — Figma `171:6570`. */
+  /** Lviv hall. */
   lviv: {
     museumId: "lviv",
     designWidth: 390,

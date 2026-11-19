@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-/** Figma Chat Bubble 72:698 */
+/** Chat bubble. */
 export function ChatBubble({ role, children, className }: Props) {
   const isUser = role === "user";
   return (

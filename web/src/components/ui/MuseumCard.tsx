@@ -13,7 +13,7 @@ type Props = {
   onClick?: () => void;
 };
 
-/** Figma Museum Card 145:3844 — Пройдений / Наступний / Попереду */
+/** Museum card — Пройдений / Наступний / Попереду. */
 export function MuseumCard({
   title,
   city,

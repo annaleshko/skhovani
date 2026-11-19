@@ -64,7 +64,7 @@ type StolenPhase = "empty" | "revealing" | "remembered";
 
 /** Focus stolen before tap — heavy blur clipped to the painting / glass opening. */
 const STOLEN_BLUR_FILTER = "blur(18px) brightness(0.45) saturate(0.55)";
-/** Melitopol vitrine interior only (Figma stolen state). */
+/** Melitopol vitrine interior only (stolen state).*/
 const VITRINE_BLUR_FILTER = "blur(14px) brightness(0.5)";
 
 function stolenBlurFor(artworkId: number): string {
@@ -114,7 +114,7 @@ function scrollLeftTo(
 
 /**
  * Hall — wall → frames → 70% darkness → opened + lamp + cone → captions.
- * MVP v2: 05 empty / 06 reveal / 12 neighbor caption (no 12б sheet).
+ * 05 empty / 06 reveal / 12 neighbor caption (no 12б sheet).
  */
 export function HallExperience({
   museumId,
@@ -789,7 +789,7 @@ export function HallExperience({
   const hintTour = (isShelter || isSaved) && showUi && !reopenHall;
   const hintPassport = reopenHall && showUi;
 
-  // Figma 05: ring ON the frame's top-right after scale (design rect × px).
+  // 05: ring ON the frame's top-right after scale (design rect × px).
   // Label above the ring, right-aligned, max-width 140px — never overlaps ring.
   // Melitopol: ring on glass top-right; label INSIDE glass under top edge, left of ring.
   const markerPos = (() => {

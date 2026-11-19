@@ -15,7 +15,7 @@ type Props = {
   style?: CSSProperties;
 };
 
-/** Figma 114:1824 connector — #98928C (= --color-text-secondary / border-control). */
+/** design connector — #98928C (= --color-text-secondary / border-control).*/
 const CONNECTOR = "var(--color-text-secondary)";
 const DOT_PASSED = "var(--color-bg-accent)";
 const RING_UPCOMING = "var(--color-border-control)";
@@ -57,9 +57,7 @@ function StepDot({ state }: { state: TrailDotState }) {
 }
 
 /**
- * Figma «Нагадування шляху» (114:1824 / instance 125:6432):
- * row gap 4px; connector 16×1 solid #98928C for all states.
- * Ref: docs/figma-refs/11-museum.png, 09-zoom.png.
+ * Route reminder trail: 4px row gap; 16×1 connector for all states.
  */
 export const RouteTrail = forwardRef<HTMLElement, Props>(
   function RouteTrail({ items, className, style }, ref) {

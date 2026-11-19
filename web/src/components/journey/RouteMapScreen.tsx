@@ -67,7 +67,7 @@ function toStageCam07(stageW: number, stageH: number) {
 }
 
 /**
- * MVP v2 screen 02в — Figma `238:1557`, ref `docs/figma-refs-v2/02v-route-map.png`.
+ * screenв — design
  * Origin = start city; rays to visited; target = bright dotted route.
  */
 export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
@@ -380,7 +380,7 @@ export function RouteMapScreen({ open, next, onDepart, onRevisit }: Props) {
             {journeyDone ? (
               <>
                 <h2 className="text-h2">{ALL_DONE_COPY.title}</h2>
-                {/* TODO(copy confirm) */}
+                {/* * * */}
                 <p className="mt-sm text-body-md text-text-secondary">
                   {ALL_DONE_COPY.body}
                 </p>

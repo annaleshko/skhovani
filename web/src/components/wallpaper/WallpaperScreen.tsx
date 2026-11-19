@@ -44,14 +44,14 @@ function downloadBlob(blob: Blob, filename: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** Figma cover path for screen 11 / download (1170×2532). */
+/** cover path for screen / download (1170×2532).*/
 export function wallpaperCoverSrc(artwork: Artwork): string | null {
   if (artwork.wallpaper?.startsWith("/wallpapers/")) return artwork.wallpaper;
   if (artwork.slug) return `/wallpapers/${artwork.slug}.png`;
   return null;
 }
 
-/** Figma 11 — designer wallpaper cover preview + save exact file. */
+/** 11 — designer wallpaper cover preview + save exact file.*/
 export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [errorToast, setErrorToast] = useState(false);
@@ -142,7 +142,7 @@ export function WallpaperScreen({ artwork, open, onClose, onSaved }: Props) {
               Зберегти на телефон
             </Button>
             <p className="mt-sm text-center text-caption text-text-secondary">
-              {/* TODO(copy): Figma cover save hint */}
+              {/* TODO(copy): cover save hint*/}
               Збережи як шпалери телефону.
             </p>
             <AnimatePresence>

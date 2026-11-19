@@ -8,7 +8,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   trailing?: ReactNode;
 };
 
-/** Figma Option Card 60:46 — rhythm / choice cards */
+/** Option card — rhythm / choice cards. */
 export function OptionCard({
   title,
   description,

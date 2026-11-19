@@ -1,6 +1,6 @@
 import { demoUser, type DemoUser } from "@/data/demo-user";
 
-/** MVP v2 — bump clears incompatible v1 state. */
+/** Bump clears incompatible v1 state. */
 export const STORAGE_KEY = "shovani:v2";
 export const LEGACY_STORAGE_KEY = "shovani:v1";
 /** Short-lived reset latch shared by shell + iframe (localStorage). */

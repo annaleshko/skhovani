@@ -27,7 +27,7 @@ function shouldUsePhonePreview(): boolean {
 }
 
 /**
- * On wide desktop viewports, show a Figma-sized phone iframe instead of the app.
+ * On wide desktop viewports, show a sized phone iframe instead of the app.
  * The outer shell does NOT mount AppStateProvider — only the iframe app persists.
  * Phones, PWA standalone, and `?embed=1` render children as usual.
  */

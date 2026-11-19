@@ -1,7 +1,5 @@
 "use client";
 
-// MVP v2: disabled — Home / Collection / Profile tabs (kept unreachable).
-
 import { Button } from "@/components/ui";
 import { getDemoStartCity } from "@/data/demo-user";
 import { getMuseumShortLabel } from "@/data/museums";
@@ -10,7 +8,7 @@ import { haversineKm } from "@/lib/geo";
 import { useAppState } from "@/state/AppState";
 import Link from "next/link";
 
-/** Temporary Home until Stage 11 — next path + «Летимо». */
+/** Temporary Home until — next path + «Летимо».*/
 export function HomePlaceholder() {
   const { user, completedPaths } = useAppState();
   const next = getNextPath(completedPaths);

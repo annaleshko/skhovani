@@ -14,7 +14,7 @@ type Props = {
 };
 
 /**
- * MVP v2 screen 01 — Figma `236:1250`, ref `docs/figma-refs-v2/01-city.png`.
+ * screen — design
  * Tap a chip → selected (150ms) → continue. No footer button.
  */
 export function CityPicker({ onPicked }: Props) {

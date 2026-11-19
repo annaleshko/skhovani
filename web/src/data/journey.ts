@@ -168,7 +168,7 @@ export function isJourneyComplete(completedPaths: number[]): boolean {
 }
 
 /** Copy shown when every path is done (02в end sheet). */
-// TODO(copy confirm): final «Шлях пройдено» body with Anna
+
 export const ALL_DONE_COPY = {
   title: "Шлях пройдено",
   body: "Ти побачив 10 творів, яких зараз немає на своїх місцях. Ми пам'ятаємо, які вони.",

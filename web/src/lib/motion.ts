@@ -2,7 +2,7 @@
 
 import { useReducedMotion } from "framer-motion";
 
-/** Named durations (ms) and easings from docs/app-spec.md §8 */
+/** Named durations (ms) and easings. */
 export const motionTokens = {
   staggerReveal: { duration: 0.4, step: 0.12, y: 8 },
   cardStagger: { step: 0.08 },
@@ -11,7 +11,7 @@ export const motionTokens = {
   pinPulse: { duration: 1.6 },
   mapFadeIn: 0.6,
   arcDraw: 1.2,
-  /** Dotted start→target route draw-in (Stage 2 constellation). */
+  /** Dotted start→target route draw-in. */
   dottedDraw: 0.8,
   sheetSlide: 0.3,
   sheetHide: 0.25,
@@ -22,7 +22,7 @@ export const motionTokens = {
   doorEnter: 0.6,
   spotlight: { duration: 0.3, step: 0.12 },
   frameShake: 0.3,
-  /** Stolen empty → memory painting (MVP v2 screen 06). */
+  /** Stolen empty frame → memory painting reveal. */
   memoryReveal: 2.5,
   /** Pause after reveal before the tour opens. */
   memoryHold: 1.2,

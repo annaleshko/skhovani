@@ -35,7 +35,7 @@ type Props = {
 };
 
 /**
- * Figma 16 — passport sheet under the framed artwork.
+ * 16 — passport sheet under the framed artwork.
  * Pinned bar: «Спитати гіда» + «Далі — <місто>» (product decision 2026-11-18).
  * Wallpaper lives on the header download icon → screen 11.
  */

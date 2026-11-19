@@ -18,7 +18,7 @@ type Props = {
   className?: string;
 };
 
-/** Figma Nav Bar 72:688 */
+/** Nav bar. */
 export function NavBar({ active, onChange, className }: Props) {
   return (
     <nav

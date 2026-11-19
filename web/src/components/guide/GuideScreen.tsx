@@ -37,7 +37,7 @@ type GuideApiOk = {
 };
 
 /**
- * Figma 09 · Гід (+ conversation 20б).
+ * 09 · Гід (+ conversation 20б).
  * OpenAI via `/api/guide`; history in localStorage per artwork.
  */
 export function GuideScreen({
@@ -259,7 +259,7 @@ export function GuideScreen({
             </div>
           </div>
 
-          {/* Messages — empty state bottom-aligned (Figma 236:1619) */}
+          {/* Messages — empty state bottom-aligned (design)*/}
           <div
             ref={listRef}
             className={

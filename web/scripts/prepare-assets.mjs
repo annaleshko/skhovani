@@ -193,7 +193,7 @@ for (const [museumId, filename] of Object.entries(HALL_WALLS)) {
 }
 
 // --- Wallpapers ---
-// Prefer designer Figma covers in public/wallpapers/<slug>.png (1170×2532).
+// Prefer designer covers in public/wallpapers/<slug>.png (1170×2532).
 for (const artwork of content.artworks) {
   if (!artwork.image) continue;
   const cover = path.join(PUBLIC, "wallpapers", `${artwork.slug}.png`);

@@ -11,30 +11,30 @@ export const FRAME = { w: 390, h: 844 } as const;
 
 /**
  * Land in map.svg viewBox (408×296): x 36–372, y 14–238 → 336×224 units.
- * Figma 87:1725 places that land box at frame (27, 253, 336, 224).
+ * That land box sits at frame (27, 253, 336, 224).
  * With SVG drawn 1 viewBox unit = 1px (scale 1), svg top-left = (−9, 239).
  */
 export const MAP_LAND = { x: 36, y: 14, w: 336, h: 224 } as const;
 export const MAP_07 = { x: 27, y: 253, w: 336, h: 224 } as const;
-/** SVG top-left on screen 07 so land aligns with MAP_07. */
+/** SVG top-left so land aligns with MAP_07. */
 export const MAP_07_ORIGIN = {
   x: MAP_07.x - MAP_LAND.x, // -9
   y: MAP_07.y - MAP_LAND.y, // 239
 } as const;
-/** 07 camera scale: 1 viewBox unit = 1 CSS px. */
+/** Overview camera scale: 1 viewBox unit = 1 CSS px. */
 export const MAP_07_SCALE = 1;
 
-/** Zoom scale relative to 07 (2090/336 ≈ 6.22); Kherson screen focus. */
+/** Zoom scale relative to overview (2090/336 ≈ 6.22); Kherson focus. */
 export const ZOOM_SCALE = 6.22;
 export const ZOOM_FOCUS = { x: 208, y: 356 } as const;
 
-/** Camera for screen 07 (land box = Figma 87:1725). */
+/** Overview camera (land box aligned to MAP_07). */
 export function camera07(): CameraTransform {
   return { tx: MAP_07_ORIGIN.x, ty: MAP_07_ORIGIN.y, scale: MAP_07_SCALE };
 }
 
 /**
- * Camera for screen 9: place `pt` (Херсон) at ZOOM_FOCUS with scale ZOOM_SCALE.
+ * City zoom camera: place `pt` at ZOOM_FOCUS with scale ZOOM_SCALE.
  */
 export function camera09(pt: MapPoint): CameraTransform {
   return cameraPlaceAt(pt, MAP_07_SCALE * ZOOM_SCALE, ZOOM_FOCUS.x, ZOOM_FOCUS.y);

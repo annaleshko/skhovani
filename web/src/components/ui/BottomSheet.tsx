@@ -25,7 +25,7 @@ type Props = {
   labelledBy?: string;
 };
 
-/** Figma Bottom Sheet 72:614 — scrim, spring, swipe-down, Esc, focus trap */
+/** Bottom sheet — scrim, spring, swipe-down, Esc, focus trap. */
 export function BottomSheet({
   open,
   onClose,

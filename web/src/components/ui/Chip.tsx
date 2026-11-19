@@ -5,7 +5,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   active?: boolean;
 };
 
-/** Figma Chip 71:657 — Default / Active */
+/** Chip — default / active. */
 export function Chip({ active = false, className, children, ...rest }: Props) {
   return (
     <button

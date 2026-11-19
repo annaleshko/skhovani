@@ -12,7 +12,7 @@ const labels: Record<SocialProvider, string> = {
   email: "Продовжити з email",
 };
 
-/** Figma Social Button 83:1297 */
+/** Social button. */
 export function SocialButton({ provider, className, children, ...rest }: Props) {
   return (
     <button

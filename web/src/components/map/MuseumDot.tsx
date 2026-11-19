@@ -18,7 +18,7 @@ type Props = {
 };
 
 /**
- * Figma «Музей · …» — 14px ring + 6px dot, 12px label `text/secondary`.
+ * «Музей · …» — 14px ring + 6px dot, 12px label `text/secondary`.
  * Used on screens 02 and 02в for non-target museums.
  */
 export function MuseumDot({

@@ -12,7 +12,7 @@ export type MuseumUi = {
   id: string;
   facadeSrc: string;
   hallSrc: string;
-  /** Display title for UI (Figma spelling, e.g. «імені» not «ім.»). */
+  /** Display title for UI (spelling, e.g. «імені» not «ім.»).*/
   displayName: string;
   /**
    * Transform-origin for the enter zoom (%, of facade image).

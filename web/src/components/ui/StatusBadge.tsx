@@ -28,7 +28,7 @@ type Props = {
   label?: string;
 };
 
-/** Figma Status Badge 71:651 */
+/** Status badge. */
 export function StatusBadge({ status, className, label }: Props) {
   return (
     <span

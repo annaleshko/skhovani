@@ -74,8 +74,6 @@ import { pickPath } from "./pickPath";
 
 type Phase =
   | "boot"
-  // MVP v2: disabled — onboarding / «Привіт, Анно»
-  // | "e1"
   | "map"
   | "flight"
   | "zoom"
@@ -85,7 +83,7 @@ type Phase =
 
 type Props = {
   pathN?: number;
-  /** From 02в «Вирушити» — skip screen-02 sheet and start flight. */
+  /** From route-map «Вирушити» — skip the path sheet and start flight. */
   autostart?: boolean;
   /** Star museum revisit — fast flight + auto facade → hall. */
   revisit?: boolean;
@@ -180,7 +178,7 @@ function toStageCam07(
 }
 
 /**
- * Screen 9 camera — Figma design space (scale 6.22, city at 208×356).
+ * City-zoom camera in design space (scale 6.22, focus at 208×356).
  * Not scaled by stage width (that produced 6.86 on 430-wide shells).
  */
 function stageCam09(pt: MapPoint): CameraTransform {
@@ -1080,8 +1078,6 @@ export function JourneyFlow({
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-screen text-text-primary">
-      {/* MVP v2: disabled — E1 «Будуємо шлях» / «Привіт, Анно» */}
-
       {showMapTrail ? <RouteTrail items={trailItems} /> : null}
 
       {/* Map stage — ALWAYS full-screen; flight/zoom only move the camera */}
@@ -1317,7 +1313,7 @@ export function JourneyFlow({
         </div>
       )}
 
-      {/* Header — MVP v2 screen 02 «Твій шлях» (path 1 only) */}
+      {/* Path-1 header only */}
       {phase === "map" && showPathConfirm && (
         <header className="pointer-events-none absolute inset-x-0 top-0 z-20 px-xl pb-md pt-[calc(56px+var(--safe-top))]">
           <h1 className="text-h1">Твій шлях</h1>
@@ -1337,7 +1333,6 @@ export function JourneyFlow({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* TODO(confirm): occupation note copy */}
             {path.museum.city} — місто під окупацією
           </motion.p>
         )}

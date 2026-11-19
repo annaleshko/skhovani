@@ -14,7 +14,7 @@ type Props = {
   onClick?: () => void;
 };
 
-/** Figma Artwork Card 72:724 — Lit / Covered */
+/** Artwork card — Lit / Covered. */
 export function ArtworkCard({
   title,
   meta,
