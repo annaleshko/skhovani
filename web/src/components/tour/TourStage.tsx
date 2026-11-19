@@ -846,7 +846,13 @@ export function TourStage({
 
       {/* Tour bottom sheet */}
       {mode === "tour" && stop ? (
-        <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 flex flex-col gap-[45px] rounded-t-lg border-t border-border-subtle bg-surface px-xl pb-[calc(24px+env(safe-area-inset-bottom,0px))] pt-xl">
+        <div
+          className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 flex flex-col gap-xl rounded-t-lg border-t border-border-subtle bg-surface px-xl pt-xl"
+          style={{
+            paddingBottom:
+              "max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px))",
+          }}
+        >
           <div className="flex flex-col gap-lg">
             <ProgressStepper total={stops.length} current={stopIdx + 1} />
             <motion.div

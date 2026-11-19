@@ -263,7 +263,8 @@ export function AboutSheet({
               dimmed && "pointer-events-none",
             )}
             style={{
-              paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
+              paddingBottom:
+                "max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px))",
             }}
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

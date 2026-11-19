@@ -67,6 +67,8 @@ export function GuideScreen({
 
   useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const t = window.setTimeout(() => {
       const input = inputRef.current;
       if (!input) return;
@@ -79,7 +81,10 @@ export function GuideScreen({
         /* input type may not support selection */
       }
     }, 80);
-    return () => clearTimeout(t);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      clearTimeout(t);
+    };
   }, [open, artwork.id]);
 
   useEffect(() => {
@@ -137,7 +142,7 @@ export function GuideScreen({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             artworkId: artwork.id,
-            messages: next.map((m) => ({
+            messages: next.slice(-6).map((m) => ({
               role: m.role,
               content: m.content,
             })),
@@ -191,16 +196,7 @@ export function GuideScreen({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="absolute inset-0 z-50 flex flex-col bg-screen text-text-primary"
-          style={{
-            // Keep shell in the visual viewport (composer above keyboard).
-            bottom: keyboardInset > 0 ? keyboardInset : 0,
-            maxHeight:
-              keyboardInset > 0
-                ? `calc(100dvh - ${keyboardInset}px)`
-                : "100dvh",
-            height: "100%",
-          }}
+          className="absolute inset-0 z-50 flex h-dvh max-h-dvh flex-col overflow-hidden bg-screen text-text-primary"
           initial={reduced ? false : { x: "100%" }}
           animate={{ x: 0 }}
           exit={reduced ? { opacity: 0 } : { x: "100%" }}
@@ -210,8 +206,14 @@ export function GuideScreen({
               : { duration: motionTokens.pushPop, ease: easings.easeOut }
           }
         >
-          {/* Header */}
-          <div className="flex shrink-0 items-center gap-md border-b border-border-subtle px-xl py-md">
+          {/* Header — below iOS status bar; stays fixed while keyboard opens */}
+          <div
+            className="flex shrink-0 items-center gap-md border-b border-border-subtle px-xl pb-md"
+            style={{
+              paddingTop:
+                "max(40px, calc(env(safe-area-inset-top, 0px) + 8px))",
+            }}
+          >
             <IconButton
               label="Назад до картини"
               className="size-10 min-h-10 min-w-10 border border-border-subtle bg-surface"
@@ -421,10 +423,13 @@ export function GuideScreen({
             </div>
           ) : null}
 
-          {/* Composer */}
+          {/* Composer — only this lifts for the keyboard; shell stays full-height */}
           <form
             onSubmit={onSubmit}
-            className="flex shrink-0 items-center gap-sm px-xl pb-[calc(24px+var(--safe-bottom))] pt-md"
+            className="flex shrink-0 items-center gap-sm px-xl pt-md"
+            style={{
+              paddingBottom: `max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px + ${keyboardInset}px))`,
+            }}
           >
             <input
               ref={inputRef}
@@ -433,9 +438,11 @@ export function GuideScreen({
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Спитай гіда…"
               disabled={waiting}
-              className="h-14 min-h-[56px] min-w-0 flex-1 rounded-md border border-border-subtle bg-surface px-lg text-body-lg text-text-primary outline-none placeholder:text-text-secondary focus:border-border-accent"
+              className="h-14 min-h-[56px] min-w-0 flex-1 rounded-md border border-border-subtle bg-surface px-lg text-[16px] leading-normal text-text-primary outline-none placeholder:text-text-secondary focus:border-border-accent"
               maxLength={800}
               aria-label="Спитай гіда"
+              enterKeyHint="send"
+              autoCapitalize="sentences"
             />
             <button
               type="submit"
