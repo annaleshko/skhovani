@@ -10,16 +10,34 @@ const manrope = Manrope({
   display: "swap",
 });
 
+const SITE_TITLE = "Сховані";
+const SITE_DESCRIPTION =
+  "Цифровий музей українського мистецтва, яке сьогодні не побачиш наживо.";
+
 export const metadata: Metadata = {
-  title: "Сховані",
-  description: "Твори, яких зараз не видно — але їх можна побачити.",
-  applicationName: "Сховані",
+  metadataBase: new URL("https://web-eta-tawny-94.vercel.app"),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_TITLE,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Сховані",
+    title: SITE_TITLE,
   },
   formatDetection: { telephone: false },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    siteName: SITE_TITLE,
+    locale: "uk_UA",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
